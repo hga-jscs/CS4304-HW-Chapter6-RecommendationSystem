@@ -18,6 +18,33 @@
 
 完整 SKU 验证集的 100 类中有 3 类没有正例；保留了固定版本 TorchMetrics 的官方宏平均 AUROC 处理，未剔除类别或改变指标。小批量 sanity validation 也可能出现无正例提示，类别支持数已记录在成绩文件中。
 
+## 历史预训练与 1001 维实验流程
+
+新增流程由三部分组成：`pretrain_encoder` 使用历史内伪未来学习 457 维表征，`history_representation build` 生成 544 维统计/内容/协同特征，`combine` 拼接并按列标准化为 1001 维。它是新候选，不能用上表 673 维的分数代表其性能。
+
+预训练把完整 `input/` 最后 14 个日历日作为伪目标。当前数据对应 2022-10-27 至 2022-11-09；伪输入止于 10-26 日末。类别/SKU Top100、聚合词表只从伪输入选择，完整历史推理继续使用同一列定义。模型使用残差 MLP 与最近 32 条行为的 GRU，输出 256 维瓶颈和 201 维 logits。内部按用户分层留出，标准化及类别权重仅由训练用户拟合，用验证 BCE 选 checkpoint；这不是官方三项任务得分。官方 `target/` 不参与预训练或特征构建。
+
+在包含 PyTorch 的拓展训练环境执行准备、训练及提取（阶段可分别重跑，无需重复准备缓存）：
+
+```powershell
+python -m extension.pretrain_encoder --stage prepare --data-directory data/extension --cache-directory outputs/extension/pretraining_cache --output-directory outputs/extension/pretrained --pseudo-days 14 --sequence-length 32
+python -m extension.pretrain_encoder --stage train --data-directory data/extension --cache-directory outputs/extension/pretraining_cache --output-directory outputs/extension/pretrained --epochs 10 --patience 2 --batch-size 1024 --device cuda --seed 42
+python -m extension.pretrain_encoder --stage extract --data-directory data/extension --cache-directory outputs/extension/pretraining_cache --output-directory outputs/extension/pretrained --device cuda
+```
+
+在安装 `extension/requirements.txt` 的特征环境中构建其余特征，再拼接：
+
+```powershell
+python -m extension.history_representation build --data-directory data/extension --output-directory outputs/extension/history --batch-size 100000
+python -m extension.history_representation combine --history-directory outputs/extension/history --pretrained-directory outputs/extension/pretrained --output-directory outputs/extension/combined
+```
+
+544 维包括：96 维统计（40 个事件统计、5 个是否有历史、6 个跨事件/间隔指标、三类商品事件各 15 个有序价格桶统计），256 维历史 Top128 商品/类别精确衰减偏好，64 维名称/搜索 PQ 共现池化，以及 128 维稀疏图用户因子。PQ 位置和码字被视为离散类别，名称和查询分别拟合，不能称为恢复了原始语义码本。默认图包含全部元数据类别及历史高频的 4096 个 SKU、2048 个 URL，使用历史衰减交互、`log1p`、行 L2 后做随机 SVD，并对输出按行归一化；无图边用户为零。
+
+中间历史矩阵为磁盘上的 `float32`，只有拼接标准化后输出官方要求的 `float16`。裁剪与量化后不保证精确均值 0、方差 1。加 `--long-tail` 可保留额外两组 64 桶，最终是 1129 维：这 128 维没有包含在原清单的 1001 维加总内。完整图的 SVD 仍需额外内存，不建议与预训练数据准备同时运行。
+
+最后将 `outputs/extension/combined` 传给下文 `extension.evaluate`，先 `--validate-only`，再使用相同官方版本、目标缓存和三任务协议取得真实评分。保留旧表征及旧成绩，不用伪任务验证损失替换正式结果。
+
 ## 数据与环境
 
 使用[官方预处理数据](https://recsys.synerise.com/data-set)，下载地址为 [challenge_dataset.tar.gz](https://data.recsys.synerise.com/dataset/challenge_dataset.tar.gz)。解压后把包含以下内容的目录传给 `--data-directory`：

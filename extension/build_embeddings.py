@@ -58,12 +58,17 @@ def feature_layout(mode: str = "baseline", popular: dict | None = None) -> tuple
     return names, blocks
 
 
-def popular_history(properties: pd.DataFrame, paths: list[Path], batch_size: int, top_k: int) -> dict:
+def popular_history(properties: pd.DataFrame, paths: list[Path], batch_size: int, top_k: int,
+                    cutoff: int | None = None) -> dict:
     """Choose identifiers using purchase/cart inputs only, including historical non-target users."""
     counts = {"sku": Counter(), "category": Counter()}
     for path in paths[:2]:
-        for batch in parquet.ParquetFile(path).iter_batches(batch_size=batch_size, columns=["sku"]):
-            skus = batch.to_pandas()["sku"]
+        columns = ["sku"] if cutoff is None else ["sku", "timestamp"]
+        for batch in parquet.ParquetFile(path).iter_batches(batch_size=batch_size, columns=columns):
+            frame = batch.to_pandas()
+            if cutoff is not None:
+                frame = frame.loc[timestamps_ns(frame["timestamp"]) <= cutoff]
+            skus = frame["sku"]
             counts["sku"].update(skus.value_counts().to_dict())
             counts["category"].update(skus.map(properties["category"]).value_counts().to_dict())
     ranked = {column: [int(identifier) for identifier, _ in sorted(values.items(),
@@ -196,7 +201,8 @@ def validate_inputs(data_directory: Path) -> tuple[np.ndarray, list[Path]]:
 def build_embeddings(data_directory: str | Path, output_directory: str | Path,
                      batch_size: int = 100_000, decay_days: float = 30.0,
                      mode: str = "baseline", standardize: bool = False, top_k: int = 128,
-                     overwrite: bool = False) -> dict:
+                     overwrite: bool = False, cutoff_utc: str | None = None,
+                     popular_identifiers: dict | None = None) -> dict:
     """Create one representation for every relevant client in their original order.
 
     Aggregates use bounded Arrow batches and a disk-backed float32 matrix.
@@ -223,7 +229,10 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
         raise ValueError("Product properties must have unique, non-missing sku values")
     properties = properties.set_index("sku")
     client_index = pd.Index(ids)
-    popular = popular_history(properties, paths, batch_size, top_k) if mode == "enhanced" else None
+    cutoff = input_cutoff(paths, batch_size) if cutoff_utc is None else pd.Timestamp(cutoff_utc).value
+    popular = (popular_identifiers if popular_identifiers is not None else
+               popular_history(properties, paths, batch_size, top_k,
+                               cutoff if cutoff_utc is not None else None)) if mode == "enhanced" else None
     names, blocks = feature_layout(mode, popular)
     if len(names) > 2048:
         raise ValueError("Representation exceeds the official 2048-dimension limit; reduce top_k")
@@ -231,7 +240,6 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
     matrix = np.lib.format.open_memmap(scratch, mode="w+", dtype=np.float32,
                                       shape=(len(ids), len(names)), fortran_order=True)
     matrix[:] = 0
-    cutoff = input_cutoff(paths, batch_size)
     summary = {}
     source_manifest = []
     query_width = None
@@ -252,8 +260,13 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
             if not selected.any():
                 continue
             frame, rows = frame.loc[selected], rows[selected]
-            selected_rows += len(frame)
             times = timestamps_ns(frame["timestamp"])
+            if cutoff_utc is not None:
+                keep = times <= cutoff
+                frame, rows, times = frame.loc[keep], rows[keep], times[keep]
+                if len(rows) == 0:
+                    continue
+            selected_rows += len(frame)
             ages = (cutoff - times) / DAY_NS
             if (ages < 0).any():
                 raise ValueError("An input event is later than the recorded input cutoff")
@@ -339,6 +352,8 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
         "clients": len(ids), "dimensions": len(names), "dtype": "float16",
         "batch_size": batch_size, "histogram_half_life_days": decay_days,
         "input_cutoff_utc": pd.Timestamp(cutoff, tz="UTC").isoformat(),
+        "cutoff_filter_applied": cutoff_utc is not None,
+        "popular_identifiers_frozen": popular_identifiers is not None,
         "relevant_clients_sha256": hashlib.sha256(ids.tobytes()).hexdigest(),
         "sources": source_manifest + [{"path": properties_path.name, "bytes": properties_path.stat().st_size}],
         "target_data_used_for_embeddings": False, "events": summary,
@@ -363,6 +378,7 @@ def main() -> None:
     parser.add_argument("--top-k", type=int, default=128,
                         help="Maximum history-selected SKU/category identifiers; cart/removal use half/quarter")
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--cutoff-utc", help="Include only input events at or before this timestamp")
     arguments = parser.parse_args()
     result = build_embeddings(**vars(arguments))
     print(json.dumps(result, indent=2))
