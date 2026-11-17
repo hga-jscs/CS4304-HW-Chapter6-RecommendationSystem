@@ -1,8 +1,18 @@
 # 拓展任务：Synerise 用户行为表征
 
-本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。当前方法是本项目的轻量基线，不是已经复现的官方基线成绩。
+本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。当前方法是本项目的轻量基线，已完成课程指定的三项官方公开任务的本地评估。
 
-2026-11-17 已在完整官方预处理数据上生成 100 万用户的 208 维表征，耗时 109.4 秒，并通过固定版本的官方格式验证器。文件校验值与环境记录见 [baseline_validation.json](baseline_validation.json)。三项下游模型训练尚未完成，当前没有拓展任务性能分数。
+2026-11-17 已在完整官方预处理数据上生成 100 万用户的 208 维表征，耗时 109.4 秒，并通过固定版本的官方格式验证器。文件校验值与表征环境记录见 [baseline_validation.json](baseline_validation.json)；完整评估的成绩、环境和数据校验值见 [baseline_scores.json](baseline_scores.json)。
+
+| 官方公开任务 | 官方分数 | 最佳轮次 |
+| --- | ---: | ---: |
+| `churn` | 0.7285 | 第 3 轮 |
+| `propensity_category` | 0.7889 | 第 3 轮 |
+| `propensity_sku` | 0.7799 | 第 3 轮 |
+
+本次使用 RTX 4060 Laptop GPU、Windows、PyTorch `2.5.0+cu118`，启用下文的等价目标缓存，完整格式验证与三任务训练共耗时 2783.9 秒（约 46.4 分钟）。这些是公开任务的本地验证成绩，不能代表隐藏任务或线上排行榜成绩；分数定义见下文。
+
+完整 SKU 验证集的 100 类中有 3 类没有正例；保留了固定版本 TorchMetrics 的官方宏平均 AUROC 处理，未剔除类别或改变指标。小批量 sanity validation 也可能出现无正例提示，类别支持数已记录在成绩文件中。
 
 ## 数据与环境
 
@@ -65,7 +75,9 @@ python -m extension.evaluate --official-directory external/recsys2025 --data-dir
 
 也可通过 `--python` 指定官方环境的 Python 路径。入口核对官方提交及受版本控制文件未被修改，先运行原始 `validator.run`，初始化随机种子后再执行原始 `training_pipeline.train` 的 `churn`、`propensity_category`、`propensity_sku`。入口种子默认为 42；官方网络内部的 `torch.manual_seed(1278)` 保持原样，模型和训练参数均未修改。不提供关闭用户覆盖检查或替换官方指标的开关。CPU 支持 `--accelerator cpu`，但完整官方模型训练通常更适合 GPU。
 
-官方验证失败时进程返回非零退出码；只有三项训练成功且分数文件完整时才记录 `training_completed: true`。官方分数写入 `scores.json`，最佳 epoch 写入 `epochs.json`，执行命令与官方版本写入 `evaluation.json`，终端日志保留在 `validation.log` 和 `training.log`。原始官方分数中的 `placeholder` 不是任务成绩。
+官方验证失败时进程返回非零退出码；只有三项训练成功且分数文件完整时才记录 `training_completed: true`。官方分数写入 `scores.json`，最佳 epoch 写入 `epochs.json`，执行命令与官方版本写入 `evaluation.json`，终端日志保留在 `validation.log` 和 `training.log`。
+
+`churn` 的分数是 AUROC；两个 `propensity` 任务的分数是 `0.8 × AUROC + 0.1 × Diversity + 0.1 × Novelty`。官方在三个 epoch 中按此分数取最大值，再四舍五入到四位小数。`epochs.json` 的 0/1/2 分别对应第 1/2/3 轮；`scores.json` 中的 `placeholder` 不是任务成绩。
 
 ### 等价目标缓存
 

@@ -1,0 +1,140 @@
+{
+  "checked_on": "2026-11-17",
+  "evaluation_scope": "Local evaluation of the three coursework-required official downstream tasks; not a hidden-task or leaderboard score",
+  "method": "historical_aggregates_with_hashed_categories",
+  "clients": 1000000,
+  "dimensions": 208,
+  "embedding_dtype": "float16",
+  "histogram_half_life_days": 30,
+  "training_completed": true,
+  "official_repository": "https://github.com/Synerise/recsys2025.git",
+  "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+  "official_tracked_files_unmodified": true,
+  "target_cache_enabled": true,
+  "cache_validation_record": "target_cache_validation.json",
+  "scores": {
+    "churn": 0.7285,
+    "propensity_category": 0.7889,
+    "propensity_sku": 0.7799
+  },
+  "best_epochs_zero_based": {
+    "churn": 2,
+    "propensity_category": 2,
+    "propensity_sku": 2
+  },
+  "score_definitions": {
+    "churn": "AUROC",
+    "propensity_category": "0.8 * AUROC + 0.1 * Diversity + 0.1 * Novelty",
+    "propensity_sku": "0.8 * AUROC + 0.1 * Diversity + 0.1 * Novelty"
+  },
+  "score_selection": "Official maximum task score across three epochs, rounded to four decimal places; placeholder excluded",
+  "official_training_parameters": {
+    "epochs_per_task": 3,
+    "batch_size": 128,
+    "hidden_size_thin": 2048,
+    "hidden_size_wide": 4096,
+    "learning_rate": 0.001,
+    "model_optimizer_and_metrics_unchanged": true
+  },
+  "runtime": {
+    "started_utc": "2026-11-17T03:10:33.928653+00:00",
+    "status": "complete",
+    "python": "3.11.3",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "cuda": "11.8",
+    "omp_num_threads": 4,
+    "mkl_num_threads": 4,
+    "num_workers": 0,
+    "target_cache_enabled": true,
+    "wrapper_seed": 42,
+    "official_model_torch_seed": 1278,
+    "versions": {
+      "torch": "2.5.0+cu118",
+      "numpy": "2.1.0",
+      "pandas": "2.2.3",
+      "pyarrow": "19.0.1",
+      "pytorch-lightning": "2.2.4",
+      "torchmetrics": "1.3.2",
+      "neptune": "1.13.0",
+      "rich": "13.9.4"
+    },
+    "seconds": 2783.939,
+    "finished_utc": "2026-11-17T03:56:58.612978+00:00"
+  },
+  "class_support": {
+    "train": {
+      "category": {
+        "classes": 100,
+        "classes_without_positives": 0,
+        "minimum_positive_clients": 14,
+        "maximum_positive_clients": 2113
+      },
+      "sku": {
+        "classes": 100,
+        "classes_without_positives": 0,
+        "minimum_positive_clients": 14,
+        "maximum_positive_clients": 266
+      }
+    },
+    "validation": {
+      "category": {
+        "classes": 100,
+        "classes_without_positives": 0,
+        "minimum_positive_clients": 22,
+        "maximum_positive_clients": 2503
+      },
+      "sku": {
+        "classes": 100,
+        "classes_without_positives": 3,
+        "minimum_positive_clients": 0,
+        "maximum_positive_clients": 345
+      }
+    }
+  },
+  "sparse_validation_classes": "Three of 100 SKU validation classes have no positive clients. All classes remain in the pinned official TorchMetrics macro AUROC; no classes were removed or metrics changed.",
+  "embedding_files": {
+    "client_ids.npy": {
+      "bytes": 8000128,
+      "sha256": "75c381d8b5ac86aa793a2b39a7572544faf3a9a4b7c408e9de4386796c56bb69"
+    },
+    "embeddings.npy": {
+      "bytes": 416000128,
+      "sha256": "ad85a9011733f2da38bbe512eab605fe3a84c42b22c0ec1ab9f608fdf8fd1160"
+    }
+  },
+  "evaluation_data_files": {
+    "input/relevant_clients.npy": {
+      "bytes": 8000128,
+      "sha256": "75c381d8b5ac86aa793a2b39a7572544faf3a9a4b7c408e9de4386796c56bb69"
+    },
+    "target/active_clients.npy": {
+      "bytes": 5959968,
+      "sha256": "b0a3a255141407a820a7daaa0f670a5beae0d66fb0a91a8b4d6a547818b9fb12"
+    },
+    "target/train_target.parquet": {
+      "bytes": 11546443,
+      "sha256": "421fb4d956ec198bda8c411b0d0d5feb11e67f99b02ae59da118e6ed521069fb"
+    },
+    "target/validation_target.parquet": {
+      "bytes": 13345938,
+      "sha256": "cdb73ddc1d4fcdf60ac036cf3aa5e00d8b9757f4344c1d3f1cb776012e31bb42"
+    },
+    "target/propensity_category.npy": {
+      "bytes": 928,
+      "sha256": "0cdadca6fa230c9ab6563b386ce1c55fffcd7ea0052dcf2440971a3cc2bd80f1"
+    },
+    "target/popularity_propensity_category.npy": {
+      "bytes": 928,
+      "sha256": "e5848f9754526525863317786505043cc54d83adb6cf4f05a526ecca53df7ed7"
+    },
+    "target/propensity_sku.npy": {
+      "bytes": 928,
+      "sha256": "acf3033f4e0f0b619f45b0da16c4b2f752caa6adc8acf81ec77411c1d035b8a8"
+    },
+    "target/popularity_propensity_sku.npy": {
+      "bytes": 928,
+      "sha256": "52b85b85fe7acff36b046388bb36d5a698ec61103e605fe2f9aee0ae67bdc11c"
+    }
+  }
+}

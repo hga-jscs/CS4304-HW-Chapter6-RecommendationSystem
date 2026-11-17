@@ -11,7 +11,7 @@
   "build_seconds": 109.418,
   "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
   "official_format_validation_passed": true,
-  "downstream_training_completed": false,
+  "downstream_training_completed": true,
   "outputs": {
     "client_ids.npy": {
       "bytes": 8000128,
@@ -27,5 +27,6 @@
     "pyarrow": "23.0.1",
     "numpy": "2.4.6",
     "pandas": "2.3.3"
-  }
+  },
+  "downstream_evaluation_record": "baseline_scores.json"
 }
