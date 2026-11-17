@@ -1,0 +1,237 @@
+{
+  "checked_on": "2026-11-17",
+  "evaluation_scope": "Local evaluation of the three coursework-required official downstream tasks; not a hidden-task or leaderboard score",
+  "baseline_record_preserved": "baseline_scores.json",
+  "protocol": {
+    "official_repository": "https://github.com/Synerise/recsys2025.git",
+    "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+    "official_tracked_files_unmodified_after_evaluation": true,
+    "official_training_parameters": {
+      "epochs_per_task": 3,
+      "batch_size": 128,
+      "hidden_size_thin": 2048,
+      "hidden_size_wide": 4096,
+      "learning_rate": 0.001,
+      "model_optimizer_and_metrics_unchanged": true
+    },
+    "score_definitions": {
+      "churn": "AUROC",
+      "propensity_category": "0.8 * AUROC + 0.1 * Diversity + 0.1 * Novelty",
+      "propensity_sku": "0.8 * AUROC + 0.1 * Diversity + 0.1 * Novelty"
+    },
+    "score_selection": "Official maximum task score across three epochs, rounded to four decimal places; placeholder excluded",
+    "wrapper_seed": 42,
+    "official_model_torch_seed": 1278,
+    "target_cache_enabled": true,
+    "target_cache_record": "target_cache_validation.json",
+    "target_cache_implementation_unchanged_between_wrapper_versions": true,
+    "dataset_fingerprints_reference": "baseline_scores.json#evaluation_data_files",
+    "clients": 1000000,
+    "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "cuda": "11.8",
+    "python": "3.11.3",
+    "evaluation_versions": {
+      "torch": "2.5.0+cu118",
+      "numpy": "2.1.0",
+      "pandas": "2.2.3",
+      "pyarrow": "19.0.1",
+      "pytorch-lightning": "2.2.4",
+      "torchmetrics": "1.3.2",
+      "neptune": "1.13.0",
+      "rich": "13.9.4"
+    },
+    "omp_num_threads": 4,
+    "mkl_num_threads": 4,
+    "num_workers": 0,
+    "sparse_validation_classes": "Three of 100 SKU validation classes have no positive clients. All classes remain in the pinned official TorchMetrics macro AUROC; no classes were removed or metrics changed."
+  },
+  "experiments": [
+    {
+      "name": "original_aggregates",
+      "dimensions": 208,
+      "dtype": "float16",
+      "standardized": false,
+      "scores": {
+        "churn": 0.7285,
+        "propensity_category": 0.7889,
+        "propensity_sku": 0.7799
+      },
+      "best_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "build_seconds": 109.418,
+      "evaluation_seconds": 2783.939,
+      "record": "baseline_scores.json"
+    },
+    {
+      "name": "standardized_original_aggregates",
+      "dimensions": 208,
+      "dtype": "float16",
+      "standardization": {
+        "input": "Existing original float16 embeddings, without recomputing historical features",
+        "statistics": "Column population mean and standard deviation over all existing input-only user embeddings",
+        "clip": [
+          -10,
+          10
+        ],
+        "target_data_used": false
+      },
+      "scores": {
+        "churn": 0.7269,
+        "propensity_category": 0.789,
+        "propensity_sku": 0.7821
+      },
+      "delta_vs_original": {
+        "churn": -0.0016,
+        "propensity_category": 0.0001,
+        "propensity_sku": 0.0022
+      },
+      "best_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "additional_postprocessing_seconds": 7.002,
+      "timing": {
+        "estimated_started_utc": "2026-11-17T05:43:20.275213+00:00",
+        "estimated_finished_utc": "2026-11-17T06:30:09.418979+00:00",
+        "estimated_seconds": 2809,
+        "timing_method": "Approximate wall time between validation.log creation and completed evaluation.json modification; not measured with a monotonic timer. Imports before log creation and final subprocess cleanup are not included."
+      },
+      "runtime_observation": {
+        "observed_utc": "2026-11-17T06:09:11.343714+00:00",
+        "observation_timing": "Inspected during the ongoing evaluation; not a start-time environment snapshot.",
+        "python": "3.11.3",
+        "versions": {
+          "torch": "2.5.0+cu118",
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "wrapper_source_commit": "f4f30d3ace355592e3b5682341f680435c9c8155",
+        "wrapper_seed": 42,
+        "official_model_torch_seed": 1278,
+        "omp_num_threads": 4,
+        "mkl_num_threads": 4,
+        "num_workers": 0,
+        "target_cache_enabled": true
+      },
+      "artifacts": {
+        "client_order_matches_original_baseline": true,
+        "embedding_bytes": 416000128,
+        "small_artifact_sha256": {
+          "manifest.json": "40967e86cc5a265a9f1b594f43f3855921a88a907e60eca513892868a1f020a6",
+          "features.json": "8115fad22de106d312bcfd97fc498a01d4ffaa47f1a662f7d2a3cb0ecd1238c3",
+          "standardization.json": "5bec5d00b42f323fa8f7594ac9e10c5e54b9cbabf8ed5040d02a193c8155db4e"
+        }
+      }
+    },
+    {
+      "name": "enhanced_aggregates",
+      "dimensions": 673,
+      "dtype": "float16",
+      "method": "historical_popular_items_ordinal_prices_and_behavior_ratios",
+      "history_selection": {
+        "source": "Historical product_buy and add_to_cart inputs only, including users outside relevant_clients; target tables are not read",
+        "exact_sku_and_category_counts_each": {
+          "product_buy": 128,
+          "add_to_cart": 64,
+          "remove_from_cart": 32
+        },
+        "histogram_half_life_days": 30,
+        "price_semantics": "Ordinal quantile-bucket statistics, not monetary amounts"
+      },
+      "standardization": {
+        "input": "Log-transformed float32 historical features before final float16 quantization",
+        "statistics": "Column population mean and standard deviation over all input-only user embeddings",
+        "clip": [
+          -10,
+          10
+        ],
+        "target_data_used": false
+      },
+      "scores": {
+        "churn": 0.7286,
+        "propensity_category": 0.7961,
+        "propensity_sku": 0.7881
+      },
+      "delta_vs_original": {
+        "churn": 0.0001,
+        "propensity_category": 0.0072,
+        "propensity_sku": 0.0082
+      },
+      "delta_vs_standardized_original": {
+        "churn": 0.0017,
+        "propensity_category": 0.0071,
+        "propensity_sku": 0.006
+      },
+      "best_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 1,
+        "propensity_sku": 2
+      },
+      "build_seconds": 319.357,
+      "build_batch_size": 50000,
+      "build_scratch_layout": "C-order in this measured build; a later F-order implementation was checked for elementwise equivalence only, without a full-data speed measurement",
+      "build_versions_recorded_by_manifest": {
+        "numpy": "2.4.6",
+        "pandas": "2.3.3"
+      },
+      "runtime": {
+        "started_utc": "2026-11-17T06:30:16.649173+00:00",
+        "status": "complete",
+        "python": "3.11.3",
+        "versions": {
+          "torch": "2.5.0+cu118",
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "cuda": "11.8",
+        "omp_num_threads": 4,
+        "mkl_num_threads": 4,
+        "num_workers": 0,
+        "wrapper_seed": 42,
+        "official_model_torch_seed": 1278,
+        "target_cache_enabled": true,
+        "source_commit": "8bfcc4d3205110ed199025ea5b8c6b57de319fdd",
+        "source_working_tree_dirty": false,
+        "source_sha256": {
+          "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+        },
+        "returncode": 0,
+        "seconds": 2747.804,
+        "finished_utc": "2026-11-17T07:16:04.456526+00:00"
+      },
+      "runtime_timing_method": "Monotonic perf_counter around the complete validator and evaluator subprocess",
+      "artifacts": {
+        "client_order_matches_original_baseline": true,
+        "embedding_bytes": 1346000128,
+        "small_artifact_sha256": {
+          "manifest.json": "bf15f1e2c70ee15f87eb1fc7ddc2d223bd72845a4c1f4c78ffa1a8776595c420",
+          "features.json": "d616572c5a28e35b20e794aa7e5d28812608c44be8f114015eaeb767ce853a9f",
+          "standardization.json": "bb7cac282257d9f8dd70774fc44abb5c23ed754d3526ef8e17594d2b58bc587b"
+        }
+      }
+    }
+  ],
+  "interpretation_limits": [
+    "All scores are from one seed and one fixed public split; no significance test or hidden-task/leaderboard score is claimed.",
+    "Each experiment is one complete representation evaluated on all three tasks; task-wise best scores from different representations are not combined.",
+    "The enhanced experiment combines feature changes and pre-quantization standardization, so it does not identify which individual feature block caused a score change.",
+    "Wall times are single observations with uncontrolled concurrent load; the standardized timing is approximate, and timing differences are not attributed causally to dimensionality or layout.",
+    "The standardized baseline incurs 7.002 seconds of additional processing after its source baseline already exists; this is not a full feature-build time."
+  ]
+}
