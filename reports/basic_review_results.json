@@ -1,0 +1,1214 @@
+{
+  "schema_version": 1,
+  "recorded_date": "2026-11-17",
+  "scope": "Sample feature comparisons, full-data calendar comparison, and a local data-fingerprint measurement",
+  "kernel": "gaoanghe/kkbox-review-samples",
+  "kernel_version": 1,
+  "status": "COMPLETE",
+  "plan": [
+    [
+      "legacy_reference",
+      [
+        "--numeric-features",
+        "legacy",
+        "--disable-frequency-features"
+      ]
+    ],
+    [
+      "calendar",
+      [
+        "--disable-frequency-features"
+      ]
+    ],
+    [
+      "context_full_count",
+      [
+        "--disable-frequency-features",
+        "--context-counting",
+        "full"
+      ]
+    ],
+    [
+      "preferences",
+      [
+        "--disable-frequency-features",
+        "--user-preference-features"
+      ]
+    ],
+    [
+      "preferences_full_count",
+      [
+        "--disable-frequency-features",
+        "--user-preference-features",
+        "--context-counting",
+        "full"
+      ]
+    ],
+    [
+      "preferences_graph",
+      [
+        "--disable-frequency-features",
+        "--user-preference-features",
+        "--collaborative-features"
+      ]
+    ],
+    [
+      "frequency_count",
+      []
+    ],
+    [
+      "frequency_relative",
+      [
+        "--frequency-mode",
+        "relative"
+      ]
+    ],
+    [
+      "row_order",
+      [
+        "--disable-frequency-features",
+        "--split-mode",
+        "row_order"
+      ]
+    ],
+    [
+      "tail_row_order",
+      [
+        "--disable-frequency-features",
+        "--split-mode",
+        "row_order",
+        "--sampling-mode",
+        "tail"
+      ]
+    ]
+  ],
+  "common_configuration": {
+    "feature_mode": "enhanced",
+    "user_context_features": true,
+    "overwrite": false,
+    "no_refit": true,
+    "max_train_rows": 300000,
+    "validation_fraction": 0.2,
+    "seed": 42,
+    "num_boost_round": 250,
+    "early_stopping_rounds": 30,
+    "learning_rate": 0.08,
+    "num_leaves": 63,
+    "min_child_samples": 50,
+    "max_cat_threshold": 32,
+    "feature_fraction": 0.9,
+    "threads": 4,
+    "chunk_size": 200000,
+    "lightgbm_parameters": {
+      "objective": "binary",
+      "metric": "auc",
+      "learning_rate": 0.08,
+      "num_leaves": 63,
+      "min_data_in_leaf": 50,
+      "feature_fraction": 0.9,
+      "bagging_fraction": 0.9,
+      "bagging_freq": 1,
+      "lambda_l2": 1.0,
+      "max_bin": 255,
+      "max_cat_threshold": 32,
+      "cat_smooth": 10.0,
+      "num_threads": 4,
+      "verbosity": -1,
+      "seed": 42,
+      "feature_fraction_seed": 42,
+      "bagging_seed": 42,
+      "data_random_seed": 42,
+      "deterministic": true,
+      "force_col_wise": true
+    },
+    "git_revision": null,
+    "working_tree_dirty": null,
+    "python": "3.13.18",
+    "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+    "packages": {
+      "numpy": "2.1.3",
+      "pandas": "2.3.3",
+      "pyarrow": "23.0.1",
+      "scikit-learn": "1.6.1",
+      "lightgbm": "4.6.0"
+    }
+  },
+  "source_manifest": {
+    "git_revision": "f4f30d3ace355592e3b5682341f680435c9c8155",
+    "working_tree_dirty": true,
+    "source_sha256": {
+      "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+      "basic/features.py": "71f50b10be8db688c2d580dd2f6e23c40c701a5dacd015bf7d05602d0b1e8646",
+      "basic/train.py": "0b9cd21275b663636664fdff7f92360c4b177043d607d54925b7def38a9d70ce",
+      "basic/predict.py": "d7d11269d46aec18f2acffb0685194fe21debbea4dc900a96be6de89eb6335fd",
+      "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+      "basic/collaborative.py": "9c838222ce89f6202a1766a3e5ca429c921af3075a8564d22106140ad7ad45db"
+    },
+    "job_settings": {
+      "feature_modes": [
+        "enhanced"
+      ],
+      "baseline_rounds": 400,
+      "enhanced_rounds": 250,
+      "early_stopping_rounds": 30,
+      "threads": 4,
+      "seed": 42,
+      "max_train_rows": 300000,
+      "install_dependencies": false,
+      "disable_frequency_features": false,
+      "user_context_features": true,
+      "numeric_features": "calendar",
+      "frequency_mode": "count",
+      "context_counting": "leave_one_out",
+      "user_preference_features": false,
+      "sampling_mode": "uniform",
+      "collaborative_features": false,
+      "split_mode": "random",
+      "no_refit": true,
+      "learning_rate": 0.08,
+      "num_leaves": 63,
+      "min_child_samples": 50,
+      "max_cat_threshold": 32,
+      "feature_fraction": 0.9,
+      "overwrite": true
+    },
+    "runtime_requirements": [
+      "numpy>=1.26,<3",
+      "pandas>=2.1,<3",
+      "scipy>=1.11,<2",
+      "scikit-learn>=1.4,<2",
+      "lightgbm>=4.0,<5",
+      "pyarrow>=14,<24",
+      "py7zr>=0.20,<2"
+    ],
+    "actual_runtime_versions": {
+      "numpy": "2.1.3",
+      "pandas": "2.3.3",
+      "scipy": "1.16.3",
+      "scikit-learn": "1.6.1",
+      "lightgbm": "4.6.0",
+      "pyarrow": "23.0.1"
+    }
+  },
+  "runtime_versions": {
+    "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+    "packages": {
+      "numpy": "2.1.3",
+      "pandas": "2.3.3",
+      "scipy": "1.16.3",
+      "scikit-learn": "1.6.1",
+      "lightgbm": "4.6.0",
+      "pyarrow": "23.0.1"
+    }
+  },
+  "engineering": {
+    "data_fingerprint_measurement": {
+      "files": {
+        "train.csv": {
+          "bytes": 971675848,
+          "mtime_ns": 1506038914000000000
+        },
+        "songs.csv": {
+          "bytes": 221828666,
+          "mtime_ns": 1506038939000000000
+        },
+        "members.csv": {
+          "bytes": 2503827,
+          "mtime_ns": 1506038995000000000
+        },
+        "song_extra_info.csv": {
+          "bytes": 181010294,
+          "mtime_ns": 1506692804000000000
+        }
+      },
+      "total_bytes": 1377018635,
+      "fingerprint_seconds": 0.008368799986783415,
+      "sha256_scan_seconds": 5.1105561000003945,
+      "measurement": "One local pass, filesystem cache and concurrent workload not controlled; this measures metadata recording, not total model training speed."
+    },
+    "interpretation": "Replacing mandatory raw-file SHA-256 scans avoids rereading 1.377 GB for metadata provenance. This one uncontrolled local measurement is not an estimate of total model training speedup. Submission validation and content hashes remain."
+  },
+  "total_job_seconds": 554.902117326,
+  "sample_validation_experiments": [
+    {
+      "experiment": "legacy_reference",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 75,
+        "validation_auc": 0.7273300103048881,
+        "validation_log_loss": 0.6103995431760938,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 11.776179289000027,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7221102223691
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6701923649574176
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7328732793425371
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.4971823949999816,
+        "total_seconds": 52.39962130700002
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7273300103048881,
+        "log_loss_recomputed": 0.610399543176094,
+        "auc_difference_from_record": 0.0,
+        "log_loss_difference_from_record": 2.220446049250313e-16,
+        "sha256": "3e3d307ab3118cebc37232118ed30d6750b19fd09ec36f739f52316c7c38f860"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "legacy",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "calendar",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 73,
+        "validation_auc": 0.7274548584907741,
+        "validation_log_loss": 0.610275252778017,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 11.684301976000029,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7221082966693805
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6701596093145138
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7333110059278597
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5362988159999986,
+        "total_seconds": 48.916067529999964
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.727454858490774,
+        "log_loss_recomputed": 0.6102752527780171,
+        "auc_difference_from_record": -1.1102230246251565e-16,
+        "log_loss_difference_from_record": 1.1102230246251565e-16,
+        "sha256": "d207dccb8f7f84678de247bfd0cc69818252c08789aa14d6c75d2c556fe720be"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "context_full_count",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 75,
+        "validation_auc": 0.72724278896959,
+        "validation_log_loss": 0.6104090584831247,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 11.727626836000013,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7218861698348646
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6695402298850576
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7334927037557294
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5207680600000231,
+        "total_seconds": 48.88205771899993
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7272427889695902,
+        "log_loss_recomputed": 0.6104090584831247,
+        "auc_difference_from_record": 1.1102230246251565e-16,
+        "log_loss_difference_from_record": 0.0,
+        "sha256": "e2b51272cdc7eb3a4e341ab80d1face6fc4275bf14c290d7017c672b7a67cc3c"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "full",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "preferences",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 32,
+        "best_iteration": 79,
+        "validation_auc": 0.7293322897744533,
+        "validation_log_loss": 0.6087942092583293,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 10.624547248999988,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7238990102540562
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.664489905306414
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7356462040035503
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5348644210000657,
+        "total_seconds": 48.60579888400002
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7293322897744534,
+        "log_loss_recomputed": 0.6087942092583292,
+        "auc_difference_from_record": 1.1102230246251565e-16,
+        "log_loss_difference_from_record": -1.1102230246251565e-16,
+        "sha256": "9ec4cd16d5cd84f9f4a081634d5ea88b752f11907ad3c749527e28999f18e610"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": true,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "preferences_full_count",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 32,
+        "best_iteration": 76,
+        "validation_auc": 0.7279163060394399,
+        "validation_log_loss": 0.6099221848276181,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 10.45176994999997,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7223475971138014
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6660651539515215
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7359181626437449
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5235011059999124,
+        "total_seconds": 48.018933045999916
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7279163060394398,
+        "log_loss_recomputed": 0.6099221848276182,
+        "auc_difference_from_record": -1.1102230246251565e-16,
+        "log_loss_difference_from_record": 1.1102230246251565e-16,
+        "sha256": "fabd949108ab81eeea98c1049dc19a30c3a598f54d84f7e2286b353c3826b454"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "full",
+        "user_preference_features": true,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "preferences_graph",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 36,
+        "best_iteration": 108,
+        "validation_auc": 0.7241929162219698,
+        "validation_log_loss": 0.6139587937961912,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 13.935632236999936,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7189485818105572
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6770323387529034
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7333978659787003
+          }
+        },
+        "platform_score": null,
+        "validation_collaborative_fit": {
+          "weighting": "log1p_counts_then_item_idf_then_row_l2",
+          "song": {
+            "shape": [
+              23905,
+              58659
+            ],
+            "nonzero_pairs": 240000,
+            "requested_rank": 32,
+            "rank": 32,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 0.57424589499999
+          },
+          "artist": {
+            "shape": [
+              23905,
+              11390
+            ],
+            "nonzero_pairs": 212429,
+            "requested_rank": 16,
+            "rank": 16,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 0.2754399899999953
+          }
+        },
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_collaborative_fit": {
+          "weighting": "log1p_counts_then_item_idf_then_row_l2",
+          "song": {
+            "shape": [
+              23905,
+              58659
+            ],
+            "nonzero_pairs": 240000,
+            "requested_rank": 32,
+            "rank": 32,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 0.57424589499999
+          },
+          "artist": {
+            "shape": [
+              23905,
+              11390
+            ],
+            "nonzero_pairs": 212429,
+            "requested_rank": 16,
+            "rank": 16,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 0.2754399899999953
+          }
+        },
+        "final_training_seconds": 0.5911167870000327,
+        "total_seconds": 53.357974399
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7241929162219698,
+        "log_loss_recomputed": 0.6139587937961912,
+        "auc_difference_from_record": 0.0,
+        "log_loss_difference_from_record": 0.0,
+        "sha256": "e6911c52b2d2fb7919f4544f50efe7e32a0845edddad9ff607ab2d3ec229b8a2"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": true,
+        "collaborative_features": true,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "frequency_count",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 35,
+        "best_iteration": 72,
+        "validation_auc": 0.7323538187687668,
+        "validation_log_loss": 0.6060914716795035,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 12.718383702999972,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7262319460872888
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6798046572568639
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.737504502812762
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5402024590000565,
+        "total_seconds": 49.877840373000026
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7323538187687669,
+        "log_loss_recomputed": 0.6060914716795035,
+        "auc_difference_from_record": 1.1102230246251565e-16,
+        "log_loss_difference_from_record": 0.0,
+        "sha256": "66fec93dec444e77535e300f55b36748962244d33477be7a633bfe22a06f45af"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": false,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "frequency_relative",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 35,
+        "best_iteration": 72,
+        "validation_auc": 0.7323538187687668,
+        "validation_log_loss": 0.6060914716795035,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723397,
+        "validation_training_seconds": 12.733913357000006,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7262319460872888
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6798046572568639
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.737504502812762
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5589524020000454,
+        "total_seconds": 50.20699656399995
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.7323538187687669,
+        "log_loss_recomputed": 0.6060914716795035,
+        "auc_difference_from_record": 1.1102230246251565e-16,
+        "log_loss_difference_from_record": 0.0,
+        "sha256": "66fec93dec444e77535e300f55b36748962244d33477be7a633bfe22a06f45af"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": false,
+        "numeric_features": "calendar",
+        "frequency_mode": "relative",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "random"
+      }
+    },
+    {
+      "experiment": "row_order",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "row_order_holdout_not_verified_time",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 78,
+        "validation_auc": 0.6466970908901244,
+        "validation_log_loss": 0.6681339138640405,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.7052410324471148,
+        "validation_training_seconds": 12.460761995999974,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 41759,
+            "auc": 0.6480393902737525
+          },
+          "new_user": {
+            "rows": 5843,
+            "auc": 0.6795042215506786
+          },
+          "new_song": {
+            "rows": 13456,
+            "auc": 0.6247333296300345
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5029669589999912,
+        "total_seconds": 49.95402624799999
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.6466970908901244,
+        "log_loss_recomputed": 0.6681339138640406,
+        "auc_difference_from_record": 0.0,
+        "log_loss_difference_from_record": 1.1102230246251565e-16,
+        "sha256": "08ec510fc381dc7fa402fa7143a8786a7dcfcc90f020859fa04c8629edf1650a"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "uniform",
+        "split_mode": "row_order"
+      }
+    },
+    {
+      "experiment": "tail_row_order",
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "tail_rows_not_verified_time",
+        "sampling_seed": 42,
+        "split": "row_order_holdout_not_verified_time",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 116,
+        "validation_auc": 0.6784776144402765,
+        "validation_log_loss": 0.6363551553179947,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6634443528844132,
+        "validation_training_seconds": 16.296615769000027,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 41696,
+            "auc": 0.6830087776875557
+          },
+          "new_user": {
+            "rows": 11014,
+            "auc": 0.669875183145088
+          },
+          "new_song": {
+            "rows": 8830,
+            "auc": 0.6586113937527913
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 240000,
+        "refit_performed": false,
+        "final_training_seconds": 0.5577103820000957,
+        "total_seconds": 52.921299698999974
+      },
+      "prediction_verification": {
+        "rows": 60000,
+        "unique_row_ids": true,
+        "auc_recomputed": 0.6784776144402764,
+        "log_loss_recomputed": 0.6363551553179947,
+        "auc_difference_from_record": -1.1102230246251565e-16,
+        "log_loss_difference_from_record": 0.0,
+        "sha256": "ff54c869633976aa5bd1c74b20f7718fc966bd68236afcf1cc1c06038b2e138b"
+      },
+      "configuration_overrides": {
+        "disable_frequency_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "collaborative_features": false,
+        "sampling_mode": "tail",
+        "split_mode": "row_order"
+      }
+    }
+  ],
+  "paired_random_holdout_comparisons": [
+    {
+      "baseline": "legacy_reference",
+      "variant": "calendar",
+      "change": "calendar_numeric_features",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": 0.000124848185885984,
+      "log_loss_difference": -0.00012429039807682063,
+      "total_seconds_difference": -3.483553777000054,
+      "maximum_prediction_difference": 0.1402749558978642,
+      "predictions_exactly_equal": false
+    },
+    {
+      "baseline": "calendar",
+      "variant": "context_full_count",
+      "change": "include_self_in_context_counts",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": -0.00021206952118402178,
+      "log_loss_difference": 0.0001338057051076813,
+      "total_seconds_difference": -0.03400981100003264,
+      "maximum_prediction_difference": 0.14546381655850188,
+      "predictions_exactly_equal": false
+    },
+    {
+      "baseline": "calendar",
+      "variant": "preferences",
+      "change": "add_user_artist_and_genre_preferences",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": 0.0018774312836792317,
+      "log_loss_difference": -0.001481043519687697,
+      "total_seconds_difference": -0.3102686459999404,
+      "maximum_prediction_difference": 0.25151730065568667,
+      "predictions_exactly_equal": false
+    },
+    {
+      "baseline": "preferences",
+      "variant": "preferences_full_count",
+      "change": "include_self_in_context_and_preference_counts",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": -0.001415983735013393,
+      "log_loss_difference": 0.001127975569288786,
+      "total_seconds_difference": -0.5868658380001079,
+      "maximum_prediction_difference": 0.31285098043444814,
+      "predictions_exactly_equal": false
+    },
+    {
+      "baseline": "preferences",
+      "variant": "preferences_graph",
+      "change": "add_training_only_graph_similarities",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": -0.005139373552483506,
+      "log_loss_difference": 0.005164584537861949,
+      "total_seconds_difference": 4.752175514999976,
+      "maximum_prediction_difference": 0.4952010842305757,
+      "predictions_exactly_equal": false
+    },
+    {
+      "baseline": "calendar",
+      "variant": "frequency_count",
+      "change": "add_absolute_frequency_features",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": 0.004898960277992748,
+      "log_loss_difference": -0.004183781098513473,
+      "total_seconds_difference": 0.9617728430000625,
+      "maximum_prediction_difference": 0.3971213626531074,
+      "predictions_exactly_equal": false
+    },
+    {
+      "baseline": "frequency_count",
+      "variant": "frequency_relative",
+      "change": "normalize_frequency_features",
+      "same_validation_rows_and_labels": true,
+      "auc_difference": 0.0,
+      "log_loss_difference": 0.0,
+      "total_seconds_difference": 0.32915619099992455,
+      "maximum_prediction_difference": 0.0,
+      "predictions_exactly_equal": true
+    }
+  ],
+  "verification": {
+    "all_ten_metrics_independently_recomputed": true,
+    "executed_source_hashes_verified": true,
+    "individual_metrics_match_job_summary": true,
+    "eight_random_experiments_have_identical_validation_rows_and_labels": true,
+    "statistical_significance_tested": false
+  },
+  "interpretation": {
+    "recommended_next_full_candidate": "calendar plus user context plus user preferences, leave-one-out counts, no frequency or graph features",
+    "recommendation_basis": "Preferences improve the matched random holdout. The current graph and full self-count variants reduce its AUC. Frequency variants tie, and past platform evidence showed frequency features can hurt despite better random-holdout AUC.",
+    "row_order_and_tail": "These evaluate different holdout rows; do not interpret their AUC differences from random holdout as feature gains or losses.",
+    "numeric_comparison": "The calendar variant jointly changes continuous-day date encoding and the ISRC reference-year proxy; the small difference cannot be attributed to either change individually.",
+    "timing": "Runs are sequential on one Kaggle CPU session. Total seconds include loading, feature building, validation training and serialization; differences include cache and runtime variation. With no-refit, final_training_seconds measures export rather than a second model fit.",
+    "source_provenance": "The source manifest records exact executed source hashes. The listed base commit alone does not reproduce these uncommitted changes.",
+    "limitations": [
+      "One seed and one sampled training set",
+      "Early stopping and comparison use the same validation set",
+      "No platform gain is claimed from these sample scores",
+      "No repeated or controlled timing benchmark of the complete old and new pipelines"
+    ]
+  },
+  "full_data_experiments": [
+    {
+      "experiment": "calendar_full",
+      "kernel": "gaoanghe/kkbox-calendar",
+      "kernel_version": 1,
+      "source_manifest": {
+        "git_revision": "f4f30d3ace355592e3b5682341f680435c9c8155",
+        "working_tree_dirty": true,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "75531f4a71b4c8cc70eebc65e3c9bfdb78993638a24377320229566f68f30aa3",
+          "basic/train.py": "8a52a2b68becdc6df7f9bc474b44815a226b52b295d1f6eb2adee211fedd9d38",
+          "basic/predict.py": "d7d11269d46aec18f2acffb0685194fe21debbea4dc900a96be6de89eb6335fd",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "enhanced"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 400,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false,
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "leave_one_out",
+          "user_preference_features": false,
+          "sampling_mode": "uniform",
+          "split_mode": "random",
+          "no_refit": false,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "overwrite": false
+        },
+        "runtime_requirements": [
+          "numpy>=1.26,<3",
+          "pandas>=2.1,<3",
+          "scipy>=1.11,<2",
+          "scikit-learn>=1.4,<2",
+          "lightgbm>=4.0,<5",
+          "pyarrow>=14,<24",
+          "py7zr>=0.20,<2"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "overwrite": false,
+        "no_refit": false,
+        "max_train_rows": 0,
+        "sampling_mode": "uniform",
+        "split_mode": "random",
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 400,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        }
+      },
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 400,
+        "validation_auc": 0.7995675278868825,
+        "validation_log_loss": 0.5441621806706931,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931224444213769,
+        "validation_training_seconds": 715.705197713,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1437341,
+            "auc": 0.7987833705173614
+          },
+          "new_user": {
+            "rows": 268,
+            "auc": 0.636989907854322
+          },
+          "new_song": {
+            "rows": 37882,
+            "auc": 0.8102356670908716
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 7377418,
+        "refit_performed": true,
+        "final_training_seconds": 622.666691334,
+        "total_seconds": 1605.1325266620001
+      },
+      "inference": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.003960586263,
+          "maximum_probability": 0.9991837618,
+          "sha256": "8a1743f2c5aada6bd32fe816c9dc90fbb85a1de8eb8e36e572ec8a79d6987291"
+        },
+        "seconds": 391.9177588609998,
+        "model_sha256": "4dc5c1f4000d870657d029ed6fd650009ee929040711239fbcd14ee3390d5bd7",
+        "test_fingerprint": {
+          "bytes": 347789925,
+          "mtime_ns": 1794894740779850839
+        },
+        "submission_sha256": "8a1743f2c5aada6bd32fe816c9dc90fbb85a1de8eb8e36e572ec8a79d6987291"
+      },
+      "artifact_verification": {
+        "source_hashes_verified": true,
+        "model_hash_verified": true,
+        "validation_rows": 1475484,
+        "validation_row_ids_unique": true,
+        "auc_recomputed": 0.7995675278868823,
+        "log_loss_recomputed": 0.5441621806706931,
+        "auc_difference_from_record": -1.1102230246251565e-16,
+        "log_loss_difference_from_record": 0.0,
+        "validation_prediction_sha256": "dcf7e58c998de99e861b90b4ac43e2d90b4e4984aadd23ff6e960d360744b836",
+        "submission": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.003960586263,
+          "maximum_probability": 0.9991837618,
+          "sha256": "8a1743f2c5aada6bd32fe816c9dc90fbb85a1de8eb8e36e572ec8a79d6987291"
+        }
+      },
+      "comparison_with_previous_context_full": {
+        "same_validation_rows_and_labels": true,
+        "same_lightgbm_parameters": true,
+        "same_actual_package_versions": true,
+        "same_400_rounds": true,
+        "previous_validation_auc": 0.7995750307909585,
+        "validation_auc_difference": -7.502904076139849e-06,
+        "validation_log_loss_difference": -4.445938076136358e-06,
+        "previous_public_score": 0.67847,
+        "previous_private_score": 0.68125,
+        "maximum_validation_prediction_difference": 0.44114848667426565,
+        "scope": "Joint continuous-day and ISRC reference-year proxy correction; engineering code was also simplified. The tiny local AUC difference is not evidence of a meaningful gain or loss.",
+        "public_score_difference": 0.00058,
+        "private_score_difference": 0.0,
+        "platform_conclusion": "Public AUC improved by 0.00058; Private AUC is unchanged at the displayed precision. This is not evidence of an improvement on both partitions."
+      },
+      "platform_submission": {
+        "reference": 58459278,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17 06:31:00.243000",
+        "description": "CS4304 calendar correction: 7377418 rows, context LOO, 30 features, 400 rounds",
+        "public_score": 0.67905,
+        "private_score": 0.68125,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "8a1743f2c5aada6bd32fe816c9dc90fbb85a1de8eb8e36e572ec8a79d6987291",
+        "source": "Kaggle CLI competitions submissions response"
+      },
+      "limitations": [
+        "One seed",
+        "Both models reached the 400-round cap",
+        "Training time is not controlled for host load or filesystem cache",
+        "No historical leaderboard rank is inferred"
+      ]
+    }
+  ]
+}

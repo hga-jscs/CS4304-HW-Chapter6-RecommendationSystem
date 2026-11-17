@@ -77,6 +77,8 @@ python -m kaggle kernels output YOUR_KAGGLE_USERNAME/kkbox-baseline -p outputs/b
 
 新训练默认 `--numeric-features calendar`：注册/到期日期转换为距 `2000-01-01` 的连续天数，保留相邻日期的区别，避免八位日期整数转 `float32` 时合并部分日期。ISRC 两位参考年使用 2017 年为世纪分界（00–17 对应 2000–2017，18–99 对应 1918–1999）。这是历史数据上的明确假设；[ISRC 参考年表示赋码年份](https://isrc.ifpi.org/isrc-standard/isrc-structure)，不等于歌曲发行年。`--numeric-features legacy` 保留旧数值定义供对照；旧模型文件缺少该配置时自动按旧定义推理。
 
+历史 `context_full` 实验（Public AUC 0.67847、Private AUC 0.68125）使用旧数值定义，源代码为提交 `1a72fba10d47c91afaa4d35349ab5825aeaffec7`。严格复现应使用该提交及 [历史实验记录](../reports/basic_results.json) 中的参数和实际依赖版本；直接使用新默认 `calendar` 会形成新实验，`legacy` 开关用于新代码内的受控对照，不单独保证逐位复现旧结果。
+
 频次消融使用 `--feature-mode enhanced --disable-frequency-features`：只移除用户、歌曲、艺人、曲风、来源的五个频次特征，保留其余增强特征及类别编码。保持样本、种子和训练参数一致，并使用新的输出目录比较；开关会记录到 `configuration.json` 和特征状态中。`basic.kaggle_job` 支持同名开关并传给训练脚本。默认仍包含频次特征，基线模式不受该开关影响。
 
 `--frequency-mode relative` 将计数除以拟合行数，默认 `count` 保留绝对计数。每次拟合内这只是共同的单调缩放；全量重训会重新学习树阈值，不能把未归一化频次直接认定为“复用旧阈值”的错误，也不预设归一化会涨分。
@@ -85,7 +87,9 @@ python -m kaggle kernels output YOUR_KAGGLE_USERNAME/kkbox-baseline -p outputs/b
 
 计数方式默认 `--context-counting leave_one_out`，可用 `--context-counting full` 消融训练行的自身扣减。两种方式都不读取目标标签；差异涉及自身计数和长尾样本分布，需要实测比较。`--user-preference-features` 按同样的平滑及计数方式增加用户—艺人、用户—曲风组合概率；艺人和曲风以元数据原字段为类别，多曲风字符串视为一个组合。
 
-`--collaborative-features` 增加用户—歌曲、用户—艺人图的重构内积和余弦，共四列。只用当前训练部分的无标签交互建立稀疏矩阵，依次应用 `log1p` 计数、按用户覆盖率计算的列 IDF 和行 L2 归一化。采用固定种子 42、3 次迭代的随机 SVD，歌曲最多 32 维、艺人最多 16 维；用户与物品因子均乘以奇异值平方根，内积对应截断重构值。未知用户/物品返回零，矩阵小于可用秩时记录实际秩，秩为零时四列为零。矩阵保持稀疏，特征查询分块进行，图不会在每个预测块重新拟合。全量重训会另建对应的图，两个阶段的形状、秩和拟合时间写入 `metrics.json`。这是一项待实测的图协同信号，不预设收益或运行时间。
+`--collaborative-features` 增加用户—歌曲、用户—艺人图的重构内积和余弦，共四列。只用当前训练部分的无标签交互建立稀疏矩阵，依次应用 `log1p` 计数、按用户覆盖率计算的列 IDF 和行 L2 归一化。采用固定种子 42、3 次迭代的随机 SVD，歌曲最多 32 维、艺人最多 16 维；用户与物品因子均乘以奇异值平方根，内积对应截断重构值。未知用户/物品返回零，矩阵小于可用秩时记录实际秩，秩为零时四列为零。矩阵保持稀疏，特征查询分块进行，图不会在每个预测块重新拟合。全量重训会另建对应的图，两个阶段的形状、秩和拟合时间写入 `metrics.json`。该开关默认关闭，收益和运行成本需要按具体数据规模验证。
+
+[本轮 300,000 行消融](../reports/basic_review_results.json)已逐组复算验证预测：同一随机留出上，用户偏好将 AUC 从 0.727455 提高至 0.729332，叠加当前图特征降至 0.724193；绝对频次与相对频次的预测完全一致。图特征保持可选，默认关闭。行序和末段抽样使用不同验证记录，其分数不能直接作为特征优劣对照；这些样本结果也不代表平台得分。
 
 上述用户场景特征借鉴[冠军作者原代码](https://github.com/lystdo/Codes-for-WSDM-CUP-Music-Rec-1st-place-solution/blob/master/input/training/script/cnt_log_process.py#L59-L86)的按用户场景比例。本项目将统计范围限制为训练集，并新增强度为 10 的平滑与训练行留一处理；原代码合并了训练和测试交互，未使用这里的平滑与留一方式。
 
