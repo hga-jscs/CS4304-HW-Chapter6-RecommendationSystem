@@ -196,6 +196,28 @@ python -m basic.submission check --submission outputs/basic/context_full/submiss
 
 新提交状态为 COMPLETE。1,475,484 行验证预测已独立重算，2,556,790 行测试预测通过完整检查，源码与模型摘要也匹配下载产物。日期精度问题得到修复，Public 增加 0.00058，Private 在平台显示精度下持平；不能将这次修复称为两项平台指标都提升。精确记录保存在 [basic_review_results.json](basic_review_results.json)。
 
+### 全量偏好与行序方案
+
+根据抽样消融选择的偏好候选继续完成全量测试；另运行一次行序验证与容量调整的组合。两份完整预测、验证标签、源码及模型摘要均已核验，并完成真实平台提交：
+
+| 全量方案 | 验证 ROC-AUC | 最佳轮数 | Public | Private | 提交编号 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 日期修正加偏好，随机留出 | 0.8092350601 | 400 | 0.67569 | 0.67849 | 58460017 |
+| 日期修正加偏好，行序留出及容量调整 | 0.6785621299 | 304 | 0.67650 | 0.67816 | 58460118 |
+
+第一组与日期修正模型使用相同验证行、标签、树参数及实际环境，增加两个用户艺人/流派偏好概率。随机验证 AUC 增加 0.0096675322，但 Public/Private 分别降低 0.00336/0.00276，未泛化到平台。第二组保留前 80% 记录训练、后 20% 验证，并同时改为学习率 0.05、127 叶、叶节点最少 200 条、类别阈值 64、特征采样 0.8、最多 1000 轮；第 304 轮最佳，之后在全部记录上重训。它的验证集和模型参数都不同，不能与随机验证 AUC 直接比较，也不能单独评价行序划分的因果贡献。
+
+两组训练流程分别耗时 1,830.152 秒和 2,025.647 秒，完整预测及检查分别耗时 376.627 秒和 436.348 秒。这些是单次云端运行记录，不是控制硬件负载后的速度消融。当前保留**日期修正模型**，两种新候选均未超过其平台成绩；工程简化也不等于所有新增特征都会涨分。
+
+最新代码的推荐配置为：
+
+```powershell
+python -m basic.train --data-dir data/basic --output-dir outputs/basic/calendar_full --feature-mode enhanced --numeric-features calendar --disable-frequency-features --user-context-features --context-counting leave_one_out --max-train-rows 0 --num-boost-round 400 --seed 42 --threads 4
+python -m basic.predict --data-dir data/basic --model-dir outputs/basic/calendar_full --output outputs/basic/calendar_full/submission.csv --threads 4
+```
+
+精确重现本次平台结果仍需匹配记录的执行源码和 Kaggle 实际依赖版本。若使用 Kaggle 作业生成器，将相同特征开关交给 `basic.kaggle_job`，使用 `--feature-modes enhanced --enhanced-rounds 400`；完成后下载并按正常流程检查、上传。
+
 ## 拓展任务：官方基线评测
 
 真实预处理数据已生成 1,000,000 名用户的 208 维 `float16` 表征，用时 109.418 秒，并通过固定版本原版官方验证器的完整用户检查。采用已核对等价性的目标缓存，在本机 RTX 4060 Laptop 上完成三项官方评测，格式检查及训练合计 2,783.939 秒（46 分 24 秒）。
@@ -209,6 +231,18 @@ python -m basic.submission check --submission outputs/basic/context_full/submiss
 每项均完成固定的 3 轮训练。`churn` 使用 AUROC；两项购买倾向使用 `0.8 × AUROC + 0.1 × Diversity + 0.1 × Novelty`，官方汇总保留四位小数。三个最佳索引 2 均表示第 3 轮，原始输出中的 `placeholder: -1` 是占位项，不属于这三项任务。完整 SKU 验证集有 3/100 个类别无正例，保留官方指标处理，未删除这些类别。
 
 官方源码固定版本且无修改，缓存仅替换下游数据集的标签读取。模型、参数、轮数与指标保持官方设置；缓存核对范围及环境详见[精确评测记录](../extension/baseline_scores.json)和[拓展任务说明](../extension/README.md)，表征来源与摘要见[格式验证记录](../extension/baseline_validation.json)。这些是本地官方评测分数，不合并为历史赛事总榜名次。
+
+### 标准化对照
+
+保持同一套 208 维历史表征，只做按列标准化并裁剪到 `[-10, 10]`，使用相同官方提交、运行依赖、种子、目标缓存及每项 3 轮的协议。三项最佳 epoch 索引均为 2，结果如下：
+
+| 表征 | churn | propensity_category | propensity_sku |
+| --- | ---: | ---: | ---: |
+| 原 208 维基线 | 0.7285 | 0.7889 | 0.7799 |
+| 标准化 208 维 | 0.7269 | 0.7890 | 0.7821 |
+| 差值 | −0.0016 | +0.0001 | +0.0022 |
+
+因此，标准化改善了本次商品倾向指标，却降低了流失预测分数，不支持“必然全任务提升”的说法。标准化处理耗时 7.002 秒；官方验证及训练约 2,809 秒，此处为日志文件时间戳估算，不是独立单调时钟计时。单次耗时也不能排除并发负载等影响。
 
 ## 记录口径
 

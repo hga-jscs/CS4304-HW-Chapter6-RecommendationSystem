@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "recorded_date": "2026-11-17",
-  "scope": "Sample feature comparisons, full-data calendar comparison, and a local data-fingerprint measurement",
+  "scope": "Ten sample validation comparisons and three full-data, independently verified competition submissions after code review",
   "kernel": "gaoanghe/kkbox-review-samples",
   "kernel_version": 1,
   "status": "COMPLETE",
@@ -962,7 +962,6 @@
     "statistical_significance_tested": false
   },
   "interpretation": {
-    "recommended_next_full_candidate": "calendar plus user context plus user preferences, leave-one-out counts, no frequency or graph features",
     "recommendation_basis": "Preferences improve the matched random holdout. The current graph and full self-count variants reduce its AUC. Frequency variants tie, and past platform evidence showed frequency features can hurt despite better random-holdout AUC.",
     "row_order_and_tail": "These evaluate different holdout rows; do not interpret their AUC differences from random holdout as feature gains or losses.",
     "numeric_comparison": "The calendar variant jointly changes continuous-day date encoding and the ISRC reference-year proxy; the small difference cannot be attributed to either change individually.",
@@ -973,7 +972,9 @@
       "Early stopping and comparison use the same validation set",
       "No platform gain is claimed from these sample scores",
       "No repeated or controlled timing benchmark of the complete old and new pipelines"
-    ]
+    ],
+    "sample_selected_full_candidate": "calendar plus user context plus user preferences, leave-one-out counts, no frequency or graph features",
+    "full_data_follow_up": "The sample-selected preference candidate improved matched full-data random-holdout AUC by 0.00966753, but its Public/Private scores fell by 0.00336/0.00276 relative to calendar_full. Do not replace calendar_full with this preference model. Random-holdout improvements did not carry over to the competition partitions."
   },
   "full_data_experiments": [
     {
@@ -1209,6 +1210,485 @@
         "Training time is not controlled for host load or filesystem cache",
         "No historical leaderboard rank is inferred"
       ]
+    },
+    {
+      "experiment": "preferences_full",
+      "kernel": "gaoanghe/kkbox-preferences",
+      "kernel_version": 1,
+      "source_manifest": {
+        "git_revision": "2a0bf4b3c9d395184f8ab1591a0b936f9f74bdc4",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "71f50b10be8db688c2d580dd2f6e23c40c701a5dacd015bf7d05602d0b1e8646",
+          "basic/train.py": "0b9cd21275b663636664fdff7f92360c4b177043d607d54925b7def38a9d70ce",
+          "basic/predict.py": "d7d11269d46aec18f2acffb0685194fe21debbea4dc900a96be6de89eb6335fd",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+          "basic/collaborative.py": "9c838222ce89f6202a1766a3e5ca429c921af3075a8564d22106140ad7ad45db"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "enhanced"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 400,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false,
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "leave_one_out",
+          "user_preference_features": true,
+          "sampling_mode": "uniform",
+          "collaborative_features": false,
+          "split_mode": "random",
+          "no_refit": false,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "overwrite": false
+        },
+        "runtime_requirements": [
+          "numpy>=1.26,<3",
+          "pandas>=2.1,<3",
+          "scipy>=1.11,<2",
+          "scikit-learn>=1.4,<2",
+          "lightgbm>=4.0,<5",
+          "pyarrow>=14,<24",
+          "py7zr>=0.20,<2"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": true,
+        "collaborative_features": false,
+        "overwrite": false,
+        "no_refit": false,
+        "max_train_rows": 0,
+        "sampling_mode": "uniform",
+        "split_mode": "random",
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 400,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        }
+      },
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "enhanced",
+        "feature_count": 32,
+        "best_iteration": 400,
+        "validation_auc": 0.809235060125157,
+        "validation_log_loss": 0.5339865100854893,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931224444213769,
+        "validation_training_seconds": 793.9325802820001,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1437341,
+            "auc": 0.8083912145410215
+          },
+          "new_user": {
+            "rows": 268,
+            "auc": 0.6287406757349715
+          },
+          "new_song": {
+            "rows": 37882,
+            "auc": 0.8227740887334976
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 7377418,
+        "refit_performed": true,
+        "final_training_seconds": 712.9226932539998,
+        "total_seconds": 1830.152433336
+      },
+      "inference": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.004759341898,
+          "maximum_probability": 0.9993232977,
+          "sha256": "8df3c79d85614197fb2ab9fde7916ce912a1d83aa4aea58cfcc5c692a05d0b4f"
+        },
+        "seconds": 376.62685820199977,
+        "model_sha256": "056f61af8f212a40b04be3f0222e785ffa6830c70efa814f1a7ef68ee79f6130",
+        "test_fingerprint": {
+          "bytes": 347789925,
+          "mtime_ns": 1794895996326604382
+        },
+        "submission_sha256": "8df3c79d85614197fb2ab9fde7916ce912a1d83aa4aea58cfcc5c692a05d0b4f"
+      },
+      "artifact_verification": {
+        "source_hashes_verified": true,
+        "model_hash_verified": true,
+        "validation_rows": 1475484,
+        "validation_row_ids_unique": true,
+        "labels_match_official_training_rows": true,
+        "auc_recomputed": 0.809235060125157,
+        "log_loss_recomputed": 0.533986510085489,
+        "auc_difference_from_record": 0.0,
+        "log_loss_difference_from_record": -2.220446049250313e-16,
+        "validation_prediction_sha256": "8d8e0debcfff8313b9c980339e1b28f067cb2bf7bb6e355c56d85d078d695197",
+        "submission": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.004759341898,
+          "maximum_probability": 0.9993232977,
+          "sha256": "8df3c79d85614197fb2ab9fde7916ce912a1d83aa4aea58cfcc5c692a05d0b4f"
+        }
+      },
+      "comparison_with_calendar_full": {
+        "same_validation_rows_and_labels": true,
+        "same_lightgbm_parameters": true,
+        "same_actual_package_versions": true,
+        "same_400_rounds": true,
+        "previous_validation_auc": 0.7995675278868825,
+        "validation_auc_difference": 0.009667532238274545,
+        "validation_log_loss_difference": -0.010175670585204077,
+        "previous_public_score": 0.67905,
+        "previous_private_score": 0.68125,
+        "maximum_validation_prediction_difference": 0.6646662372550269,
+        "scope": "Adds two training-only smoothed user artist and user genre probabilities to the calendar model; both use leave-one-out context counting, identical random holdout, no frequency or graph features, and matching LightGBM parameters.",
+        "public_score_difference": -0.00336,
+        "private_score_difference": -0.00276,
+        "platform_conclusion": "Public AUC difference: -0.00336; Private AUC difference: -0.00276. Differences use the platform's displayed precision; statistical significance was not tested."
+      },
+      "platform_submission": {
+        "reference": 58460017,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17 06:58:05.517000",
+        "description": "CS4304 full preferences: 7377418 rows, calendar/context LOO, 32 features, 400 rounds",
+        "public_score": 0.67569,
+        "private_score": 0.67849,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "8df3c79d85614197fb2ab9fde7916ce912a1d83aa4aea58cfcc5c692a05d0b4f",
+        "source": "Kaggle CLI competitions submissions response"
+      },
+      "limitations": [
+        "One seed",
+        "Both models reached the 400-round cap",
+        "Training time is not controlled for host load or filesystem cache",
+        "No historical leaderboard rank is inferred"
+      ],
+      "selection_decision": "Retain calendar_full over preferences_full: the preference model scores lower on both competition partitions. This does not rule out other preference definitions or validation strategies."
+    },
+    {
+      "experiment": "row_order_full",
+      "kernel": "gaoanghe/kkbox-row-order",
+      "kernel_version": 1,
+      "source_manifest": {
+        "git_revision": "2a0bf4b3c9d395184f8ab1591a0b936f9f74bdc4",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "71f50b10be8db688c2d580dd2f6e23c40c701a5dacd015bf7d05602d0b1e8646",
+          "basic/train.py": "0b9cd21275b663636664fdff7f92360c4b177043d607d54925b7def38a9d70ce",
+          "basic/predict.py": "d7d11269d46aec18f2acffb0685194fe21debbea4dc900a96be6de89eb6335fd",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+          "basic/collaborative.py": "9c838222ce89f6202a1766a3e5ca429c921af3075a8564d22106140ad7ad45db"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "enhanced"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 1000,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false,
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "leave_one_out",
+          "user_preference_features": true,
+          "sampling_mode": "uniform",
+          "collaborative_features": false,
+          "split_mode": "row_order",
+          "no_refit": false,
+          "learning_rate": 0.05,
+          "num_leaves": 127,
+          "min_child_samples": 200,
+          "max_cat_threshold": 64,
+          "feature_fraction": 0.8,
+          "overwrite": false
+        },
+        "runtime_requirements": [
+          "numpy>=1.26,<3",
+          "pandas>=2.1,<3",
+          "scipy>=1.11,<2",
+          "scikit-learn>=1.4,<2",
+          "lightgbm>=4.0,<5",
+          "pyarrow>=14,<24",
+          "py7zr>=0.20,<2"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": true,
+        "collaborative_features": false,
+        "overwrite": false,
+        "no_refit": false,
+        "max_train_rows": 0,
+        "sampling_mode": "uniform",
+        "split_mode": "row_order",
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 1000,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.05,
+        "num_leaves": 127,
+        "min_child_samples": 200,
+        "max_cat_threshold": 64,
+        "feature_fraction": 0.8,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.05,
+          "num_leaves": 127,
+          "min_data_in_leaf": 200,
+          "feature_fraction": 0.8,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 64,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        }
+      },
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "row_order_holdout_not_verified_time",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "enhanced",
+        "feature_count": 32,
+        "best_iteration": 304,
+        "validation_auc": 0.6785621299135633,
+        "validation_log_loss": 0.6507368809873247,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.7055654714689416,
+        "validation_training_seconds": 844.3526087549999,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1252351,
+            "auc": 0.6843807564083759
+          },
+          "new_user": {
+            "rows": 104479,
+            "auc": 0.680162416921602
+          },
+          "new_song": {
+            "rows": 126614,
+            "auc": 0.6785256431053486
+          }
+        },
+        "platform_score": null,
+        "final_training_rows": 7377418,
+        "refit_performed": true,
+        "final_training_seconds": 850.3155838740001,
+        "total_seconds": 2025.647272127
+      },
+      "inference": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.005523496241,
+          "maximum_probability": 0.9986367633,
+          "sha256": "af28c6dc4463874ff2c5d950f3175c3263cbf03e75b3001a083db144f5f03a8e"
+        },
+        "seconds": 436.34788808300027,
+        "model_sha256": "c788c5a87a80e0d65f251cf6d7e7d5cfa3a5f8169c393b62eb8ccda931472aee",
+        "test_fingerprint": {
+          "bytes": 347789925,
+          "mtime_ns": 1794895987061641673
+        },
+        "submission_sha256": "af28c6dc4463874ff2c5d950f3175c3263cbf03e75b3001a083db144f5f03a8e"
+      },
+      "artifact_verification": {
+        "validation_rows": 1475484,
+        "row_ids_unique": true,
+        "labels_match_official_training_rows": true,
+        "same_validation_rows_and_labels_as_context_full": false,
+        "recalculated_auc": 0.6785621299135636,
+        "recalculated_log_loss": 0.6507368809873249,
+        "auc_difference": 2.220446049250313e-16,
+        "log_loss_difference": 1.1102230246251565e-16,
+        "execution_source_hashes_match_manifest": true,
+        "submission": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.005523496241,
+          "maximum_probability": 0.9986367633,
+          "sha256": "af28c6dc4463874ff2c5d950f3175c3263cbf03e75b3001a083db144f5f03a8e"
+        },
+        "model_sha256_matches_prediction_record": true,
+        "validation_prediction_sha256": "4c663e9b361b6fe480fbce20ed8790a39b5efa7eced83038195f010986a85416"
+      },
+      "platform_submission": {
+        "reference": 58460118,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17 07:01:49.310000",
+        "description": "CS4304 row-order validation: full preferences, calendar, leaves127, 304 rounds",
+        "public_score": 0.6765,
+        "private_score": 0.67816,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "af28c6dc4463874ff2c5d950f3175c3263cbf03e75b3001a083db144f5f03a8e",
+        "source": "Kaggle CLI competitions submissions response"
+      },
+      "comparison_with_calendar_full": {
+        "same_validation_rows_and_labels": false,
+        "same_lightgbm_parameters": false,
+        "public_score_difference": -0.00255,
+        "private_score_difference": -0.00309,
+        "scope": "Combined change: user preferences, row-order holdout, learning rate 0.05, 127 leaves, minimum leaf samples 200, categorical threshold 64, feature fraction 0.8, maximum 1000 rounds. Early stopping selected 304 rounds, then refit all rows.",
+        "conclusion": "Neither platform score exceeds calendar_full. Different holdout and parameters prevent attributing this outcome to row-order validation alone."
+      },
+      "limitations": [
+        "One seed",
+        "Combined changes rather than an isolated split ablation",
+        "Validation AUC is not directly comparable with random holdout",
+        "Single-run timing does not control host load",
+        "No historical leaderboard rank is inferred"
+      ],
+      "selection_decision": "Keep calendar_full as the current preferred platform model; row-order remains available for more realistic holdout diagnostics."
     }
-  ]
+  ],
+  "current_platform_selection": {
+    "experiment": "calendar_full",
+    "reference": 58459278,
+    "public_score": 0.67905,
+    "private_score": 0.68125,
+    "comparison_with_previous_best": "Public +0.00058; Private unchanged at displayed precision. Preference and combined row-order/capacity experiments did not improve either score."
+  }
 }
