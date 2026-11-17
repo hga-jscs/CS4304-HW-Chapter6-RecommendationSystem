@@ -133,18 +133,23 @@
   ],
   "pending_experiments": [
     {
-      "experiment": "baseline_full",
-      "execution": "private Kaggle CPU job",
-      "kernel": "gaoanghe/kkbox-baseline",
-      "kernel_version": 2,
+      "experiment": "context_full",
+      "execution": "private free Kaggle CPU job",
+      "kernel": "gaoanghe/kkbox-context",
+      "kernel_version": 1,
       "last_observed_status": "RUNNING",
-      "stage": "final_refit_in_progress",
-      "runtime": "Use Kaggle preinstalled packages without network installation",
-      "validation_log_observation": {
-        "rounds": 400,
-        "auc_approximate": 0.795648,
-        "source": "Kaggle training log",
-        "precision": "Rounded log value; complete metrics.json not yet retrieved"
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "max_train_rows": 0,
+        "available_rows": 7377418,
+        "num_boost_round": 400,
+        "seed": 42
+      },
+      "source_state": {
+        "git_revision": "1a72fba10d47c91afaa4d35349ab5825aeaffec7",
+        "working_tree_dirty": false
       },
       "final_metrics_retrieved": false,
       "platform_score_recorded": false
@@ -602,5 +607,233 @@
       "url": "https://github.com/lystdo/Codes-for-WSDM-CUP-Music-Rec-1st-place-solution/blob/master/input/training/script/cnt_log_process.py#L59-L86",
       "note": "First-place author implementation. This project keeps fitting limited to the training partition rather than combining train and test statistics."
     }
-  ]
+  ],
+  "full_data_experiments": [
+    {
+      "experiment": "baseline_full",
+      "status": "scored",
+      "scope": "All 7377418 official training rows; predictions cover the entire official test set",
+      "execution": {
+        "platform": "private free Kaggle CPU job",
+        "kernel": "gaoanghe/kkbox-baseline",
+        "kernel_version": 2,
+        "status": "COMPLETE",
+        "gpu_enabled": false,
+        "install_dependencies": false
+      },
+      "configuration": {
+        "feature_mode": "baseline",
+        "max_train_rows": 0,
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 400,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        }
+      },
+      "source_manifest": {
+        "git_revision": "63749fd82b82f265a1c59522554715a02bb17fc3",
+        "working_tree_dirty": true,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "17339d3fa1e24c386e8b69d641e38344ddafabb6e5b5eaf2c1e76002f95b2800",
+          "basic/train.py": "533b27821645139a96a75782a63c666715dec7c490464da1531255685409da2b",
+          "basic/predict.py": "451687b09b17a0ba929928eb3b6c1dd1f2a130d5513ef33e6caa67950de00a1f",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "baseline"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 600,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false
+        },
+        "runtime_requirements": [
+          "numpy==2.4.6",
+          "pandas==2.3.3",
+          "scipy==1.17.1",
+          "scikit-learn==1.9.1",
+          "lightgbm==4.7.0",
+          "pyarrow==23.0.1",
+          "py7zr==1.1.4"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "verified_source_commit": "f74f2c8296338c424875c1efd16c206bfaef21d0",
+      "source_verification": {
+        "method": "SHA-256 of git show COMMIT:path matched each source_manifest digest",
+        "verified_files": [
+          "basic/__init__.py",
+          "basic/features.py",
+          "basic/train.py",
+          "basic/predict.py",
+          "basic/submission.py"
+        ],
+        "all_file_hashes_match": true,
+        "scope": "Only the five executed basic Python files; the job generator is outside this verification scope. The generation-time base revision and dirty state remain unchanged."
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_note": "Kaggle preinstalled packages were used. runtime_versions and source_manifest.actual_runtime_versions describe execution; runtime_requirements are planned pins and were not installed.",
+      "local_validation_and_training": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "baseline",
+        "feature_count": 17,
+        "best_iteration": 400,
+        "validation_auc": 0.795647783128468,
+        "validation_log_loss": 0.5482478278052512,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931224444213769,
+        "validation_training_seconds": 671.500581574,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1437341,
+            "auc": 0.7949787962664384
+          },
+          "new_user": {
+            "rows": 268,
+            "auc": 0.628916191311979
+          },
+          "new_song": {
+            "rows": 37882,
+            "auc": 0.8019245256980391
+          }
+        },
+        "final_training_rows": 7377418,
+        "final_training_seconds": 530.8831438039999,
+        "total_seconds": 1394.3061074080001
+      },
+      "prediction": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.004473071149,
+          "maximum_probability": 0.9990515985,
+          "sha256": "5e47db93deaf30c3bd16ce0cb80d9114038a8d5f4088b90291a39a5cec90c5d7"
+        },
+        "seconds": 352.8061022940001,
+        "model_sha256": "01b25e92b2166d0f939ba4e06749459dda6a1c43cf19813c1649d1c0a79e7542",
+        "test_sha256": "b5bac50fd7d93ee04e9567e61de3bb89d6dec225b2b80474a0cacc85056c91f4",
+        "submission_sha256": "5e47db93deaf30c3bd16ce0cb80d9114038a8d5f4088b90291a39a5cec90c5d7"
+      },
+      "platform_submission": {
+        "reference": 58454264,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17T03:24:51.997Z",
+        "description": "CS4304 full baseline: 7377418 rows seed42, 17 features, 400 rounds",
+        "public_score": 0.67527,
+        "private_score": 0.67706,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "5e47db93deaf30c3bd16ce0cb80d9114038a8d5f4088b90291a39a5cec90c5d7",
+        "source": "Kaggle CLI competitions submissions"
+      },
+      "training_data_manifest": {
+        "train.csv": {
+          "bytes": 971675848,
+          "sha256": "ff19a9d3fd1def1494082fbee833fd2470ce3342aabdc8de1eb87ee578692934"
+        },
+        "members.csv": {
+          "bytes": 2503827,
+          "sha256": "a3cd1b868d5d32df23ed99f2609d3675f48a5d3ecef35eb591eced3f9b9939ee"
+        },
+        "songs.csv": {
+          "bytes": 221828666,
+          "sha256": "56c8ee6914fbb5d41ee378fa28d0e1505211886b01d5772944246e24cb26098c"
+        }
+      },
+      "comparison_to_baseline_sample": {
+        "public_difference": 0.0224,
+        "private_difference": 0.02108,
+        "single_factor_ablation": false,
+        "note": "Training row count, iteration count and runtime environment differ from the local sampled baseline."
+      },
+      "limitations": [
+        "Random stratified holdout is not chronological validation.",
+        "Best iteration equals the 400-round cap; convergence beyond the cap was not evaluated.",
+        "Platform scores do not establish a historical leaderboard rank."
+      ],
+      "independent_metric_verification": {
+        "rows": 1475484,
+        "unique_row_ids": true,
+        "targets_match_official_training_rows": true,
+        "auc_recomputed": 0.7956477831284681,
+        "log_loss_recomputed": 0.5482478278052508,
+        "auc_difference_from_record": 1.1102230246251565e-16,
+        "log_loss_difference_from_record": -3.3306690738754696e-16
+      }
+    }
+  ],
+  "current_best_scored_experiment": {
+    "experiment": "baseline_full",
+    "submission_reference": 58454264,
+    "selection_scope": "Five completed experiments: four sampled and one full-data baseline",
+    "public_score": 0.67527,
+    "private_score": 0.67706,
+    "historical_rank_inferred": false
+  }
 }

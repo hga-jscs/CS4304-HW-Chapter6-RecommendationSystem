@@ -81,17 +81,50 @@ python -m basic.train --data-dir data/basic --output-dir outputs/basic/context_s
 
 频次消融的动机也来自第 6 名 EdZhang 的[作者论文](https://www.researchgate.net/publication/328838360)第 4 节 Conclusion：作者报告过歌曲听众数量计数提高验证表现、降低测试表现的现象，并讨论了相关分布差异。本项目通过自己的对照实验检验这一方向，不使用未知行序充当可靠时间，也不把测试标签用于特征。
 
-## 全量训练状态
+## 基本任务：已评分的全量基线
 
-免费私有 Kaggle 作业 `gaoanghe/kkbox-baseline` 的第一版在安装依赖时遇到 `pypi.org` DNS 失败。第二版已改为默认使用预装环境，已跑完 400 轮留出验证；日志显示 ROC-AUC 约 **0.795648**，随后进入全量重训。该分数只是日志约数，完整 `metrics.json` 尚未取得，作业仍在运行，也没有全量模型的平台分数。
+免费私有 Kaggle CPU 作业 `gaoanghe/kkbox-baseline` 第二版已完成训练、推理与平台评分，未使用 GPU。实际数据使用全部 7,377,418 条训练记录，没有抽样。
+
+| 项目 | 结果 |
+| --- | --- |
+| 留出划分 | 种子 42，分层随机；5,901,934 条训练，1,475,484 条验证 |
+| 模型与轮数 | LightGBM，17 个基础特征，最多 400 轮，最佳轮数 400 |
+| 留出验证 ROC-AUC | 0.795647783128468 |
+| 留出验证对数损失 | 0.5482478278052512 |
+| 最终重训 | 全部 7,377,418 条训练记录，400 轮 |
+| 训练流程总耗时 | 1,394.3061074080001 秒，约 23.24 分钟 |
+| 其中验证阶段训练、预测与指标计算 | 671.500581574 秒 |
+| 其中全量模型重训 | 530.8831438039999 秒 |
+| 完整推理与输出检查 | 2,556,790 条；352.8061022940001 秒，约 5.88 分钟 |
+| Kaggle Public / Private | **0.67527 / 0.67706** |
+| 提交编号与状态 | **58454264，COMPLETE** |
+| 平台记录的提交时间 | 2026-11-17 03:24:51.997 UTC（北京时间 11:24:51.997） |
+
+平台提交说明为 `CS4304 full baseline: 7377418 rows seed42, 17 features, 400 rounds`。分数及提交状态来自 Kaggle CLI `competitions submissions`；精确训练指标、预测摘要及数据 SHA-256 来自本次作业的输出文件，保存在 [basic_results.json](basic_results.json) 的 `full_data_experiments` 中。完整预测下载后也已通过本机文件检查；另独立核验 1,475,484 行验证预测的 `row_id` 全部唯一，标签与官方训练数据对应行逐一匹配，重算 ROC-AUC 和对数损失与原记录的差异均小于 4 × 10⁻¹⁶。该模型在当前五组已完成实验中的 Public 与 Private 均最高，相对抽样基线分别提高 0.02240、0.02108；数据量、训练轮数和运行环境均不同，因此这不是单一因素消融。最佳轮数达到上限，不代表已经验证继续增加轮数无益。
+
+源码快照生成时记录的基准提交是 `63749fd82b82f265a1c59522554715a02bb17fc3`，工作树有未提交改动，这一事实原样保留。另对 `basic/__init__.py`、`basic/features.py`、`basic/train.py`、`basic/predict.py`、`basic/submission.py` 逐个校验，快照 SHA-256 与提交 `f74f2c8296338c424875c1efd16c206bfaef21d0` 中的文件全部一致；验证范围仅限这五个执行文件，不包括作业生成器。
+
+作业实际使用 Kaggle 预装的 Python 3.13.18、LightGBM 4.6.0、NumPy 2.1.3、pandas 2.3.3、SciPy 1.16.3、scikit-learn 1.6.1、PyArrow 23.0.1。原清单中的计划依赖没有重新安装，复现时应以 `runtime_versions` 的实测版本为准。第一版在安装依赖时遇到 DNS 失败，第二版改用预装环境后完成；本地抽样实验使用的 Python 3.11.3 与 LightGBM 4.7.0 等版本另行保留。
+
+核心训练和推理命令如下；精确复现还需匹配上述源码和运行环境：
+
+```powershell
+python -m basic.train --data-dir data/basic --output-dir outputs/basic/baseline_full --max-train-rows 0 --num-boost-round 400 --seed 42 --threads 4
+python -m basic.predict --data-dir data/basic --model-dir outputs/basic/baseline_full --output outputs/basic/baseline_full/submission.csv --threads 4
+python -m basic.submission check --submission outputs/basic/baseline_full/submission.csv --sample data/basic/sample_submission.csv --test data/basic/test.csv
+```
+
+## 待完成的全量场景模型
+
+免费私有 Kaggle CPU 作业 `gaoanghe/kkbox-context` 第一版正在运行，使用全部 7,377,418 条记录、种子 42、最多 400 轮，以及 `enhanced`、`--disable-frequency-features`、`--user-context-features` 的组合。提交时源码为干净的 `1a72fba10d47c91afaa4d35349ab5825aeaffec7`。尚无最终指标或平台成绩，不根据样本实验预填收益。
 
 ## 拓展任务：官方格式验证
 
-真实预处理数据已生成 1,000,000 名用户的 208 维 `float16` 表征，用时 109.418 秒，并通过固定版本原版官方验证器的完整用户检查。当前正在准备等价目标缓存以加速官方评估，尚未报告三项任务分数。格式验证不等于下游性能评估；精确来源与摘要见[表征验证记录](../extension/baseline_validation.json)，运行方式见[拓展任务说明](../extension/README.md)。
+真实预处理数据已生成 1,000,000 名用户的 208 维 `float16` 表征，用时 109.418 秒，并通过固定版本原版官方验证器的完整用户检查。目标缓存已通过一致性核对，正在运行三项下游评测，尚未报告全部最终分数。格式验证不等于下游性能评估；精确来源与摘要见[表征验证记录](../extension/baseline_validation.json)，运行方式见[拓展任务说明](../extension/README.md)。
 
 ## 记录口径
 
 - 本地验证、Kaggle Public 与 Kaggle Private 分别列出，不混用。
 - 每项结果保留样本量、随机种子、参数、依赖版本与数据摘要；提交文件同时保留 SHA-256。
-- 本次抽样训练发生在实现尚未提交的工作树中，JSON 如实记录当时的基准提交及修改状态。该基准提交本身不包含完整训练实现。
+- 抽样训练与全量基线快照均如实保留生成时的基准提交及工作树修改状态，不把基准提交冒充完整执行代码。全量基线另有五个执行文件与后续提交的逐文件哈希核验。
 - 尚在运行的任务只记录可追溯的阶段性日志及其精度，最终指标与平台分数需等待对应输出；合成数据测试不作为模型性能结果。
