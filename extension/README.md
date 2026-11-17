@@ -31,11 +31,11 @@
 先在完整 `input/` 内拟合独立历史块，保留同一份原始矩阵供历史单独对照和预训练拼接使用：
 
 ```powershell
-python -m extension.behavior_features --data-directory data/extension --output-directory outputs/extension/behavior --batch-size 50000 --seed 42
-python -m extension.standardize --embeddings-directory outputs/extension/behavior --output-directory outputs/extension/behavior_scaled --method block
+python -m extension.behavior_features --data-directory data/extension --output-directory outputs/extension/behavior --batch-size 100000 --seed 42
+python -m extension.standardize --embeddings-directory outputs/extension/behavior --output-directory outputs/extension/behavior_scaled --method block --batch-size 5000
 ```
 
-在包含 PyTorch 的拓展训练环境中准备、训练、提取延迟候选。三个阶段可分别执行；`prepare` 自动构建其内部的 earlier、later、full 特征与序列缓存，无需手动先建这些子目录：
+准备阶段需要 `extension/requirements.txt` 中的特征依赖；训练和提取另需 PyTorch，内部验证还使用 scikit-learn。在已有官方训练环境补齐特征依赖时，可运行 `python -m pip install -r extension/requirements.txt -c extension/official-requirements.txt`，保留官方固定的 NumPy、pandas 等版本。下面三个阶段可分别执行；`prepare` 自动构建其内部的 earlier、later、full 特征与序列缓存，无需手动先建这些子目录：
 
 ```powershell
 python -m extension.pretrain_encoder --stage prepare --mode multiwindow --data-directory data/extension --cache-directory outputs/extension/delayed_cache --output-directory outputs/extension/delayed_encoder --pseudo-days 14 --sequence-length 64 --prepare-batch-size 50000 --validation-fraction 0.1 --class-selection training_targets --include-delayed-window --seed 42
@@ -57,7 +57,7 @@ python -m extension.pretrain_encoder --stage extract --data-directory data/exten
 将延迟预训练块与前面独立构建的历史块拼接，输出官方要求的 `float16` 1797 维矩阵：
 
 ```powershell
-python -m extension.standardize --embeddings-directory outputs/extension/behavior --pretrained-directory outputs/extension/delayed_encoder --output-directory outputs/extension/delayed_combined --method block
+python -m extension.standardize --embeddings-directory outputs/extension/behavior --pretrained-directory outputs/extension/delayed_encoder --output-directory outputs/extension/delayed_combined --method block --batch-size 5000
 ```
 
 393 维对照使用 `--pretrained-directory outputs/extension/immediate_encoder` 和单独的 `outputs/extension/immediate_combined` 输出目录。`--method block` 根据元数据将统计列按列标准化、PQ/图向量按行 L2 缩放、瓶颈按行归一化；已输出的 sigmoid 分数只乘块权重，不再次 sigmoid。参数保存在 `standardization.json`，原始矩阵保持不变。旧 `--method column` 仍是默认值；两条数值路径可能有极少量 `float16` 双重舍入差异，不声称共同统计列逐元素恒等，量化核验见第三轮诊断。
