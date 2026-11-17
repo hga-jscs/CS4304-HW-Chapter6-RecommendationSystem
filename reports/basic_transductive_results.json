@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "Eight paired tail-sample feature comparisons and two full-data refit-policy comparisons",
+  "scope": "Eight tail-sample experiments with seven paired feature comparisons and two full-data experiments comparing refit policies",
   "requested_platform_targets": {
     "public_auc": 0.705,
     "private_auc": 0.705
