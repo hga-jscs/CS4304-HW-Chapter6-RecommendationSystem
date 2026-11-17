@@ -1,0 +1,667 @@
+{
+  "checked_on": "2026-11-17",
+  "scope": "Local evaluation of the three coursework-required official downstream tasks; not a hidden-task or leaderboard score",
+  "original_records_preserved": [
+    "baseline_scores.json",
+    "baseline_validation.json",
+    "review_results.json"
+  ],
+  "protocol": {
+    "official_repository": "https://github.com/Synerise/recsys2025.git",
+    "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+    "official_tracked_files_unmodified_after_evaluation": true,
+    "official_training_parameters": {
+      "epochs_per_task": 3,
+      "batch_size": 128,
+      "hidden_size_thin": 2048,
+      "hidden_size_wide": 4096,
+      "learning_rate": 0.001,
+      "model_optimizer_and_metrics_unchanged": true
+    },
+    "score_definitions": {
+      "churn": "AUROC",
+      "propensity_category": "0.8 * AUROC + 0.1 * Diversity + 0.1 * Novelty",
+      "propensity_sku": "0.8 * AUROC + 0.1 * Diversity + 0.1 * Novelty"
+    },
+    "score_selection": "Official maximum task score across three epochs, rounded to four decimal places; placeholder excluded",
+    "wrapper_seed": 42,
+    "official_model_torch_seed": 1278,
+    "target_cache_enabled": true,
+    "target_cache_validation_record": "target_cache_validation.json",
+    "dataset_fingerprints_reference": "baseline_scores.json#evaluation_data_files",
+    "sparse_official_validation_classes": "Three of 100 SKU validation classes have no positive clients. All classes remain in the pinned official TorchMetrics macro AUROC; no classes were removed or metrics changed."
+  },
+  "requested_goals": {
+    "churn": 0.75,
+    "propensity_category": 0.815,
+    "propensity_sku": 0.815
+  },
+  "previous_enhanced_673_scores": {
+    "churn": 0.7286,
+    "propensity_category": 0.7961,
+    "propensity_sku": 0.7881
+  },
+  "representation_comparison_checks": {
+    "clients": 1000000,
+    "history_dimensions": 544,
+    "combined_dimensions": 1001,
+    "common_544_columns_elementwise_identical": true,
+    "client_order_identical": true,
+    "combined_values_all_finite": true
+  },
+  "history_features": {
+    "dimensions": 544,
+    "blocks": {
+      "window_presence_price_bucket_and_rhythm_statistics": 96,
+      "exact_purchase_and_cart_sku_category_counts": 256,
+      "name_and_query_pq_cooccurrence_pools": 64,
+      "sparse_graph_factors": 128
+    },
+    "input_cutoff_utc": "2022-11-09T23:59:59+00:00",
+    "seed": 42,
+    "graph_columns": {
+      "category": 6774,
+      "sku": 4096,
+      "url": 2048
+    },
+    "graph_rank": 128,
+    "long_tail_hash_block_enabled": false,
+    "pq_interpretation": "Separate name/query position-code co-occurrence factors; not recovered source semantic vectors",
+    "raw_dtype": "float32",
+    "raw_build_seconds": 511.159,
+    "build_runtime": {
+      "started_utc": "2026-11-17T08:27:55.550127+00:00",
+      "source_commit": "2aeb0796159a97fe35a49dd625830b802ce27a94",
+      "source_dirty": false,
+      "source_sha256": {
+        "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf"
+      },
+      "python": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+      "versions": {
+        "numpy": "2.4.6",
+        "pandas": "2.3.3",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.1",
+        "pyarrow": "23.0.1"
+      },
+      "status": "complete",
+      "returncode": 0,
+      "finished_utc": "2026-11-17T08:36:30.247424+00:00",
+      "seconds": 514.6205646999879,
+      "memory_measurement_note": "The Windows venv launcher was sampled instead of its actual child. The launcher measurement is invalid as a build peak; no true peak is claimed.",
+      "separate_process_snapshot": {
+        "working_set_gib_rounded": 2.92,
+        "private_memory_gib_rounded": 1.13,
+        "is_peak": false,
+        "source": "Read-only PowerShell Get-Process of actual history child during build"
+      }
+    },
+    "valid_peak_memory_measurement": null,
+    "memory_note": "The initial monitor sampled the launcher, not the actual worker. No valid build peak is claimed.",
+    "independent_standardization_runtime": {
+      "stage": "standardize_history_544",
+      "started_utc": "2026-11-17T08:36:33.159697+00:00",
+      "status": "complete",
+      "source_commit": "2aeb0796159a97fe35a49dd625830b802ce27a94",
+      "source_working_tree_changes": [
+        " M reports/revision_review.md"
+      ],
+      "source_sha256": {
+        "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+        "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf",
+        "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+        "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+      },
+      "omp_num_threads": 4,
+      "mkl_num_threads": 4,
+      "python": "3.11.3",
+      "versions": {
+        "numpy": "2.4.6",
+        "pandas": "2.3.3",
+        "pyarrow": "23.0.1",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.1"
+      },
+      "returncode": 0,
+      "seconds": 11.109,
+      "finished_utc": "2026-11-17T08:36:44.516140+00:00"
+    }
+  },
+  "pretrained_core": {
+    "dimensions": 457,
+    "bottleneck_dimensions": 256,
+    "logit_dimensions": 201,
+    "architecture": "Residual MLP over 673 frozen-vocabulary aggregates plus a GRU over the latest 32 events",
+    "pseudo_window": {
+      "created_utc": "2026-11-17T08:18:48.046236+00:00",
+      "clients": 1000000,
+      "aggregate_dimensions": 673,
+      "sequence_length": 32,
+      "pseudo_days": 14,
+      "pseudo_input_inclusive_cutoff_utc": "2022-10-26T23:59:59.999999999+00:00",
+      "pseudo_target_start_inclusive_utc": "2022-10-27T00:00:00+00:00",
+      "full_input_inclusive_cutoff_utc": "2022-11-09T23:59:59+00:00",
+      "pseudo_target_end_inclusive_utc": "2022-11-09T23:59:59+00:00",
+      "official_target_directory_read": false,
+      "class_selection": "Pseudo-input purchases only",
+      "class_counts": {
+        "sku": 100,
+        "category": 100
+      },
+      "churn_eligible_users": 465783,
+      "validation_users": 100000,
+      "seed": 42,
+      "sequence_order": "Latest events, deterministic chronological/tie ordering",
+      "seconds": 626.393
+    },
+    "class_selection": "Pseudo-input purchases only; no official target files",
+    "churn_loss_eligibility": "Users with at least one pseudo-input purchase",
+    "normalization_and_class_weights_fitted_on": "Training users only",
+    "training": {
+      "created_utc": "2026-11-17T08:25:45.982976+00:00",
+      "seed": 42,
+      "selection": "Minimum held-out-user weighted three-head BCE; weights estimated from training users only",
+      "training_users": 900000,
+      "validation_users": 100000,
+      "official_target_directory_read": false,
+      "class_counts": {
+        "sku": 100,
+        "category": 100
+      },
+      "best_validation_weighted_bce": 0.1395924411688686,
+      "epochs": [
+        {
+          "epoch_zero_based": 0,
+          "training_weighted_bce": 0.1599226873779297,
+          "validation_weighted_bce": 0.14170508055136585,
+          "seconds": 33.695
+        },
+        {
+          "epoch_zero_based": 1,
+          "training_weighted_bce": 0.13985760240713754,
+          "validation_weighted_bce": 0.1395924411688686,
+          "seconds": 32.608
+        },
+        {
+          "epoch_zero_based": 2,
+          "training_weighted_bce": 0.1370948928949568,
+          "validation_weighted_bce": 0.14052332155637773,
+          "seconds": 33.507
+        },
+        {
+          "epoch_zero_based": 3,
+          "training_weighted_bce": 0.13418893691327838,
+          "validation_weighted_bce": 0.14229829974334468,
+          "seconds": 33.216
+        }
+      ],
+      "batch_size": 1024,
+      "positive_weight_clipping": {
+        "churn": [
+          0.02,
+          50
+        ],
+        "category": [
+          1,
+          50
+        ],
+        "sku": [
+          1,
+          50
+        ]
+      },
+      "churn_positive_weight": 0.06206360086798668,
+      "learning_rate": 0.001,
+      "device": "cuda",
+      "torch_version": "2.5.0+cu118",
+      "seconds": 143.41
+    },
+    "prepare_runtime": {
+      "started_utc": "2026-11-17T08:08:20.979285+00:00",
+      "status": "complete",
+      "python": "3.11.3",
+      "versions": {
+        "numpy": "2.1.0",
+        "pandas": "2.2.3",
+        "pyarrow": "19.0.1",
+        "torch": "2.5.0+cu118"
+      },
+      "source_commit": "e5ecd22966b4fe2e65f6853d7995d829eef9cd4a",
+      "source_working_tree_changes": [
+        " M basic/collaborative.py",
+        " M basic/features.py",
+        " M basic/kaggle_job.py",
+        " M basic/predict.py",
+        " M basic/train.py",
+        " M extension/build_embeddings.py",
+        " M extension/requirements.txt",
+        " M tests/test_basic_training.py",
+        "?? basic/target_encoding.py",
+        "?? extension/history_representation.py",
+        "?? extension/pretrain_encoder.py",
+        "?? tests/test_basic_target_encoding.py",
+        "?? tests/test_history_representation.py",
+        "?? tests/test_pretrain_encoder.py"
+      ],
+      "source_sha256": {
+        "extension/pretrain_encoder.py": "50f78f62d4618bc0f2535d3304d7b3282f0cc2f8488e986803c90a01f81d2eb4",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3",
+        "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf"
+      },
+      "omp_num_threads": 4,
+      "mkl_num_threads": 4,
+      "returncode": 0,
+      "seconds": 627.634,
+      "finished_utc": "2026-11-17T08:18:48.676743+00:00"
+    },
+    "model_runtime": {
+      "started_utc": "2026-11-17T08:23:20.158546+00:00",
+      "status": "complete",
+      "python": "3.11.3",
+      "versions": {
+        "numpy": "2.1.0",
+        "pandas": "2.2.3",
+        "pyarrow": "19.0.1",
+        "torch": "2.5.0+cu118"
+      },
+      "source_commit": "8796eb7e1ffa0746257bfbd5f00910cfaa66a5fc",
+      "source_working_tree_changes": [
+        " M extension/README.md",
+        " M extension/build_embeddings.py",
+        " M extension/requirements.txt",
+        "?? extension/history_representation.py",
+        "?? extension/pretrain_encoder.py",
+        "?? reports/revision_review.md",
+        "?? tests/test_history_representation.py",
+        "?? tests/test_pretrain_encoder.py"
+      ],
+      "source_sha256": {
+        "extension/pretrain_encoder.py": "4d45dc1f38cb76f61be4b1443e5c1d5473fc2764e03cd0fcc000558b3127b9e8",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3",
+        "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf"
+      },
+      "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 566.36",
+      "omp_num_threads": 4,
+      "mkl_num_threads": 4,
+      "churn_positive_weight": "Training eligible users negative/positive ratio, clipped to [0.02, 50]; propensity weights clipped to [1, 50]",
+      "returncode": 0,
+      "seconds": 183.308,
+      "finished_utc": "2026-11-17T08:26:23.578984+00:00"
+    },
+    "model_stage_timings": [
+      {
+        "stage": "train",
+        "started_utc": "2026-11-17T08:23:20.272874+00:00",
+        "finished_utc": "2026-11-17T08:25:47.817979+00:00",
+        "seconds": 147.545,
+        "returncode": 0
+      },
+      {
+        "stage": "extract",
+        "started_utc": "2026-11-17T08:25:47.819988+00:00",
+        "finished_utc": "2026-11-17T08:26:23.578984+00:00",
+        "seconds": 35.761,
+        "returncode": 0
+      }
+    ],
+    "cache_validation": {
+      "client_order_and_feature_columns_match": true,
+      "sequence_cutoffs": {
+        "prefix": {
+          "shape": [
+            1000000,
+            32
+          ],
+          "latest_event_utc": "2022-10-26T23:59:59+00:00"
+        },
+        "full": {
+          "shape": [
+            1000000,
+            32
+          ],
+          "latest_event_utc": "2022-11-09T23:59:59+00:00"
+        }
+      },
+      "class_support": {
+        "train": {
+          "category": {
+            "minimum_positives": 10,
+            "maximum_positives": 1753,
+            "classes_without_positives": 0
+          },
+          "sku": {
+            "minimum_positives": 0,
+            "maximum_positives": 168,
+            "classes_without_positives": 19
+          }
+        },
+        "validation": {
+          "category": {
+            "minimum_positives": 1,
+            "maximum_positives": 216,
+            "classes_without_positives": 0
+          },
+          "sku": {
+            "minimum_positives": 0,
+            "maximum_positives": 18,
+            "classes_without_positives": 34
+          }
+        }
+      },
+      "eligible_churn": {
+        "train": {
+          "users": 419205,
+          "churn_positive": 394708
+        },
+        "validation": {
+          "users": 46578,
+          "churn_positive": 43856
+        }
+      }
+    },
+    "encoder_validation": {
+      "clients": 1000000,
+      "dimensions": 457,
+      "dtype": "float16",
+      "all_values_finite": true,
+      "client_order_matches_cache": true,
+      "minimum": -11.4921875,
+      "maximum": 5.60546875,
+      "embedding_bytes": 914000128,
+      "checkpoint_sha256": "b276ab59a6021948765e3d3b04e023b5426889356aae6626f6698299d9d17505",
+      "total_seconds": 183.308,
+      "stages": [
+        {
+          "stage": "train",
+          "seconds": 147.545,
+          "returncode": 0
+        },
+        {
+          "stage": "extract",
+          "seconds": 35.761,
+          "returncode": 0
+        }
+      ]
+    }
+  },
+  "combined_standardization_runtime": {
+    "stage": "combine_history_and_pretrained_1001",
+    "started_utc": "2026-11-17T08:36:44.518559+00:00",
+    "status": "complete",
+    "source_commit": "2aeb0796159a97fe35a49dd625830b802ce27a94",
+    "source_working_tree_changes": [
+      " M reports/revision_review.md"
+    ],
+    "source_sha256": {
+      "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+      "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf",
+      "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+      "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+    },
+    "omp_num_threads": 4,
+    "mkl_num_threads": 4,
+    "python": "3.11.3",
+    "versions": {
+      "numpy": "2.4.6",
+      "pandas": "2.3.3",
+      "pyarrow": "23.0.1",
+      "scipy": "1.17.1",
+      "scikit-learn": "1.9.1"
+    },
+    "returncode": 0,
+    "seconds": 56.585,
+    "finished_utc": "2026-11-17T08:37:41.302794+00:00"
+  },
+  "experiments": [
+    {
+      "name": "compact_history",
+      "dimensions": 544,
+      "clients": 1000000,
+      "dtype": "float16",
+      "standardized": true,
+      "standardization_clip": [
+        -10,
+        10
+      ],
+      "training_completed": true,
+      "scores": {
+        "churn": 0.7293,
+        "propensity_category": 0.8054,
+        "propensity_sku": 0.7972
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 1,
+        "propensity_sku": 2
+      },
+      "delta_vs_original_208": {
+        "churn": 0.0008,
+        "propensity_category": 0.0165,
+        "propensity_sku": 0.0173
+      },
+      "delta_vs_previous_enhanced_673": {
+        "churn": 0.0007,
+        "propensity_category": 0.0093,
+        "propensity_sku": 0.0091
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "runtime": {
+        "stage": "历史特征_official_three_tasks",
+        "started_utc": "2026-11-17T08:37:54.912352+00:00",
+        "status": "complete",
+        "source_commit": "2aeb0796159a97fe35a49dd625830b802ce27a94",
+        "source_working_tree_changes": [
+          " M reports/revision_review.md"
+        ],
+        "source_sha256": {
+          "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+          "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf",
+          "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+        },
+        "omp_num_threads": 4,
+        "mkl_num_threads": 4,
+        "python": "3.11.3",
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "wrapper_seed": 42,
+        "official_model_torch_seed": 1278,
+        "target_cache_enabled": true,
+        "num_workers": 0,
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 566.36",
+        "returncode": 0,
+        "seconds": 3405.726,
+        "finished_utc": "2026-11-17T09:34:40.981380+00:00"
+      }
+    },
+    {
+      "name": "compact_history_with_pretrained_encoder",
+      "dimensions": 1001,
+      "clients": 1000000,
+      "dtype": "float16",
+      "standardized": true,
+      "standardization_clip": [
+        -10,
+        10
+      ],
+      "training_completed": true,
+      "scores": {
+        "churn": 0.7299,
+        "propensity_category": 0.8053,
+        "propensity_sku": 0.7985
+      },
+      "best_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "delta_vs_original_208": {
+        "churn": 0.0014,
+        "propensity_category": 0.0164,
+        "propensity_sku": 0.0186
+      },
+      "delta_vs_previous_enhanced_673": {
+        "churn": 0.0013,
+        "propensity_category": 0.0092,
+        "propensity_sku": 0.0104
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "runtime": {
+        "stage": "历史组合_official_three_tasks",
+        "started_utc": "2026-11-17T09:34:40.987871+00:00",
+        "status": "complete",
+        "source_commit": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "source_working_tree_changes": [
+          " M basic/README.md",
+          " M reports/README.md",
+          " M reports/methods_and_experiments.md",
+          "?? reports/basic_transductive_results.json"
+        ],
+        "source_sha256": {
+          "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+          "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf",
+          "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+        },
+        "omp_num_threads": 4,
+        "mkl_num_threads": 4,
+        "python": "3.11.3",
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "wrapper_seed": 42,
+        "official_model_torch_seed": 1278,
+        "target_cache_enabled": true,
+        "num_workers": 0,
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 566.36",
+        "seconds": null,
+        "resumed_after_interruption": true,
+        "timing_note": "Interrupted initial segment has no completed monotonic timing. Only the separately resumed task durations are exact; no full 1001 evaluation duration is claimed.",
+        "resumed_started_utc": "2026-11-17T10:08:56.858200+00:00",
+        "resumed_task_segments": [
+          {
+            "task": "propensity_category",
+            "started_utc": "2026-11-17T10:08:56.961365+00:00",
+            "status": "complete",
+            "returncode": 0,
+            "seconds": 1251.872,
+            "finished_utc": "2026-11-17T10:29:48.833044+00:00"
+          },
+          {
+            "task": "propensity_sku",
+            "started_utc": "2026-11-17T10:29:48.865132+00:00",
+            "status": "complete",
+            "returncode": 0,
+            "seconds": 1246.732,
+            "finished_utc": "2026-11-17T10:50:35.603866+00:00"
+          }
+        ],
+        "resume_source_commit": "9712f90cbc79a183810c069b89ff7e096e353433",
+        "resume_source_working_tree_changes": [
+          " M README.md",
+          " M reports/README.md",
+          " M reports/methods_and_experiments.md"
+        ],
+        "resume_versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "returncode": 0,
+        "finished_utc": "2026-11-17T10:50:35.734728+00:00",
+        "resumed_tasks_seconds": 2498.604
+      },
+      "resumed_after_interruption": true,
+      "completed_churn_recovery": {
+        "detected_utc": "2026-11-17T10:08:56.846090+00:00",
+        "neptune_run_uuid": "01d98a28-3b45-40b1-8517-1025decca070",
+        "neptune_run_name": "历史组合评分:churn",
+        "source_log": ".neptune\\offline\\run__01d98a28-3b45-40b1-8517-1025decca070__48024__hbrpoig8\\data-1.log",
+        "source_log_sha256": "06800b4d1b5d899de5daee9c1f198c315f61888b428f46b67e85da1408a4534b",
+        "original_epoch_metrics": [
+          {
+            "epoch_zero_based": 0,
+            "auroc": 0.7280107736587524,
+            "global_step": 3991,
+            "timestamp": 1794908462.3488705
+          },
+          {
+            "epoch_zero_based": 1,
+            "auroc": 0.728830873966217,
+            "global_step": 7983,
+            "timestamp": 1794908662.8471968
+          },
+          {
+            "epoch_zero_based": 2,
+            "auroc": 0.7299035787582397,
+            "global_step": 11975,
+            "timestamp": 1794908875.0037663
+          }
+        ],
+        "method": "Unmodified official ChurnMetricContainer and MetricsAggregator.save applied to the three exact Neptune LogFloats values; no model retraining or rounded progress text used",
+        "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "completed_task_retrained": false,
+        "scores": {
+          "churn": 0.7299,
+          "placeholder": -1
+        },
+        "epochs": {
+          "churn": 2
+        },
+        "restart_randomness_review": "Official UniversalModel.__init__ calls torch.manual_seed(1278) for each task; num_workers=0; DataLoader is sequential (shuffle defaults false); task/target construction and metric computation contain no random sampling. Reset wrapper seed42 before each remaining task. No dependence on previous-task RNG consumption was found in training_pipeline/data_utils.",
+        "incomplete_tasks_restarted": [
+          "propensity_category",
+          "propensity_sku"
+        ]
+      },
+      "delta_vs_same_history_without_pretraining": {
+        "churn": 0.0006,
+        "propensity_category": -0.0001,
+        "propensity_sku": 0.0013
+      }
+    }
+  ],
+  "interpretation_limits": [
+    "The 544 shared columns are elementwise identical in both final representations; the 1001-dimensional row adds the 457 pretrained columns.",
+    "Relative to the previous 673-dimensional representation, the compact statistics, exact counts, PQ pools and graph factors changed together; no individual block effect is identified.",
+    "All reported downstream scores use one seed and one fixed public split, not hidden tasks or leaderboard scoring. No statistical significance is claimed.",
+    "Pseudo-task weighted BCE selects the checkpoint internally; it is not an official downstream score or proof of meeting requested goals.",
+    "The zero-positive pseudo-future SKU classes were retained; future labels were not used to replace the pseudo-input-selected vocabulary.",
+    "Reported durations of completed stages and resumed tasks are single monotonic observations, with uncontrolled concurrent system load; differences do not establish causal speed improvements.",
+    "The 1001-dimensional evaluation was interrupted after churn completed. Churn was recovered from exact original Neptune float logs through the unchanged official aggregator; only the unfinished category and SKU tasks were restarted. The initial segment lost its monotonic timer, so total 1001 evaluation time is unavailable; only resumed segment times are exact."
+  ]
+}
