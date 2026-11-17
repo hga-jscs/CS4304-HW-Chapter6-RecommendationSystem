@@ -1,0 +1,12 @@
+# Direct dependency versions from the pinned Synerise requirements.txt.
+# Install in a separate Python 3.11 environment; install the appropriate CUDA
+# build of torch first when GPU evaluation is needed.
+numpy==2.1.0
+pandas==2.2.3
+pyarrow==19.0.1
+torch==2.5.0
+pytorch-lightning==2.2.4
+torchmetrics==1.3.2
+tqdm==4.65.0
+neptune==1.13.0
+rich==13.9.4

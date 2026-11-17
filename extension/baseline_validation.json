@@ -1,0 +1,31 @@
+{
+  "checked_on": "2026-11-17",
+  "dataset": "Synerise official preprocessed challenge_dataset.tar.gz",
+  "input_cutoff_utc": "2022-11-09T23:59:59+00:00",
+  "clients": 1000000,
+  "dimensions": 208,
+  "dtype": "float16",
+  "method": "historical_aggregates_with_hashed_categories",
+  "histogram_half_life_days": 30,
+  "batch_size": 100000,
+  "build_seconds": 109.418,
+  "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+  "official_format_validation_passed": true,
+  "downstream_training_completed": false,
+  "outputs": {
+    "client_ids.npy": {
+      "bytes": 8000128,
+      "sha256": "75c381d8b5ac86aa793a2b39a7572544faf3a9a4b7c408e9de4386796c56bb69"
+    },
+    "embeddings.npy": {
+      "bytes": 416000128,
+      "sha256": "ad85a9011733f2da38bbe512eab605fe3a84c42b22c0ec1ab9f608fdf8fd1160"
+    }
+  },
+  "versions": {
+    "python": "3.11.3",
+    "pyarrow": "23.0.1",
+    "numpy": "2.4.6",
+    "pandas": "2.3.3"
+  }
+}
