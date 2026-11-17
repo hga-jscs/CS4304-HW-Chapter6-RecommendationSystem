@@ -131,30 +131,7 @@
     "The model was refitted on all 300000 sampled rows, not all 7377418 official training rows.",
     "Scores do not establish a historical leaderboard rank."
   ],
-  "pending_experiments": [
-    {
-      "experiment": "context_full",
-      "execution": "private free Kaggle CPU job",
-      "kernel": "gaoanghe/kkbox-context",
-      "kernel_version": 1,
-      "last_observed_status": "RUNNING",
-      "configuration": {
-        "feature_mode": "enhanced",
-        "disable_frequency_features": true,
-        "user_context_features": true,
-        "max_train_rows": 0,
-        "available_rows": 7377418,
-        "num_boost_round": 400,
-        "seed": 42
-      },
-      "source_state": {
-        "git_revision": "1a72fba10d47c91afaa4d35349ab5825aeaffec7",
-        "working_tree_dirty": false
-      },
-      "final_metrics_retrieved": false,
-      "platform_score_recorded": false
-    }
-  ],
+  "pending_experiments": [],
   "local_comparisons": [
     {
       "experiment": "enhanced_sample",
@@ -539,7 +516,7 @@
     "public_score": 0.65373,
     "private_score": 0.65697,
     "statistical_significance_tested": false,
-    "full_data_improvement_established": false
+    "full_data_result_recorded_separately_as": "context_full"
   },
   "distribution_diagnostics": {
     "method": "Streamed msno, song_id and source_type only; full-file uniform sample without replacement using NumPy default_rng(42). No test labels were accessed.",
@@ -826,14 +803,288 @@
         "auc_difference_from_record": 1.1102230246251565e-16,
         "log_loss_difference_from_record": -3.3306690738754696e-16
       }
+    },
+    {
+      "experiment": "context_full",
+      "status": "scored",
+      "scope": "All 7377418 official training rows; metadata and user-context probabilities without the five frequency features; predictions cover the entire official test set",
+      "execution": {
+        "platform": "private free Kaggle CPU job",
+        "kernel": "gaoanghe/kkbox-context",
+        "kernel_version": 1,
+        "status": "COMPLETE",
+        "gpu_enabled": false,
+        "install_dependencies": false
+      },
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "max_train_rows": 0,
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 400,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        }
+      },
+      "source_manifest": {
+        "git_revision": "1a72fba10d47c91afaa4d35349ab5825aeaffec7",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "4eeb1929f4397d6460a2c7dac0f3b5f5f553fadec65097ce14859b6c952cbae7",
+          "basic/train.py": "9bd86a0bad4c2d31e890ecb2517686491ca3c00710836955a909c165d939581f",
+          "basic/predict.py": "451687b09b17a0ba929928eb3b6c1dd1f2a130d5513ef33e6caa67950de00a1f",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "enhanced"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 400,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false,
+          "disable_frequency_features": true,
+          "user_context_features": true
+        },
+        "runtime_requirements": [
+          "numpy==2.4.6",
+          "pandas==2.3.3",
+          "scipy==1.17.1",
+          "scikit-learn==1.9.1",
+          "lightgbm==4.7.0",
+          "pyarrow==23.0.1",
+          "py7zr==1.1.4"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_note": "Kaggle preinstalled packages were used, identical to baseline_full. Actual versions are recorded in runtime_versions; runtime_requirements are uninstalled planned pins.",
+      "local_validation_and_training": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 400,
+        "validation_auc": 0.7995750307909585,
+        "validation_log_loss": 0.5441666266087692,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931224444213769,
+        "validation_training_seconds": 594.8751021129999,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1437341,
+            "auc": 0.7988001296207664
+          },
+          "new_user": {
+            "rows": 268,
+            "auc": 0.6341816586222028
+          },
+          "new_song": {
+            "rows": 37882,
+            "auc": 0.8100155670948473
+          }
+        },
+        "final_training_rows": 7377418,
+        "final_training_seconds": 465.41063386099995,
+        "total_seconds": 1263.5844536920001
+      },
+      "prediction": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.003544924814,
+          "maximum_probability": 0.9991792968,
+          "sha256": "7f8aaa85b78daba70687b7f572bd92c74ba52079e8687c967f9ae361de3eb394"
+        },
+        "seconds": 323.0895310589999,
+        "model_sha256": "0c7344669291dc8de62e7003cc292ae945206968287ec27029948f90ef1c76b9",
+        "test_sha256": "b5bac50fd7d93ee04e9567e61de3bb89d6dec225b2b80474a0cacc85056c91f4",
+        "submission_sha256": "7f8aaa85b78daba70687b7f572bd92c74ba52079e8687c967f9ae361de3eb394"
+      },
+      "platform_submission": {
+        "reference": 58454968,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17T03:52:28.357Z",
+        "description": "CS4304 full context: 7377418 rows seed42, 30 features, 400 rounds",
+        "public_score": 0.67847,
+        "private_score": 0.68125,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "7f8aaa85b78daba70687b7f572bd92c74ba52079e8687c967f9ae361de3eb394",
+        "source": "Kaggle CLI competitions submissions"
+      },
+      "training_data_manifest": {
+        "train.csv": {
+          "bytes": 971675848,
+          "sha256": "ff19a9d3fd1def1494082fbee833fd2470ce3342aabdc8de1eb87ee578692934"
+        },
+        "members.csv": {
+          "bytes": 2503827,
+          "sha256": "a3cd1b868d5d32df23ed99f2609d3675f48a5d3ecef35eb591eced3f9b9939ee"
+        },
+        "songs.csv": {
+          "bytes": 221828666,
+          "sha256": "56c8ee6914fbb5d41ee378fa28d0e1505211886b01d5772944246e24cb26098c"
+        },
+        "song_extra_info.csv": {
+          "bytes": 181010294,
+          "sha256": "8a4083603ee8f9de1a81a23635d116dd7a5d2f8061397a149a9f4cece4273e6e"
+        }
+      },
+      "independent_metric_verification": {
+        "rows": 1475484,
+        "unique_row_ids": true,
+        "row_ids_and_targets_match_verified_baseline": true,
+        "auc_recomputed": 0.7995750307909584,
+        "log_loss_recomputed": 0.5441666266087689,
+        "auc_difference_from_record": -1.1102230246251565e-16,
+        "log_loss_difference_from_record": -3.3306690738754696e-16
+      },
+      "artifact_verification": {
+        "source_commit": "1a72fba10d47c91afaa4d35349ab5825aeaffec7",
+        "working_tree_dirty_at_generation": false,
+        "source_matches": {
+          "basic/__init__.py": true,
+          "basic/features.py": true,
+          "basic/train.py": true,
+          "basic/predict.py": true,
+          "basic/submission.py": true
+        },
+        "downloaded_model_matches_prediction_record": true
+      },
+      "comparison_to_baseline_full": {
+        "validation_auc_difference": 0.0039272476624905295,
+        "public_difference": 0.0032,
+        "private_difference": 0.00419,
+        "same_training_rows": true,
+        "same_validation_row_ids_and_targets": true,
+        "same_split_seed": true,
+        "same_400_round_limit_and_selected_rounds": true,
+        "same_lightgbm_parameters": true,
+        "same_actual_runtime": true,
+        "isolates_context_feature_contribution": false,
+        "statistical_significance_tested": false,
+        "note": "The 30-feature model changes both metadata and user-context features relative to the 17-feature baseline. This comparison measures their combined change, not the standalone contribution of context probabilities."
+      },
+      "limitations": [
+        "Random stratified holdout is not chronological validation.",
+        "Best iteration equals the 400-round cap; convergence beyond the cap was not evaluated.",
+        "The result is one seed and no statistical significance test was performed.",
+        "Platform scores do not establish a historical leaderboard rank."
+      ]
     }
   ],
   "current_best_scored_experiment": {
-    "experiment": "baseline_full",
-    "submission_reference": 58454264,
-    "selection_scope": "Five completed experiments: four sampled and one full-data baseline",
-    "public_score": 0.67527,
-    "private_score": 0.67706,
-    "historical_rank_inferred": false
+    "experiment": "context_full",
+    "submission_reference": 58454968,
+    "selection_scope": "Six completed experiments: four sampled and two full-data models",
+    "public_score": 0.67847,
+    "private_score": 0.68125,
+    "historical_rank_inferred": false,
+    "statistical_significance_tested": false
+  },
+  "full_data_distribution_diagnostics": {
+    "method": "Exact set membership of official user and song identifiers. Test references all 7377418 training rows; random validation references its 5901934-row training partition. No target labels are used for coverage statistics.",
+    "source_artifacts": [
+      "full training/test coverage check JSON",
+      "baseline/metrics.json segments"
+    ],
+    "training_and_test_coverage": {
+      "reference_training_rows": 7377418,
+      "unique_training_users": 30755,
+      "unique_training_songs": 359966,
+      "test_rows": 2556790,
+      "new_user_rows": 184018,
+      "new_song_rows": 320125,
+      "both_known_rows": 2073484,
+      "new_user_fraction": 0.07197227773888352,
+      "new_song_fraction": 0.1252058244908655,
+      "both_known_fraction": 0.8109715698199695,
+      "seconds": 148.1868725999957,
+      "method": "Streaming exact set membership of official user and song identifiers; no target labels used."
+    },
+    "validation": {
+      "rows": 1475484,
+      "reference_training_rows": 5901934,
+      "new_user": {
+        "rows": 268,
+        "share": 0.0001816353142426485
+      },
+      "new_song": {
+        "rows": 37882,
+        "share": 0.02567428721694034
+      },
+      "known_user_and_song": {
+        "rows": 1437341,
+        "share": 0.974148821674786
+      }
+    },
+    "group_note": "New-user and new-song rows can overlap; the three displayed groups are not a mutually exclusive partition.",
+    "interpretation": "The full-data test set has higher unseen-user and unseen-song shares than random validation, even with the larger reference training set. This establishes a coverage difference but does not attribute the entire validation/platform score gap to cold start."
   }
 }
