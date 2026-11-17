@@ -1,0 +1,2952 @@
+{
+  "schema_version": 1,
+  "scope": "Eight paired tail-sample feature comparisons and two full-data refit-policy comparisons",
+  "requested_platform_targets": {
+    "public_auc": 0.705,
+    "private_auc": 0.705
+  },
+  "sample_ablation": {
+    "schema_version": 1,
+    "kernel": "gaoanghe/kkbox-transductive-review",
+    "kernel_version": 1,
+    "status": "COMPLETE",
+    "source_manifest": {
+      "git_revision": "e5ecd22966b4fe2e65f6853d7995d829eef9cd4a",
+      "working_tree_dirty": true,
+      "source_sha256": {
+        "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+        "basic/features.py": "92007b0930716244be02283c6af315777040e9a6c97d501ecd49c15018dfc098",
+        "basic/train.py": "9064c6453d43312b9f7475bcf59b5ce1c742543fcbed693897db690df36c110e",
+        "basic/predict.py": "d9afd9612301c12c49eccf998ce39db972e9bdbb133b9ca8e4afecf8e756d2ba",
+        "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+        "basic/collaborative.py": "d2e9fbac460edbad4ed148d0bcc16eabf68ed8ad961c1ad9f275002bc7eff9ee",
+        "basic/target_encoding.py": "8b689c053b19c6492d0e2233620810f4f248618cd27c00255d50149188b860c1"
+      },
+      "job_settings": {
+        "feature_modes": [
+          "enhanced"
+        ],
+        "baseline_rounds": 400,
+        "enhanced_rounds": 400,
+        "early_stopping_rounds": 30,
+        "threads": 4,
+        "seed": 42,
+        "max_train_rows": 500000,
+        "install_dependencies": false,
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "count",
+        "context_counting": "leave_one_out",
+        "user_preference_features": false,
+        "sampling_mode": "tail",
+        "collaborative_features": false,
+        "transductive": false,
+        "row_order_features": false,
+        "target_encoding": false,
+        "song_components": null,
+        "artist_components": null,
+        "genre_components": null,
+        "split_mode": "row_order",
+        "no_refit": true,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "overwrite": false
+      },
+      "experiment_plan": [
+        [
+          "training_reference",
+          [
+            "--disable-frequency-features"
+          ]
+        ],
+        [
+          "global_statistics",
+          [
+            "--disable-frequency-features",
+            "--transductive",
+            "--context-counting",
+            "full"
+          ]
+        ],
+        [
+          "row_features",
+          [
+            "--disable-frequency-features",
+            "--transductive",
+            "--context-counting",
+            "full",
+            "--row-order-features"
+          ]
+        ],
+        [
+          "graph_features",
+          [
+            "--disable-frequency-features",
+            "--transductive",
+            "--context-counting",
+            "full",
+            "--row-order-features",
+            "--collaborative-features",
+            "--song-components",
+            "48",
+            "--artist-components",
+            "24",
+            "--genre-components",
+            "16"
+          ]
+        ],
+        [
+          "target_encoding",
+          [
+            "--disable-frequency-features",
+            "--transductive",
+            "--context-counting",
+            "full",
+            "--row-order-features",
+            "--collaborative-features",
+            "--song-components",
+            "48",
+            "--artist-components",
+            "24",
+            "--genre-components",
+            "16",
+            "--target-encoding"
+          ]
+        ],
+        [
+          "user_preferences",
+          [
+            "--disable-frequency-features",
+            "--transductive",
+            "--context-counting",
+            "full",
+            "--row-order-features",
+            "--collaborative-features",
+            "--song-components",
+            "48",
+            "--artist-components",
+            "24",
+            "--genre-components",
+            "16",
+            "--target-encoding",
+            "--user-preference-features"
+          ]
+        ],
+        [
+          "larger_trees",
+          [
+            "--disable-frequency-features",
+            "--transductive",
+            "--context-counting",
+            "full",
+            "--row-order-features",
+            "--collaborative-features",
+            "--song-components",
+            "48",
+            "--artist-components",
+            "24",
+            "--genre-components",
+            "16",
+            "--target-encoding",
+            "--user-preference-features",
+            "--num-leaves",
+            "255",
+            "--learning-rate",
+            "0.05",
+            "--min-child-samples",
+            "100",
+            "--max-cat-threshold",
+            "64",
+            "--feature-fraction",
+            "0.8",
+            "--num-boost-round",
+            "1200",
+            "--early-stopping-rounds",
+            "50"
+          ]
+        ],
+        [
+          "relative_frequencies",
+          [
+            "--transductive",
+            "--context-counting",
+            "full",
+            "--row-order-features",
+            "--collaborative-features",
+            "--song-components",
+            "48",
+            "--artist-components",
+            "24",
+            "--genre-components",
+            "16",
+            "--target-encoding",
+            "--user-preference-features",
+            "--frequency-mode",
+            "relative"
+          ]
+        ]
+      ],
+      "runtime_requirements": [
+        "numpy>=1.26,<3",
+        "pandas>=2.1,<3",
+        "scipy>=1.11,<2",
+        "scikit-learn>=1.4,<2",
+        "lightgbm>=4.0,<5",
+        "pyarrow>=14,<24",
+        "py7zr>=0.20,<2"
+      ],
+      "actual_runtime_versions": {
+        "numpy": "2.1.3",
+        "pandas": "2.3.3",
+        "scipy": "1.16.3",
+        "scikit-learn": "1.6.1",
+        "lightgbm": "4.6.0",
+        "pyarrow": "23.0.1"
+      }
+    },
+    "subsequent_source_verification": {
+      "commit": "8796eb7",
+      "all_seven_execution_module_hashes_match": true,
+      "note": "Verified against git show after the run started; original generation metadata remains unchanged."
+    },
+    "runtime_versions": {
+      "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+      "packages": {
+        "numpy": "2.1.3",
+        "pandas": "2.3.3",
+        "scipy": "1.16.3",
+        "scikit-learn": "1.6.1",
+        "lightgbm": "4.6.0",
+        "pyarrow": "23.0.1"
+      }
+    },
+    "plan": [
+      [
+        "training_reference",
+        [
+          "--disable-frequency-features"
+        ]
+      ],
+      [
+        "global_statistics",
+        [
+          "--disable-frequency-features",
+          "--transductive",
+          "--context-counting",
+          "full"
+        ]
+      ],
+      [
+        "row_features",
+        [
+          "--disable-frequency-features",
+          "--transductive",
+          "--context-counting",
+          "full",
+          "--row-order-features"
+        ]
+      ],
+      [
+        "graph_features",
+        [
+          "--disable-frequency-features",
+          "--transductive",
+          "--context-counting",
+          "full",
+          "--row-order-features",
+          "--collaborative-features",
+          "--song-components",
+          "48",
+          "--artist-components",
+          "24",
+          "--genre-components",
+          "16"
+        ]
+      ],
+      [
+        "target_encoding",
+        [
+          "--disable-frequency-features",
+          "--transductive",
+          "--context-counting",
+          "full",
+          "--row-order-features",
+          "--collaborative-features",
+          "--song-components",
+          "48",
+          "--artist-components",
+          "24",
+          "--genre-components",
+          "16",
+          "--target-encoding"
+        ]
+      ],
+      [
+        "user_preferences",
+        [
+          "--disable-frequency-features",
+          "--transductive",
+          "--context-counting",
+          "full",
+          "--row-order-features",
+          "--collaborative-features",
+          "--song-components",
+          "48",
+          "--artist-components",
+          "24",
+          "--genre-components",
+          "16",
+          "--target-encoding",
+          "--user-preference-features"
+        ]
+      ],
+      [
+        "larger_trees",
+        [
+          "--disable-frequency-features",
+          "--transductive",
+          "--context-counting",
+          "full",
+          "--row-order-features",
+          "--collaborative-features",
+          "--song-components",
+          "48",
+          "--artist-components",
+          "24",
+          "--genre-components",
+          "16",
+          "--target-encoding",
+          "--user-preference-features",
+          "--num-leaves",
+          "255",
+          "--learning-rate",
+          "0.05",
+          "--min-child-samples",
+          "100",
+          "--max-cat-threshold",
+          "64",
+          "--feature-fraction",
+          "0.8",
+          "--num-boost-round",
+          "1200",
+          "--early-stopping-rounds",
+          "50"
+        ]
+      ],
+      [
+        "relative_frequencies",
+        [
+          "--transductive",
+          "--context-counting",
+          "full",
+          "--row-order-features",
+          "--collaborative-features",
+          "--song-components",
+          "48",
+          "--artist-components",
+          "24",
+          "--genre-components",
+          "16",
+          "--target-encoding",
+          "--user-preference-features",
+          "--frequency-mode",
+          "relative"
+        ]
+      ]
+    ],
+    "total_job_seconds": 2328.832138328,
+    "experiments": [
+      {
+        "experiment": "training_reference",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "leave_one_out",
+          "user_preference_features": false,
+          "collaborative_features": false,
+          "transductive": false,
+          "row_order_features": false,
+          "target_encoding": false,
+          "song_components": null,
+          "artist_components": null,
+          "genre_components": null,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "current_supervised_training_rows_without_labels",
+            "frequency_mode": "count",
+            "context_counting": "leave_one_out",
+            "rows": 400000
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 30,
+          "best_iteration": 166,
+          "validation_auc": 0.671636409872806,
+          "validation_log_loss": 0.645233365052375,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 54.875745061999964,
+          "unsupervised_statistics": {
+            "scope": "current_supervised_training_rows_without_labels",
+            "validation_fit_rows": 400000,
+            "frequency_mode": "count",
+            "context_counting": "leave_one_out",
+            "initial_fit_seconds": 6.939312441000027,
+            "reused_for_refit": false,
+            "final_fit_rows": 400000
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.6758551331385226
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.6526094061202052
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.6481661259602209
+            }
+          },
+          "platform_score": null,
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_training_seconds": 1.1653479499999548,
+          "total_seconds": 117.76262208600002,
+          "peak_rss_megabytes": 2328.6015625
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.671636409872806,
+          "recomputed_log_loss": 0.6452333650523752,
+          "prediction_sha256": "eeb13e201e29faa1dcc0c05ca4b6b49a97ac905e7bae15db8e7f78fef14185f9"
+        }
+      },
+      {
+        "experiment": "global_statistics",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "full",
+          "user_preference_features": false,
+          "collaborative_features": false,
+          "transductive": true,
+          "row_order_features": false,
+          "target_encoding": false,
+          "song_components": null,
+          "artist_components": null,
+          "genre_components": null,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 30,
+          "best_iteration": 152,
+          "validation_auc": 0.6715051453464654,
+          "validation_log_loss": 0.6424086455354184,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 55.67233683800009,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 163.83966092000003,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.6761064176419496
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.6517251365455565
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.6474134099963129
+            }
+          },
+          "platform_score": null,
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_training_seconds": 3.0282171229999904,
+          "total_seconds": 277.058745934,
+          "peak_rss_megabytes": 6309.79296875
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.6715051453464654,
+          "recomputed_log_loss": 0.6424086455354184,
+          "prediction_sha256": "f1acabae25c3192e9221e5e09c57b04542c52ccc97a9d9ffd8a957725c6b9ac1"
+        }
+      },
+      {
+        "experiment": "row_features",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "full",
+          "user_preference_features": false,
+          "collaborative_features": false,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": false,
+          "song_components": null,
+          "artist_components": null,
+          "genre_components": null,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 36,
+          "best_iteration": 142,
+          "validation_auc": 0.6883484184124207,
+          "validation_log_loss": 0.6275192078641186,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 44.06340495500001,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 170.466980316,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.6905031859958579
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.6933100882502284
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.6619641444726129
+            }
+          },
+          "platform_score": null,
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_training_seconds": 2.733936434000043,
+          "total_seconds": 273.053642913,
+          "peak_rss_megabytes": 6556.87890625
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.6883484184124207,
+          "recomputed_log_loss": 0.6275192078641185,
+          "prediction_sha256": "a860290fa22a7ff611d8cdf6cda7263be4b263c2648d3c3f528d8c8cf85ef2e3"
+        }
+      },
+      {
+        "experiment": "graph_features",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "full",
+          "user_preference_features": false,
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": false,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 42,
+          "best_iteration": 84,
+          "validation_auc": 0.7089896983253975,
+          "validation_log_loss": 0.601850258373474,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 26.62592837400007,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 214.59598827800005,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.7137428724539219
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.7133373045416276
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.6601281459650779
+            }
+          },
+          "platform_score": null,
+          "validation_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.36020058500003
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.830394025000032
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.643675204999909
+            }
+          },
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.36020058500003
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.830394025000032
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.643675204999909
+            }
+          },
+          "final_training_seconds": 1.8414861570001904,
+          "total_seconds": 298.845070801,
+          "peak_rss_megabytes": 7404.5703125
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.7089896983253974,
+          "recomputed_log_loss": 0.601850258373474,
+          "prediction_sha256": "bf6836cd6866323ae066ccba4fee1ded3361cdbd3e75d46546d477009938ebfd"
+        }
+      },
+      {
+        "experiment": "target_encoding",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "full",
+          "user_preference_features": false,
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": true,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 47,
+          "best_iteration": 85,
+          "validation_auc": 0.7097500662741896,
+          "validation_log_loss": 0.6011618919714764,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 27.249032395000086,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 208.97938570199995,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.7149191279020405
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.7132836174885835
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.6589265626832429
+            }
+          },
+          "platform_score": null,
+          "validation_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.14205185800006
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.91408725600013
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.965588417000163
+            }
+          },
+          "validation_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.14205185800006
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.91408725600013
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.965588417000163
+            }
+          },
+          "final_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_seconds": 1.753126290999944,
+          "total_seconds": 294.78398732899996,
+          "peak_rss_megabytes": 7388.9609375
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.7097500662741897,
+          "recomputed_log_loss": 0.6011618919714764,
+          "prediction_sha256": "f5614a255caa09953692815be9a3f76008097515bd97492fba1ba22027c71c0c"
+        }
+      },
+      {
+        "experiment": "user_preferences",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "full",
+          "user_preference_features": true,
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": true,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 49,
+          "best_iteration": 78,
+          "validation_auc": 0.7125853193496036,
+          "validation_log_loss": 0.5978220137785094,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 27.257795421000083,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 228.79862377500012,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.7176167205992289
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.7155884925254702
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.661871596686337
+            }
+          },
+          "platform_score": null,
+          "validation_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.18804361399998
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.756023943999935
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.575899914999809
+            }
+          },
+          "validation_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.18804361399998
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.756023943999935
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.575899914999809
+            }
+          },
+          "final_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_seconds": 1.7434209479999936,
+          "total_seconds": 315.4176944799999,
+          "peak_rss_megabytes": 7579.06640625
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.7125853193496037,
+          "recomputed_log_loss": 0.5978220137785095,
+          "prediction_sha256": "d961a75c8fcf5e721d32fe114fb4c79cbfb2cd534ce654d4e3764023a3a789b7"
+        }
+      },
+      {
+        "experiment": "larger_trees",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "count",
+          "context_counting": "full",
+          "user_preference_features": true,
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": true,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 1200,
+          "early_stopping_rounds": 50,
+          "learning_rate": 0.05,
+          "num_leaves": 255,
+          "min_child_samples": 100,
+          "max_cat_threshold": 64,
+          "feature_fraction": 0.8,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.05,
+            "num_leaves": 255,
+            "min_data_in_leaf": 100,
+            "feature_fraction": 0.8,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 64,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 49,
+          "best_iteration": 95,
+          "validation_auc": 0.7072705297438632,
+          "validation_log_loss": 0.6110685064401287,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 59.624059364000004,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 229.5456791239999,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.7119129264850472
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.7091458679458887
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.66000708598202
+            }
+          },
+          "platform_score": null,
+          "validation_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.13887165799997
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.86623752000014
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.740064019999863
+            }
+          },
+          "validation_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.13887165799997
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.86623752000014
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 6.740064019999863
+            }
+          },
+          "final_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_seconds": 4.589611914000216,
+          "total_seconds": 353.5805731840003,
+          "peak_rss_megabytes": 7556.59765625
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.7072705297438633,
+          "recomputed_log_loss": 0.6110685064401287,
+          "prediction_sha256": "24b1056e1ad271ea33ba8291e2a56876005c095c09298a2992f36e6400906d1c"
+        }
+      },
+      {
+        "experiment": "relative_frequencies",
+        "configuration": {
+          "feature_mode": "enhanced",
+          "disable_frequency_features": false,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "user_preference_features": true,
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": true,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "overwrite": false,
+          "no_refit": true,
+          "max_train_rows": 500000,
+          "sampling_mode": "tail",
+          "split_mode": "row_order",
+          "validation_fraction": 0.2,
+          "seed": 42,
+          "num_boost_round": 400,
+          "early_stopping_rounds": 30,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "threads": 4,
+          "chunk_size": 200000,
+          "lightgbm_parameters": {
+            "objective": "binary",
+            "metric": "auc",
+            "learning_rate": 0.08,
+            "num_leaves": 63,
+            "min_data_in_leaf": 50,
+            "feature_fraction": 0.9,
+            "bagging_fraction": 0.9,
+            "bagging_freq": 1,
+            "lambda_l2": 1.0,
+            "max_bin": 255,
+            "max_cat_threshold": 32,
+            "cat_smooth": 10.0,
+            "num_threads": 4,
+            "verbosity": -1,
+            "seed": 42,
+            "feature_fraction_seed": 42,
+            "bagging_seed": 42,
+            "data_random_seed": 42,
+            "deterministic": true,
+            "force_col_wise": true
+          },
+          "git_revision": null,
+          "working_tree_dirty": null,
+          "python": "3.13.18",
+          "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+          "packages": {
+            "numpy": "2.1.3",
+            "pandas": "2.3.3",
+            "pyarrow": "23.0.1",
+            "scikit-learn": "1.6.1",
+            "lightgbm": "4.6.0"
+          },
+          "effective_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "rows": 9934208
+          }
+        },
+        "metrics": {
+          "available_rows": 7377418,
+          "selected_rows": 500000,
+          "sampling": "tail_rows_not_verified_time",
+          "sampling_seed": 42,
+          "split": "row_order_holdout_not_verified_time",
+          "split_seed": 42,
+          "training_rows": 400000,
+          "validation_rows": 100000,
+          "feature_mode": "enhanced",
+          "feature_count": 54,
+          "best_iteration": 87,
+          "validation_auc": 0.7126140529285048,
+          "validation_log_loss": 0.5991835018705427,
+          "constant_baseline_auc": 0.5,
+          "constant_baseline_log_loss": 0.6645446579230837,
+          "validation_training_seconds": 29.363261404999776,
+          "unsupervised_statistics": {
+            "scope": "full_train_and_test_without_labels",
+            "validation_fit_rows": 9934208,
+            "frequency_mode": "relative",
+            "context_counting": "full",
+            "initial_fit_seconds": 238.90635655799997,
+            "reused_for_refit": false,
+            "final_fit_rows": 9934208
+          },
+          "segments": {
+            "known_user_and_song": {
+              "rows": 76908,
+              "auc": 0.7173820590437691
+            },
+            "new_user": {
+              "rows": 12032,
+              "auc": 0.7175483001550316
+            },
+            "new_song": {
+              "rows": 12472,
+              "auc": 0.6629570805947075
+            }
+          },
+          "platform_score": null,
+          "validation_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.912037111000245
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.95738830800019
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 7.1957799019996855
+            }
+          },
+          "validation_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_rows": 400000,
+          "refit_performed": false,
+          "final_collaborative_fit": {
+            "weighting": "log1p_counts_then_item_idf_then_row_l2",
+            "song": {
+              "shape": [
+                34403,
+                419839
+              ],
+              "nonzero_pairs": 9613762,
+              "requested_rank": 48,
+              "rank": 48,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 16.912037111000245
+            },
+            "artist": {
+              "shape": [
+                34403,
+                46372
+              ],
+              "nonzero_pairs": 3957356,
+              "requested_rank": 24,
+              "rank": 24,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 10.95738830800019
+            },
+            "genre": {
+              "shape": [
+                34403,
+                608
+              ],
+              "nonzero_pairs": 497804,
+              "requested_rank": 16,
+              "rank": 16,
+              "seed": 42,
+              "iterations": 3,
+              "fit_seconds": 7.1957799019996855
+            }
+          },
+          "final_target_encoding": {
+            "strategy": "preceding_row_blocks",
+            "fit_rows": 400000,
+            "folds": 5,
+            "prior": 0.388405,
+            "split_mode": "row_order",
+            "smoothing": 20,
+            "seed": 42,
+            "first_block_prior": 0.5
+          },
+          "final_training_seconds": 1.9563530099999298,
+          "total_seconds": 329.29584365799974,
+          "peak_rss_megabytes": 6575.6484375
+        },
+        "verification": {
+          "rows": 100000,
+          "row_ids_match_official_last_100000": true,
+          "labels_match_official_training_rows": true,
+          "recomputed_auc": 0.7126140529285048,
+          "recomputed_log_loss": 0.5991835018705427,
+          "prediction_sha256": "c27badb320814ecb830a9d375aadd6581ecb1460ff446180fa40bda29452de31"
+        }
+      }
+    ],
+    "paired_comparisons": [
+      {
+        "baseline": "training_reference",
+        "variant": "global_statistics",
+        "auc_difference": -0.00013126452634060204,
+        "log_loss_difference": -0.0028247195169566197,
+        "total_seconds_difference": 159.29612384799998,
+        "maximum_prediction_difference": 0.4031267771114969,
+        "same_validation_rows_and_labels": true
+      },
+      {
+        "baseline": "global_statistics",
+        "variant": "row_features",
+        "auc_difference": 0.016843273065955233,
+        "log_loss_difference": -0.014889437671299799,
+        "total_seconds_difference": -4.005103021000025,
+        "maximum_prediction_difference": 0.6414823592992002,
+        "same_validation_rows_and_labels": true
+      },
+      {
+        "baseline": "row_features",
+        "variant": "graph_features",
+        "auc_difference": 0.020641279912976818,
+        "log_loss_difference": -0.025668949490644688,
+        "total_seconds_difference": 25.791427888000044,
+        "maximum_prediction_difference": 0.6104826409930688,
+        "same_validation_rows_and_labels": true
+      },
+      {
+        "baseline": "graph_features",
+        "variant": "target_encoding",
+        "auc_difference": 0.0007603679487920845,
+        "log_loss_difference": -0.0006883664019975422,
+        "total_seconds_difference": -4.061083472000064,
+        "maximum_prediction_difference": 0.4848270444990319,
+        "same_validation_rows_and_labels": true
+      },
+      {
+        "baseline": "target_encoding",
+        "variant": "user_preferences",
+        "auc_difference": 0.0028352530754139904,
+        "log_loss_difference": -0.003339878192966994,
+        "total_seconds_difference": 20.633707150999953,
+        "maximum_prediction_difference": 0.5197773445174023,
+        "same_validation_rows_and_labels": true
+      },
+      {
+        "baseline": "user_preferences",
+        "variant": "larger_trees",
+        "auc_difference": -0.005314789605740389,
+        "log_loss_difference": 0.013246492661619258,
+        "total_seconds_difference": 38.16287870400038,
+        "maximum_prediction_difference": 0.4236082448291775,
+        "same_validation_rows_and_labels": true
+      },
+      {
+        "baseline": "user_preferences",
+        "variant": "relative_frequencies",
+        "auc_difference": 2.8733578901207757e-05,
+        "log_loss_difference": 0.0013614880920332917,
+        "total_seconds_difference": 13.87814917799983,
+        "maximum_prediction_difference": 0.4809975152027873,
+        "same_validation_rows_and_labels": true
+      }
+    ],
+    "best_validation_experiment": "relative_frequencies",
+    "platform_submissions": [],
+    "verification": {
+      "all_eight_metrics_recomputed": true,
+      "execution_source_hashes_verified": true,
+      "all_experiments_use_identical_official_validation_rows_and_labels": true
+    },
+    "limitations": [
+      "One seed, one 500000-row tail sample, and one final-100000-row validation set",
+      "Transductive unsupervised features explicitly include validation and test interactions; no validation or test labels are used for fitting",
+      "The global-statistics comparison jointly changes vocabulary/count scope and self-counting policy",
+      "The larger-tree case jointly changes six training controls; its gain cannot be assigned to leaf count alone",
+      "The frequency case is compared with user_preferences under the same smaller-tree settings",
+      "Row gaps are order proxies, not elapsed seconds or guaranteed sessions",
+      "Single-run timing and peak RSS are descriptive; cache and host load are not controlled",
+      "Validation improvements do not establish platform gains or achievement of the requested AUC target"
+    ]
+  },
+  "full_data_experiments": [
+    {
+      "experiment": "transductive_holdout",
+      "kernel": "gaoanghe/kkbox-transductive-holdout",
+      "kernel_version": 1,
+      "generated_source": {
+        "git_revision": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "92007b0930716244be02283c6af315777040e9a6c97d501ecd49c15018dfc098",
+          "basic/train.py": "9064c6453d43312b9f7475bcf59b5ce1c742543fcbed693897db690df36c110e",
+          "basic/predict.py": "d9afd9612301c12c49eccf998ce39db972e9bdbb133b9ca8e4afecf8e756d2ba",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+          "basic/collaborative.py": "d2e9fbac460edbad4ed148d0bcc16eabf68ed8ad961c1ad9f275002bc7eff9ee",
+          "basic/target_encoding.py": "8b689c053b19c6492d0e2233620810f4f248618cd27c00255d50149188b860c1"
+        }
+      },
+      "planned_settings": {
+        "feature_modes": [
+          "enhanced"
+        ],
+        "baseline_rounds": 400,
+        "enhanced_rounds": 1200,
+        "early_stopping_rounds": 30,
+        "threads": 4,
+        "seed": 42,
+        "max_train_rows": 0,
+        "install_dependencies": false,
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "relative",
+        "context_counting": "full",
+        "user_preference_features": true,
+        "sampling_mode": "uniform",
+        "collaborative_features": true,
+        "transductive": true,
+        "row_order_features": true,
+        "target_encoding": true,
+        "song_components": 48,
+        "artist_components": 24,
+        "genre_components": 16,
+        "split_mode": "row_order",
+        "no_refit": true,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "overwrite": false
+      },
+      "artifact_status": "independently_verified",
+      "platform_submission": {
+        "reference": 58464162,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17 09:33:12.213000",
+        "description": "CS4304 transductive holdout: full unlabeled graph, row order, OOF target encoding, no refit",
+        "public_score": 0.69701,
+        "private_score": 0.69844,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "07d4b58851fb9944d5a0763b22f8ecfaa93b3b1e1bb2e5faa89c2600df868e09",
+        "source": "Kaggle CLI competitions submissions response"
+      },
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "relative",
+        "context_counting": "full",
+        "user_preference_features": true,
+        "collaborative_features": true,
+        "transductive": true,
+        "row_order_features": true,
+        "target_encoding": true,
+        "song_components": 48,
+        "artist_components": 24,
+        "genre_components": 16,
+        "overwrite": false,
+        "no_refit": true,
+        "max_train_rows": 0,
+        "sampling_mode": "uniform",
+        "split_mode": "row_order",
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 1200,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        },
+        "effective_statistics": {
+          "scope": "full_train_and_test_without_labels",
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "rows": 9934208
+        }
+      },
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "row_order_holdout_not_verified_time",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "enhanced",
+        "feature_count": 49,
+        "best_iteration": 165,
+        "validation_auc": 0.7317389600844693,
+        "validation_log_loss": 0.5926526823436964,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.7055654714689416,
+        "validation_training_seconds": 329.939294344,
+        "unsupervised_statistics": {
+          "scope": "full_train_and_test_without_labels",
+          "validation_fit_rows": 9934208,
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "initial_fit_seconds": 237.64725397299998,
+          "reused_for_refit": false,
+          "final_fit_rows": 9934208
+        },
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1252351,
+            "auc": 0.7274714851927367
+          },
+          "new_user": {
+            "rows": 104479,
+            "auc": 0.7567841525449848
+          },
+          "new_song": {
+            "rows": 126614,
+            "auc": 0.7729467706567642
+          }
+        },
+        "platform_score": null,
+        "validation_collaborative_fit": {
+          "weighting": "log1p_counts_then_item_idf_then_row_l2",
+          "song": {
+            "shape": [
+              34403,
+              419839
+            ],
+            "nonzero_pairs": 9613762,
+            "requested_rank": 48,
+            "rank": 48,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 19.31860158199993
+          },
+          "artist": {
+            "shape": [
+              34403,
+              46372
+            ],
+            "nonzero_pairs": 3957356,
+            "requested_rank": 24,
+            "rank": 24,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 11.118192700999998
+          },
+          "genre": {
+            "shape": [
+              34403,
+              608
+            ],
+            "nonzero_pairs": 497804,
+            "requested_rank": 16,
+            "rank": 16,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 6.99945909600001
+          }
+        },
+        "validation_target_encoding": {
+          "strategy": "preceding_row_blocks",
+          "fit_rows": 5901934,
+          "folds": 5,
+          "prior": 0.5282776798249523,
+          "split_mode": "row_order",
+          "smoothing": 20,
+          "seed": 42,
+          "first_block_prior": 0.5
+        },
+        "final_training_rows": 5901934,
+        "refit_performed": false,
+        "final_collaborative_fit": {
+          "weighting": "log1p_counts_then_item_idf_then_row_l2",
+          "song": {
+            "shape": [
+              34403,
+              419839
+            ],
+            "nonzero_pairs": 9613762,
+            "requested_rank": 48,
+            "rank": 48,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 19.31860158199993
+          },
+          "artist": {
+            "shape": [
+              34403,
+              46372
+            ],
+            "nonzero_pairs": 3957356,
+            "requested_rank": 24,
+            "rank": 24,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 11.118192700999998
+          },
+          "genre": {
+            "shape": [
+              34403,
+              608
+            ],
+            "nonzero_pairs": 497804,
+            "requested_rank": 16,
+            "rank": 16,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 6.99945909600001
+          }
+        },
+        "final_target_encoding": {
+          "strategy": "preceding_row_blocks",
+          "fit_rows": 5901934,
+          "folds": 5,
+          "prior": 0.5282776798249523,
+          "split_mode": "row_order",
+          "smoothing": 20,
+          "seed": 42,
+          "first_block_prior": 0.5
+        },
+        "final_training_seconds": 3.576289825999993,
+        "total_seconds": 807.1377028080001,
+        "peak_rss_megabytes": 8536.125
+      },
+      "source_manifest": {
+        "git_revision": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "92007b0930716244be02283c6af315777040e9a6c97d501ecd49c15018dfc098",
+          "basic/train.py": "9064c6453d43312b9f7475bcf59b5ce1c742543fcbed693897db690df36c110e",
+          "basic/predict.py": "d9afd9612301c12c49eccf998ce39db972e9bdbb133b9ca8e4afecf8e756d2ba",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+          "basic/collaborative.py": "d2e9fbac460edbad4ed148d0bcc16eabf68ed8ad961c1ad9f275002bc7eff9ee",
+          "basic/target_encoding.py": "8b689c053b19c6492d0e2233620810f4f248618cd27c00255d50149188b860c1"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "enhanced"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 1200,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false,
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "user_preference_features": true,
+          "sampling_mode": "uniform",
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": true,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "split_mode": "row_order",
+          "no_refit": true,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "overwrite": false
+        },
+        "runtime_requirements": [
+          "numpy>=1.26,<3",
+          "pandas>=2.1,<3",
+          "scipy>=1.11,<2",
+          "scikit-learn>=1.4,<2",
+          "lightgbm>=4.0,<5",
+          "pyarrow>=14,<24",
+          "py7zr>=0.20,<2"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "artifact_verification": {
+        "expected_refit": false,
+        "training_rows": 5901934,
+        "final_training_rows": 5901934,
+        "validation_rows": 1475484,
+        "validation_first_row_id": 5901934,
+        "validation_last_row_id": 7377417,
+        "row_ids_unique": true,
+        "row_ids_match_official_last_twenty_percent": true,
+        "labels_match_official_training_rows": true,
+        "recalculated_auc": 0.7317389600844693,
+        "recalculated_log_loss": 0.5926526823436963,
+        "auc_difference": 0.0,
+        "log_loss_difference": -1.1102230246251565e-16,
+        "validation_prediction_sha256": "b1a3c072499ebab057a5d02b3046c3afc6100dcd09aecb99a01a0c405b0ca025",
+        "execution_source_hashes_match_manifest": {
+          "basic/__init__.py": true,
+          "basic/features.py": true,
+          "basic/train.py": true,
+          "basic/predict.py": true,
+          "basic/submission.py": true,
+          "basic/collaborative.py": true,
+          "basic/target_encoding.py": true
+        },
+        "source_revision": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "source_working_tree_dirty": false,
+        "feature_names": [
+          "msno",
+          "song_id",
+          "source_system_tab",
+          "source_screen_name",
+          "source_type",
+          "city",
+          "gender",
+          "registered_via",
+          "age",
+          "registration_days",
+          "expiration_days",
+          "genre_ids",
+          "artist_name",
+          "composer",
+          "lyricist",
+          "language",
+          "song_length",
+          "genre_ids_count",
+          "artist_name_count",
+          "composer_count",
+          "lyricist_count",
+          "registration_year",
+          "registration_month",
+          "membership_days",
+          "isrc_country",
+          "isrc_reference_year",
+          "song_name_length",
+          "msno_source_type_probability",
+          "msno_source_screen_name_probability",
+          "msno_source_system_tab_probability",
+          "msno_artist_name_probability",
+          "msno_genre_ids_probability",
+          "song_embedding_dot",
+          "song_embedding_cosine",
+          "artist_embedding_dot",
+          "artist_embedding_cosine",
+          "genre_embedding_dot",
+          "genre_embedding_cosine",
+          "global_time_pos",
+          "user_prev_row_gap",
+          "user_next_row_gap",
+          "user_cum_count",
+          "user_rev_cum_count",
+          "song_recent_pop_ratio",
+          "target_msno",
+          "target_song_id",
+          "target_artist_name",
+          "target_user_source_system_tab",
+          "target_user_source_type"
+        ],
+        "feature_count": 49,
+        "model_sha256": "c98e472c4581f813d05fa68818917cdddd9f4a87679dee1de7c3df4eadfa613a",
+        "model_hash_matches_prediction_record": true,
+        "validation_model_sha256": "c98e472c4581f813d05fa68818917cdddd9f4a87679dee1de7c3df4eadfa613a",
+        "final_and_validation_models_byte_identical": true,
+        "features_pickle_bytes": 1081551410,
+        "features_pickle_loaded_locally": false,
+        "feature_state_check": "Cloud prediction successfully loaded the paired serialized state; local verification reads model headers and hashes without allocating the large pickle.",
+        "transductive_fit_rows": 9934208,
+        "target_encoding_fit_rows": 5901934,
+        "submission": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.0130281459,
+          "maximum_probability": 0.9884485926,
+          "sha256": "07d4b58851fb9944d5a0763b22f8ecfaa93b3b1e1bb2e5faa89c2600df868e09"
+        },
+        "local_verification_packages": {
+          "numpy": "2.4.6",
+          "pandas": "2.3.3",
+          "scikit-learn": "1.9.1"
+        }
+      },
+      "inference": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.0130281459,
+          "maximum_probability": 0.9884485926,
+          "sha256": "07d4b58851fb9944d5a0763b22f8ecfaa93b3b1e1bb2e5faa89c2600df868e09"
+        },
+        "seconds": 159.29858053499993,
+        "model_sha256": "c98e472c4581f813d05fa68818917cdddd9f4a87679dee1de7c3df4eadfa613a",
+        "test_fingerprint": {
+          "bytes": 347789925,
+          "mtime_ns": 1794906594362424764
+        },
+        "submission_sha256": "07d4b58851fb9944d5a0763b22f8ecfaa93b3b1e1bb2e5faa89c2600df868e09"
+      },
+      "target_check": {
+        "public_auc_at_least_0_705": false,
+        "private_auc_at_least_0_705": false,
+        "both_targets_met": false
+      },
+      "comparison_with_previous_best_platform": {
+        "baseline_experiment": "calendar_full",
+        "baseline_submission_reference": 58459278,
+        "baseline_public_score": 0.67905,
+        "baseline_private_score": 0.68125,
+        "public_score_difference": 0.01796,
+        "private_score_difference": 0.01719
+      }
+    },
+    {
+      "experiment": "transductive_refit",
+      "kernel": "gaoanghe/kkbox-transductive-refit",
+      "kernel_version": 1,
+      "generated_source": {
+        "git_revision": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "92007b0930716244be02283c6af315777040e9a6c97d501ecd49c15018dfc098",
+          "basic/train.py": "9064c6453d43312b9f7475bcf59b5ce1c742543fcbed693897db690df36c110e",
+          "basic/predict.py": "d9afd9612301c12c49eccf998ce39db972e9bdbb133b9ca8e4afecf8e756d2ba",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+          "basic/collaborative.py": "d2e9fbac460edbad4ed148d0bcc16eabf68ed8ad961c1ad9f275002bc7eff9ee",
+          "basic/target_encoding.py": "8b689c053b19c6492d0e2233620810f4f248618cd27c00255d50149188b860c1"
+        }
+      },
+      "planned_settings": {
+        "feature_modes": [
+          "enhanced"
+        ],
+        "baseline_rounds": 400,
+        "enhanced_rounds": 1200,
+        "early_stopping_rounds": 30,
+        "threads": 4,
+        "seed": 42,
+        "max_train_rows": 0,
+        "install_dependencies": false,
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "relative",
+        "context_counting": "full",
+        "user_preference_features": true,
+        "sampling_mode": "uniform",
+        "collaborative_features": true,
+        "transductive": true,
+        "row_order_features": true,
+        "target_encoding": true,
+        "song_components": 48,
+        "artist_components": 24,
+        "genre_components": 16,
+        "split_mode": "row_order",
+        "no_refit": false,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "overwrite": false
+      },
+      "artifact_status": "independently_verified",
+      "platform_submission": {
+        "reference": 58464307,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17 09:39:25.633000",
+        "description": "CS4304 transductive refit: full unlabeled graph, row order, OOF target encoding, all labeled rows",
+        "public_score": 0.71053,
+        "private_score": 0.7107,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "565020eae85828275aabc935d2883edcfd6485b368f568b001e24c7b5f63c0c3",
+        "source": "Kaggle CLI competitions submissions response"
+      },
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "numeric_features": "calendar",
+        "frequency_mode": "relative",
+        "context_counting": "full",
+        "user_preference_features": true,
+        "collaborative_features": true,
+        "transductive": true,
+        "row_order_features": true,
+        "target_encoding": true,
+        "song_components": 48,
+        "artist_components": 24,
+        "genre_components": 16,
+        "overwrite": false,
+        "no_refit": false,
+        "max_train_rows": 0,
+        "sampling_mode": "uniform",
+        "split_mode": "row_order",
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 1200,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "max_cat_threshold": 32,
+        "feature_fraction": 0.9,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": null,
+        "working_tree_dirty": null,
+        "python": "3.13.18",
+        "platform": "Linux-6.18.55+-x86_64-with-glibc2.39",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0"
+        },
+        "effective_statistics": {
+          "scope": "full_train_and_test_without_labels",
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "rows": 9934208
+        }
+      },
+      "metrics": {
+        "available_rows": 7377418,
+        "selected_rows": 7377418,
+        "sampling": "all_rows",
+        "sampling_seed": 42,
+        "split": "row_order_holdout_not_verified_time",
+        "split_seed": 42,
+        "training_rows": 5901934,
+        "validation_rows": 1475484,
+        "feature_mode": "enhanced",
+        "feature_count": 49,
+        "best_iteration": 165,
+        "validation_auc": 0.7317389600844693,
+        "validation_log_loss": 0.5926526823436964,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.7055654714689416,
+        "validation_training_seconds": 321.43495264599994,
+        "unsupervised_statistics": {
+          "scope": "full_train_and_test_without_labels",
+          "validation_fit_rows": 9934208,
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "initial_fit_seconds": 219.05779876500003,
+          "reused_for_refit": true,
+          "final_fit_rows": 9934208
+        },
+        "segments": {
+          "known_user_and_song": {
+            "rows": 1252351,
+            "auc": 0.7274714851927367
+          },
+          "new_user": {
+            "rows": 104479,
+            "auc": 0.7567841525449848
+          },
+          "new_song": {
+            "rows": 126614,
+            "auc": 0.7729467706567642
+          }
+        },
+        "platform_score": null,
+        "validation_collaborative_fit": {
+          "weighting": "log1p_counts_then_item_idf_then_row_l2",
+          "song": {
+            "shape": [
+              34403,
+              419839
+            ],
+            "nonzero_pairs": 9613762,
+            "requested_rank": 48,
+            "rank": 48,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 16.998660916000006
+          },
+          "artist": {
+            "shape": [
+              34403,
+              46372
+            ],
+            "nonzero_pairs": 3957356,
+            "requested_rank": 24,
+            "rank": 24,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 10.662437962000013
+          },
+          "genre": {
+            "shape": [
+              34403,
+              608
+            ],
+            "nonzero_pairs": 497804,
+            "requested_rank": 16,
+            "rank": 16,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 6.630330180999977
+          }
+        },
+        "validation_target_encoding": {
+          "strategy": "preceding_row_blocks",
+          "fit_rows": 5901934,
+          "folds": 5,
+          "prior": 0.5282776798249523,
+          "split_mode": "row_order",
+          "smoothing": 20,
+          "seed": 42,
+          "first_block_prior": 0.5
+        },
+        "final_training_rows": 7377418,
+        "refit_performed": true,
+        "final_collaborative_fit": {
+          "weighting": "log1p_counts_then_item_idf_then_row_l2",
+          "song": {
+            "shape": [
+              34403,
+              419839
+            ],
+            "nonzero_pairs": 9613762,
+            "requested_rank": 48,
+            "rank": 48,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 16.998660916000006
+          },
+          "artist": {
+            "shape": [
+              34403,
+              46372
+            ],
+            "nonzero_pairs": 3957356,
+            "requested_rank": 24,
+            "rank": 24,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 10.662437962000013
+          },
+          "genre": {
+            "shape": [
+              34403,
+              608
+            ],
+            "nonzero_pairs": 497804,
+            "requested_rank": 16,
+            "rank": 16,
+            "seed": 42,
+            "iterations": 3,
+            "fit_seconds": 6.630330180999977
+          }
+        },
+        "final_target_encoding": {
+          "strategy": "preceding_row_blocks",
+          "fit_rows": 7377418,
+          "folds": 5,
+          "prior": 0.5035170841614234,
+          "split_mode": "row_order",
+          "smoothing": 20,
+          "seed": 42,
+          "first_block_prior": 0.5
+        },
+        "final_training_seconds": 404.8140859970001,
+        "total_seconds": 1169.7319152149998,
+        "peak_rss_megabytes": 9806.12890625
+      },
+      "source_manifest": {
+        "git_revision": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "working_tree_dirty": false,
+        "source_sha256": {
+          "basic/__init__.py": "31797c953f2e9b17ddd9c35a08a9849dd2187d75c758502b86b8296de3ee9e30",
+          "basic/features.py": "92007b0930716244be02283c6af315777040e9a6c97d501ecd49c15018dfc098",
+          "basic/train.py": "9064c6453d43312b9f7475bcf59b5ce1c742543fcbed693897db690df36c110e",
+          "basic/predict.py": "d9afd9612301c12c49eccf998ce39db972e9bdbb133b9ca8e4afecf8e756d2ba",
+          "basic/submission.py": "0cbfbb12d8f23b2deed7f857322fd3127d7bfd5464165fab77369fb915a8ea18",
+          "basic/collaborative.py": "d2e9fbac460edbad4ed148d0bcc16eabf68ed8ad961c1ad9f275002bc7eff9ee",
+          "basic/target_encoding.py": "8b689c053b19c6492d0e2233620810f4f248618cd27c00255d50149188b860c1"
+        },
+        "job_settings": {
+          "feature_modes": [
+            "enhanced"
+          ],
+          "baseline_rounds": 400,
+          "enhanced_rounds": 1200,
+          "early_stopping_rounds": 30,
+          "threads": 4,
+          "seed": 42,
+          "max_train_rows": 0,
+          "install_dependencies": false,
+          "disable_frequency_features": true,
+          "user_context_features": true,
+          "numeric_features": "calendar",
+          "frequency_mode": "relative",
+          "context_counting": "full",
+          "user_preference_features": true,
+          "sampling_mode": "uniform",
+          "collaborative_features": true,
+          "transductive": true,
+          "row_order_features": true,
+          "target_encoding": true,
+          "song_components": 48,
+          "artist_components": 24,
+          "genre_components": 16,
+          "split_mode": "row_order",
+          "no_refit": false,
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_child_samples": 50,
+          "max_cat_threshold": 32,
+          "feature_fraction": 0.9,
+          "overwrite": false
+        },
+        "runtime_requirements": [
+          "numpy>=1.26,<3",
+          "pandas>=2.1,<3",
+          "scipy>=1.11,<2",
+          "scikit-learn>=1.4,<2",
+          "lightgbm>=4.0,<5",
+          "pyarrow>=14,<24",
+          "py7zr>=0.20,<2"
+        ],
+        "actual_runtime_versions": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "runtime_versions": {
+        "python": "3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]",
+        "packages": {
+          "numpy": "2.1.3",
+          "pandas": "2.3.3",
+          "scipy": "1.16.3",
+          "scikit-learn": "1.6.1",
+          "lightgbm": "4.6.0",
+          "pyarrow": "23.0.1"
+        }
+      },
+      "artifact_verification": {
+        "expected_refit": true,
+        "training_rows": 5901934,
+        "final_training_rows": 7377418,
+        "validation_rows": 1475484,
+        "validation_first_row_id": 5901934,
+        "validation_last_row_id": 7377417,
+        "row_ids_unique": true,
+        "row_ids_match_official_last_twenty_percent": true,
+        "labels_match_official_training_rows": true,
+        "recalculated_auc": 0.7317389600844693,
+        "recalculated_log_loss": 0.5926526823436963,
+        "auc_difference": 0.0,
+        "log_loss_difference": -1.1102230246251565e-16,
+        "validation_prediction_sha256": "b1a3c072499ebab057a5d02b3046c3afc6100dcd09aecb99a01a0c405b0ca025",
+        "execution_source_hashes_match_manifest": {
+          "basic/__init__.py": true,
+          "basic/features.py": true,
+          "basic/train.py": true,
+          "basic/predict.py": true,
+          "basic/submission.py": true,
+          "basic/collaborative.py": true,
+          "basic/target_encoding.py": true
+        },
+        "source_revision": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "source_working_tree_dirty": false,
+        "feature_names": [
+          "msno",
+          "song_id",
+          "source_system_tab",
+          "source_screen_name",
+          "source_type",
+          "city",
+          "gender",
+          "registered_via",
+          "age",
+          "registration_days",
+          "expiration_days",
+          "genre_ids",
+          "artist_name",
+          "composer",
+          "lyricist",
+          "language",
+          "song_length",
+          "genre_ids_count",
+          "artist_name_count",
+          "composer_count",
+          "lyricist_count",
+          "registration_year",
+          "registration_month",
+          "membership_days",
+          "isrc_country",
+          "isrc_reference_year",
+          "song_name_length",
+          "msno_source_type_probability",
+          "msno_source_screen_name_probability",
+          "msno_source_system_tab_probability",
+          "msno_artist_name_probability",
+          "msno_genre_ids_probability",
+          "song_embedding_dot",
+          "song_embedding_cosine",
+          "artist_embedding_dot",
+          "artist_embedding_cosine",
+          "genre_embedding_dot",
+          "genre_embedding_cosine",
+          "global_time_pos",
+          "user_prev_row_gap",
+          "user_next_row_gap",
+          "user_cum_count",
+          "user_rev_cum_count",
+          "song_recent_pop_ratio",
+          "target_msno",
+          "target_song_id",
+          "target_artist_name",
+          "target_user_source_system_tab",
+          "target_user_source_type"
+        ],
+        "feature_count": 49,
+        "model_sha256": "1354c7b85fd2860d3b9d49f22fb3f8622643142b93fdb9aa8570903bbb46532e",
+        "model_hash_matches_prediction_record": true,
+        "validation_model_sha256": "c98e472c4581f813d05fa68818917cdddd9f4a87679dee1de7c3df4eadfa613a",
+        "final_and_validation_models_byte_identical": false,
+        "features_pickle_bytes": 1085528813,
+        "features_pickle_loaded_locally": false,
+        "feature_state_check": "Cloud prediction successfully loaded the paired serialized state; local verification reads model headers and hashes without allocating the large pickle.",
+        "transductive_fit_rows": 9934208,
+        "target_encoding_fit_rows": 7377418,
+        "submission": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.01239613343,
+          "maximum_probability": 0.9895713855,
+          "sha256": "565020eae85828275aabc935d2883edcfd6485b368f568b001e24c7b5f63c0c3"
+        },
+        "local_verification_packages": {
+          "numpy": "2.4.6",
+          "pandas": "2.3.3",
+          "scikit-learn": "1.9.1"
+        }
+      },
+      "inference": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.01239613343,
+          "maximum_probability": 0.9895713855,
+          "sha256": "565020eae85828275aabc935d2883edcfd6485b368f568b001e24c7b5f63c0c3"
+        },
+        "seconds": 145.87188912500005,
+        "model_sha256": "1354c7b85fd2860d3b9d49f22fb3f8622643142b93fdb9aa8570903bbb46532e",
+        "test_fingerprint": {
+          "bytes": 347789925,
+          "mtime_ns": 1794906597975021276
+        },
+        "submission_sha256": "565020eae85828275aabc935d2883edcfd6485b368f568b001e24c7b5f63c0c3"
+      },
+      "target_check": {
+        "public_auc_at_least_0_705": true,
+        "private_auc_at_least_0_705": true,
+        "both_targets_met": true
+      },
+      "comparison_with_previous_best_platform": {
+        "baseline_experiment": "calendar_full",
+        "baseline_submission_reference": 58459278,
+        "baseline_public_score": 0.67905,
+        "baseline_private_score": 0.68125,
+        "public_score_difference": 0.03148,
+        "private_score_difference": 0.02945
+      }
+    }
+  ],
+  "paired_full_data_comparison": {
+    "status": "both_scored",
+    "baseline": "transductive_holdout",
+    "variant": "transductive_refit",
+    "same_validation_rows_and_labels": true,
+    "validation_predictions_exactly_equal": true,
+    "maximum_validation_prediction_difference": 0.0,
+    "same_validation_model_sha256": true,
+    "same_execution_sources": true,
+    "same_runtime_versions": true,
+    "configuration_differences": {
+      "no_refit": [
+        true,
+        false
+      ]
+    },
+    "validation_auc_difference": 0.0,
+    "validation_log_loss_difference": 0.0,
+    "same_selected_rounds": true,
+    "isolates_refit_policy": true,
+    "public_score_difference_refit_minus_holdout": 0.01352,
+    "private_score_difference_refit_minus_holdout": 0.01226,
+    "interpretation": "Refitting scores higher on both competition partitions in this controlled pair; the claim that skipping refit is necessarily better is not supported."
+  },
+  "limitations": [
+    "Sample validation uses the last 100000 rows; full-data validation uses the last 20 percent. Their AUCs are not directly comparable as feature gains.",
+    "All transductive variants include full train/test interactions without target labels in unsupervised statistics.",
+    "Row-order gaps are proxies rather than seconds or guaranteed sessions.",
+    "Platform targets are checked only after actual scoring; no historical leaderboard rank is inferred.",
+    "Single-run timing and peak RSS are descriptive, not controlled benchmarks."
+  ]
+}

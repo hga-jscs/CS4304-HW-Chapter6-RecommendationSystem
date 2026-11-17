@@ -91,11 +91,11 @@ python -m kaggle kernels output YOUR_KAGGLE_USERNAME/kkbox-baseline -p outputs/b
 
 `--collaborative-features` 增加用户—歌曲、用户—艺人图的重构内积和余弦，共四列。只用当前训练部分的无标签交互建立稀疏矩阵，依次应用 `log1p` 计数、按用户覆盖率计算的列 IDF 和行 L2 归一化。采用固定种子 42、3 次迭代的随机 SVD，歌曲最多 32 维、艺人最多 16 维；用户与物品因子均乘以奇异值平方根，内积对应截断重构值。未知用户/物品返回零，矩阵小于可用秩时记录实际秩，秩为零时四列为零。矩阵保持稀疏，特征查询分块进行，图不会在每个预测块重新拟合。全量重训会另建对应的图，两个阶段的形状、秩和拟合时间写入 `metrics.json`。该开关默认关闭，收益和运行成本需要按具体数据规模验证。
 
-[本轮 300,000 行消融](../reports/basic_review_results.json)已逐组复算验证预测：同一随机留出上，用户偏好将 AUC 从 0.727455 提高至 0.729332，叠加当前图特征降至 0.724193；绝对频次与相对频次的预测完全一致。图特征保持可选，默认关闭。行序和末段抽样使用不同验证记录，其分数不能直接作为特征优劣对照；这些样本结果也不代表平台得分。
+[早期 300,000 行训练范围内消融](../reports/basic_review_results.json)已逐组复算验证预测：同一随机留出上，用户偏好将 AUC 从 0.727455 提高至 0.729332，叠加当时的训练内图特征降至 0.724193；绝对频次与相对频次的预测完全一致。图特征保持可选，默认关闭。行序和末段抽样使用不同验证记录，其分数不能直接作为特征优劣对照；这些样本结果也不代表平台得分。
 
-全量平台复核进一步显示：日期修正模型为 Public 0.67905 / Private 0.68125，加入用户偏好后为 0.67569 / 0.67849，尽管随机验证 AUC 从 0.799568 升至 0.809235。当前偏好特征保持可选，不用随机验证的提升替代平台证据；完整参数、提交编号和核验记录保存在同一实验报告中。
+上述旧统计范围的全量平台复核显示：日期修正模型为 Public 0.67905 / Private 0.68125，加入用户偏好后为 0.67569 / 0.67849，尽管随机验证 AUC 从 0.799568 升至 0.809235。偏好特征保持可选，不用随机验证的提升替代平台证据；后续采用转导统计和行序验证的结果见下文。
 
-上述用户场景特征借鉴[冠军作者原代码](https://github.com/lystdo/Codes-for-WSDM-CUP-Music-Rec-1st-place-solution/blob/master/input/training/script/cnt_log_process.py#L59-L86)的按用户场景比例。本项目将统计范围限制为训练集，并新增强度为 10 的平滑与训练行留一处理；原代码合并了训练和测试交互，未使用这里的平滑与留一方式。
+上述用户场景特征借鉴[冠军作者原代码](https://github.com/lystdo/Codes-for-WSDM-CUP-Music-Rec-1st-place-solution/blob/master/input/training/script/cnt_log_process.py#L59-L86)的按用户场景比例。本项目默认模式将统计范围限制为训练集，并新增强度为 10 的平滑与训练行留一处理；原代码合并了训练和测试交互，未使用这里的平滑与留一方式。下文的显式转导模式采用完整无标签交互范围。
 
 默认模式的类别词表与频次只从本次训练部分拟合，不使用验证标签或测试集统计；下面的转导模式显式改变无标签统计范围。未知类别编码为 `-1`，由 LightGBM 按缺失处理；未知频次为零。元数据以唯一 ID 查表，拒绝重复键，防止合并导致记录膨胀。日期无效、年龄不在 1–100 或歌曲时长非正数时按缺失处理。ISRC 信息可能有误，其增益需要实测确认。
 
@@ -122,15 +122,38 @@ python -m kaggle kernels output YOUR_KAGGLE_USERNAME/kkbox-baseline -p outputs/b
 
 训练使用原始 `row_id`；测试使用“官方完整训练行数 + 测试原始位置”，与抽样大小、CSV 的 `id` 值、推理块大小无关。行号差是文件顺序代理，不是秒数，也不能保证识别真实会话。未来无标签交互参与这些特征，因此应按转导式离线评测理解，不把它表述为只能看到过去数据的在线预测。
 
+使用行序缓存的模型，推理时必须提供建模时同一份 `test.csv` 内容并保留原始顺序；更换测试记录或重排行后，需要重新拟合相应特征，不能把现有缓存直接用于任意新测试集。
+
 `--target-encoding` 独立增加用户、歌曲、艺人、用户×系统入口、用户×播放来源五个标签统计。每个类别的编码为 `(positive_count + 20 × prior) / (count + 20)`。随机划分使用固定种子 5 折 OOF，各折的计数和先验都只来自其他折；`row_order` 使用按原始行号排序的五个连续块，每块只用严格前序块，首块固定 0.5，不使用未来全局标签均值。验证/测试仅使用当前有监督训练部分的标签统计，未知类别回退其训练先验。refit 时重新生成 OOF 特征和全训练标签统计，`--no-refit` 则保留验证模型与其对应的训练分区状态。
 
-这些选项均保持显式开启。一个待验证的完整候选命令如下；拆分消融时逐项添加开关，不能预设各项都会涨分：
+这些选项均保持显式开启。以下是组合特征的样本命令；拆分消融时逐项添加开关，不能预设各项都会涨分：
 
 ```powershell
 python -m basic.train --data-dir data/basic --output-dir outputs/basic/transductive_sample --feature-mode enhanced --max-train-rows 500000 --sampling-mode tail --split-mode row_order --no-refit --disable-frequency-features --user-context-features --transductive --row-order-features --collaborative-features --target-encoding
 ```
 
 Kaggle 生成器透传同名选项以及树容量参数。Linux 训练记录进程峰值 RSS；500,000 行标签抽样仍需处理全量无标签图，全量训练建议在 Kaggle CPU 实测内存，不能把小数据测试通过解释为 16 GB 本机全量已验证。
+
+### 已完成的转导实验
+
+[新实验记录](../reports/basic_transductive_results.json)保留 8 组末段 500,000 行消融及两组完整平台结果。样本消融共享最后 100,000 行验证数据：加入行序特征的 AUC 为 0.688348，再加全图 SVD 为 0.708990，再加目标编码和偏好为 0.712585。单独扩展无标签统计范围没有提高 AUC；255 叶的大容量参数组合降至 0.707271；频次仅带来 0.000029 的 AUC 增量且对数损失变差，因此全量候选使用 63 叶并关闭频次。
+
+| 已评分模型 | Public AUC | Private AUC | 提交编号 |
+| --- | --- | --- | --- |
+| 之前的日期修正模型 | 0.67905 | 0.68125 | 58459278 |
+| 转导方案，保留验证训练模型 | 0.69701 | 0.69844 | 58464162 |
+| 转导方案，全量重训 | **0.71053** | **0.71070** | **58464307** |
+
+全量重训方案两项平台分数均达到 0.705，较之前日期修正模型分别提高 0.03148 和 0.02945。两组转导实验的源码、依赖、验证记录、验证模型摘要及全部验证预测完全一致，配置仅 `no_refit` 不同；验证 AUC 都为 0.7317389601，早停选出 165 轮。保留模型使用 5,901,934 行有标签数据，重训使用全部 7,377,418 行；两者的无标签图均为完整 train+test。这个对照中重训提高了两个平台分数，不支持“不重训必然更好”的说法，也不把这一结果推广为所有模型都应重训。
+
+重训方案在 Kaggle CPU、4 线程下完整训练用时 1169.73 秒、推理 145.87 秒，训练进程峰值 RSS 为 9806 MiB。以下命令复现该方案；若要求复现精确分数，还需固定提交 `20aa5dc0af3ea0803edb26de4f0982478864bedb` 及报告中记录的实际 Kaggle 运行环境。不同环境不保证逐位一致。
+
+```powershell
+python -m basic.train --data-dir data/basic --output-dir outputs/basic/transductive_refit --feature-mode enhanced --numeric-features calendar --transductive --row-order-features --collaborative-features --song-components 48 --artist-components 24 --genre-components 16 --target-encoding --user-context-features --user-preference-features --disable-frequency-features --frequency-mode relative --context-counting full --split-mode row_order --validation-fraction 0.2 --num-boost-round 1200 --early-stopping-rounds 30 --num-leaves 63 --learning-rate 0.08 --min-child-samples 50 --max-cat-threshold 32 --feature-fraction 0.9 --seed 42 --threads 4
+python -m basic.predict --data-dir data/basic --model-dir outputs/basic/transductive_refit --output outputs/basic/transductive_refit/submission.csv --threads 4
+```
+
+该命令保留默认全量重训。严格复现留出模型对照时，使用另一个输出目录并添加 `--no-refit`。样本和完整训练的验证范围不同，不直接用它们之间的 AUC 差值宣称模型增益；本次达标依据是实际平台评分。
 
 ## 实验产物
 
