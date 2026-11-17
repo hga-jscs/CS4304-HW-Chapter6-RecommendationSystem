@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 from functools import lru_cache
 import hashlib
@@ -15,6 +16,8 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as parquet
 
+from .standardize import write_embeddings
+
 
 EVENTS = ("product_buy", "add_to_cart", "remove_from_cart", "page_visit", "search_query")
 PRODUCT_EVENTS = EVENTS[:3]
@@ -24,17 +27,101 @@ DAY_NS = 86_400_000_000_000
 DOWNLOAD_URL = "https://data.recsys.synerise.com/dataset/challenge_dataset.tar.gz"
 
 
-def feature_layout() -> tuple[list[str], dict[str, dict[str, tuple[int, int]]]]:
+PRICE_STATISTICS = ("price_bucket_mean", "price_bucket_max", "price_bucket_std",
+                    "price_bucket_mean_30_days", "price_observations",
+                    "price_band_0", "price_band_1", "price_band_2", "price_band_3", "price_band_4")
+CROSS_STATISTICS = ("buy_to_cart_count_ratio", "remove_to_cart_count_ratio", "buy_to_search_count_ratio",
+                    "page_views_per_span_day", "mean_purchase_interval_days", "purchase_recency_to_interval_ratio")
+
+
+def feature_layout(mode: str = "baseline", popular: dict | None = None) -> tuple[list[str], dict]:
     names = [f"{event}.{statistic}" for event in EVENTS for statistic in STATISTICS]
     blocks: dict[str, dict[str, tuple[int, int]]] = {}
     for event in EVENTS:
-        sizes = {"sku": 16, "category": 16, "price": 8} if event in PRODUCT_EVENTS else (
+        sizes = ({"sku": 16, "category": 16, "price": 8} if mode == "baseline" else
+                 {"sku": 16, "category": 16}) if event in PRODUCT_EVENTS else (
             {"url": 16} if event == "page_visit" else {"query": 32})
         blocks[event] = {}
         for column, width in sizes.items():
             blocks[event][column] = (len(names), width)
             names.extend(f"{event}.{column}_bucket_{i}" for i in range(width))
+    if mode == "enhanced":
+        for event in PRODUCT_EVENTS:
+            for column in ("sku", "category"):
+                values = popular[event][column]
+                blocks[event]["popular_" + column] = (len(names), len(values))
+                names.extend(f"{event}.popular_{column}_{value}" for value in values)
+            blocks[event]["price_statistics"] = (len(names), len(PRICE_STATISTICS))
+            names.extend(f"{event}.{name}" for name in PRICE_STATISTICS)
+        names.extend(f"{event}.has_history" for event in EVENTS)
+        names.extend(CROSS_STATISTICS)
     return names, blocks
+
+
+def popular_history(properties: pd.DataFrame, paths: list[Path], batch_size: int, top_k: int) -> dict:
+    """Choose identifiers using purchase/cart inputs only, including historical non-target users."""
+    counts = {"sku": Counter(), "category": Counter()}
+    for path in paths[:2]:
+        for batch in parquet.ParquetFile(path).iter_batches(batch_size=batch_size, columns=["sku"]):
+            skus = batch.to_pandas()["sku"]
+            counts["sku"].update(skus.value_counts().to_dict())
+            counts["category"].update(skus.map(properties["category"]).value_counts().to_dict())
+    ranked = {column: [int(identifier) for identifier, _ in sorted(values.items(),
+               key=lambda pair: (-pair[1], pair[0]))[:top_k]] for column, values in counts.items()}
+    # Purchases get the largest exact block; cart/removal retain smaller, separate blocks.
+    return {event: {column: values[:max(1, top_k // divisor)] for column, values in ranked.items()}
+            for event, divisor in zip(PRODUCT_EVENTS, (1, 2, 4))}
+
+
+def add_price_statistics(matrix: np.ndarray, rows: np.ndarray, prices: np.ndarray, ages: np.ndarray,
+                         weights: np.ndarray, offset: int, recent_counts: np.ndarray) -> None:
+    valid = np.isfinite(prices) & (prices >= 0)
+    rows, prices, ages, weights = rows[valid], prices[valid], ages[valid], weights[valid]
+    np.add.at(matrix[:, offset], rows, prices)
+    np.maximum.at(matrix[:, offset + 1], rows, prices)
+    np.add.at(matrix[:, offset + 2], rows, prices ** 2)
+    recent = ages <= 30
+    np.add.at(matrix[:, offset + 3], rows[recent], prices[recent])
+    np.add.at(recent_counts, rows[recent], 1)
+    np.add.at(matrix[:, offset + 4], rows, 1)
+    # Price values are quantile-bucket indices, not currency amounts.
+    bands = np.minimum((prices // 20).astype(np.int64), 4)
+    np.add.at(matrix, (rows, offset + 5 + bands), weights)
+
+
+def finish_price_statistics(matrix: np.ndarray, offset: int, recent_counts: np.ndarray,
+                            batch_size: int) -> None:
+    for start in range(0, len(matrix), batch_size):
+        block = matrix[start:start + batch_size]
+        count = np.maximum(block[:, offset + 4], 1)
+        mean = block[:, offset] / count
+        variance = np.maximum(block[:, offset + 2] / count - mean ** 2, 0)
+        block[:, offset] = mean
+        block[:, offset + 2] = np.sqrt(variance)
+        block[:, offset + 3] /= np.maximum(recent_counts[start:start + batch_size], 1)
+
+
+def add_cross_statistics(matrix: np.ndarray, names: list[str], batch_size: int) -> None:
+    lookup = {name: index for index, name in enumerate(names)}
+    for start in range(0, len(matrix), batch_size):
+        block = matrix[start:start + batch_size]
+        for event in EVENTS:
+            block[:, lookup[f"{event}.has_history"]] = block[:, lookup[f"{event}.count"]] > 0
+        buy = block[:, lookup["product_buy.count"]]
+        cart = block[:, lookup["add_to_cart.count"]]
+        remove = block[:, lookup["remove_from_cart.count"]]
+        search = block[:, lookup["search_query.count"]]
+        views = block[:, lookup["page_visit.count"]]
+        page_span = block[:, lookup["page_visit.span_days"]]
+        eligible = buy >= 2
+        interval = np.zeros(len(block), dtype=np.float32)
+        interval[eligible] = block[eligible, lookup["product_buy.span_days"]] / (buy[eligible] - 1)
+        relative_recency = np.zeros(len(block), dtype=np.float32)
+        relative_recency[eligible] = block[eligible, lookup["product_buy.recency_days"]] / (interval[eligible] + 1)
+        values = (buy / (cart + 1), remove / (cart + 1), buy / (search + 1),
+                  views / (page_span + 1), interval, relative_recency)
+        for name, values in zip(CROSS_STATISTICS, values):
+            block[:, lookup[name]] = values
 
 
 def hash_buckets(values: np.ndarray, width: int, salt: int = 0) -> np.ndarray:
@@ -107,20 +194,28 @@ def validate_inputs(data_directory: Path) -> tuple[np.ndarray, list[Path]]:
 
 
 def build_embeddings(data_directory: str | Path, output_directory: str | Path,
-                     batch_size: int = 100_000, decay_days: float = 30.0) -> dict:
+                     batch_size: int = 100_000, decay_days: float = 30.0,
+                     mode: str = "baseline", standardize: bool = False, top_k: int = 128,
+                     overwrite: bool = False) -> dict:
     """Create one representation for every relevant client in their original order.
 
-    Aggregates use bounded Arrow batches and a float32 matrix (~832 MB for 1M users).
-    Output is written in batches as float16 (~416 MB).  target/ is never opened.
+    Aggregates use bounded Arrow batches and a disk-backed float32 matrix.
+    Output is float16 (~416 MB for baseline, ~1.35 GB for default enhanced).
+    target/ is never opened.
     """
-    if batch_size < 1 or decay_days < 0 or not np.isfinite(decay_days):
+    if batch_size < 1 or decay_days < 0 or not np.isfinite(decay_days) or top_k < 1:
         raise ValueError("batch_size must be positive and decay_days finite and non-negative")
+    if mode not in {"baseline", "enhanced"}:
+        raise ValueError("mode must be baseline or enhanced")
     started = time.perf_counter()
     data_directory, output_directory = Path(data_directory), Path(output_directory)
     output_directory.mkdir(parents=True, exist_ok=True)
-    reserved = ("client_ids.npy", "embeddings.npy", "features.json", "manifest.json")
-    if any((output_directory / name).exists() for name in reserved):
-        raise FileExistsError("Output files already exist; use a new experiment directory")
+    reserved = ("client_ids.npy", "embeddings.npy", "features.json", "manifest.json", "standardization.json")
+    if not overwrite and any((output_directory / name).exists() for name in reserved):
+        raise FileExistsError("Output files already exist; use --overwrite to replace this experiment")
+    if overwrite:
+        (output_directory / "manifest.json").unlink(missing_ok=True)
+        (output_directory / "standardization.json").unlink(missing_ok=True)
     ids, paths = validate_inputs(data_directory)
     properties_path = data_directory / "product_properties.parquet"
     properties = pd.read_parquet(properties_path, columns=["sku", "category", "price"])
@@ -128,8 +223,14 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
         raise ValueError("Product properties must have unique, non-missing sku values")
     properties = properties.set_index("sku")
     client_index = pd.Index(ids)
-    names, blocks = feature_layout()
-    matrix = np.zeros((len(ids), len(names)), dtype=np.float32)
+    popular = popular_history(properties, paths, batch_size, top_k) if mode == "enhanced" else None
+    names, blocks = feature_layout(mode, popular)
+    if len(names) > 2048:
+        raise ValueError("Representation exceeds the official 2048-dimension limit; reduce top_k")
+    scratch = output_directory / "features.partial.npy"
+    matrix = np.lib.format.open_memmap(scratch, mode="w+", dtype=np.float32,
+                                      shape=(len(ids), len(names)), fortran_order=True)
+    matrix[:] = 0
     cutoff = input_cutoff(paths, batch_size)
     summary = {}
     source_manifest = []
@@ -141,6 +242,7 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
         last = np.full(len(ids), np.iinfo(np.int64).min, dtype=np.int64)
         selected_rows = 0
         observed_rows = 0
+        recent_price_counts = np.zeros(len(ids), dtype=np.float32) if mode == "enhanced" and event in PRODUCT_EVENTS else None
         event_start = time.perf_counter()
         for batch in file.iter_batches(batch_size=batch_size, columns=["client_id", "timestamp", payload]):
             frame = batch.to_pandas()
@@ -165,12 +267,22 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
             weights = np.exp2(-ages / decay_days).astype(np.float32) if decay_days else np.ones(len(rows), np.float32)
             if event in PRODUCT_EVENTS:
                 metadata = properties.reindex(frame["sku"].to_numpy())
-                for column in ("sku", "category", "price"):
+                for column in (("sku", "category", "price") if mode == "baseline" else ("sku", "category")):
                     values = frame["sku"].to_numpy() if column == "sku" else metadata[column].to_numpy()
                     valid = ~pd.isna(values)
+                    if mode == "enhanced":
+                        exact_codes = pd.Index(popular[event][column]).get_indexer(values)
+                        exact = valid & (exact_codes >= 0)
+                        exact_offset, _ = blocks[event]["popular_" + column]
+                        np.add.at(matrix, (rows[exact], exact_offset + exact_codes[exact]), weights[exact])
+                        valid &= ~exact
                     offset, width = blocks[event][column]
                     buckets = hash_buckets(values[valid], width)
                     np.add.at(matrix, (rows[valid], offset + buckets), weights[valid])
+                if mode == "enhanced":
+                    price_offset, _ = blocks[event]["price_statistics"]
+                    prices = pd.to_numeric(metadata["price"], errors="coerce").to_numpy(dtype=np.float64)
+                    add_price_statistics(matrix, rows, prices, ages, weights, price_offset, recent_price_counts)
             elif event == "page_visit":
                 valid = frame["url"].notna().to_numpy()
                 offset, width = blocks[event]["url"]
@@ -201,27 +313,29 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
         matrix[:, base + 6] = 366.0  # Distinguishes no history from a very recent event.
         matrix[present, base + 6] = (cutoff - last[present]) / DAY_NS
         matrix[present, base + 7] = (last[present] - first[present]) / DAY_NS
+        if mode == "enhanced" and event in PRODUCT_EVENTS:
+            finish_price_statistics(matrix, blocks[event]["price_statistics"][0], recent_price_counts,
+                                    min(batch_size, 20_000))
+        matrix.flush()
         summary[event] = {"input_rows": observed_rows, "relevant_client_rows": selected_rows,
                           "seconds": round(time.perf_counter() - event_start, 3)}
         source_manifest.append({"path": f"input/{path.name}", "bytes": path.stat().st_size,
                                 "rows": file.metadata.num_rows})
         print(f"{event}: {selected_rows:,}/{observed_rows:,} rows, {summary[event]['seconds']:.1f}s", flush=True)
-    # Log counts/weighted histograms to avoid float16 overflow from heavy users.
-    temporary = output_directory / "embeddings.partial.npy"
-    output = np.lib.format.open_memmap(temporary, mode="w+", dtype=np.float16, shape=matrix.shape)
-    for start in range(0, len(ids), batch_size):
-        values = np.log1p(matrix[start:start + batch_size])
-        if not np.isfinite(values).all():
-            raise ValueError("Non-finite aggregated features were produced")
-        output[start:start + batch_size] = values.astype(np.float16)
-    output.flush()
-    del output
-    temporary.replace(output_directory / "embeddings.npy")
+    if mode == "enhanced":
+        add_cross_statistics(matrix, names, min(batch_size, 20_000))
+    normalization = write_embeddings(matrix, output_directory / "embeddings.npy",
+                                     batch_size=min(batch_size, 20_000), standardize=standardize,
+                                     log_transform=True)
+    del matrix
+    scratch.unlink()
     np.save(output_directory / "client_ids.npy", ids, allow_pickle=False)
     (output_directory / "features.json").write_text(json.dumps(names, indent=2) + "\n", encoding="utf-8")
     manifest = {
         "created_utc": datetime.now(timezone.utc).isoformat(),
-        "method": "historical_aggregates_with_hashed_categories",
+        "method": ("historical_aggregates_with_hashed_categories" if mode == "baseline" else
+                   "historical_popular_items_ordinal_prices_and_behavior_ratios"),
+        "mode": mode, "standardized": standardize, "popular_history_identifiers": popular,
         "clients": len(ids), "dimensions": len(names), "dtype": "float16",
         "batch_size": batch_size, "histogram_half_life_days": decay_days,
         "input_cutoff_utc": pd.Timestamp(cutoff, tz="UTC").isoformat(),
@@ -231,6 +345,8 @@ def build_embeddings(data_directory: str | Path, output_directory: str | Path,
         "seconds": round(time.perf_counter() - started, 3),
         "versions": {"numpy": np.__version__, "pandas": pd.__version__},
     }
+    if standardize:
+        (output_directory / "standardization.json").write_text(json.dumps(normalization, indent=2) + "\n", encoding="utf-8")
     (output_directory / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return manifest
 
@@ -242,6 +358,11 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=100_000)
     parser.add_argument("--decay-days", type=float, default=30.0,
                         help="Half-life of hashed history counts; 0 disables decay")
+    parser.add_argument("--mode", choices=("baseline", "enhanced"), default="baseline")
+    parser.add_argument("--standardize", action="store_true", help="Standardize log features by column and clip to [-10, 10]")
+    parser.add_argument("--top-k", type=int, default=128,
+                        help="Maximum history-selected SKU/category identifiers; cart/removal use half/quarter")
+    parser.add_argument("--overwrite", action="store_true")
     arguments = parser.parse_args()
     result = build_embeddings(**vars(arguments))
     print(json.dumps(result, indent=2))

@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import warnings
 
 
 OFFICIAL_REPOSITORY = "https://github.com/Synerise/recsys2025.git"
@@ -31,22 +32,27 @@ def run_logged(command: list[str], directory: Path, log_path: Path) -> None:
             raise subprocess.CalledProcessError(code, command)
 
 
-def check_official_code(directory: Path) -> str:
+def check_official_code(directory: Path, allow_modified: bool = False) -> dict:
     actual = subprocess.check_output(["git", "-C", str(directory), "rev-parse", "HEAD"], text=True).strip()
-    if actual != OFFICIAL_COMMIT:
-        raise ValueError(f"Official code must use {OFFICIAL_COMMIT}; found {actual}")
     changed = subprocess.check_output(
-        ["git", "-C", str(directory), "status", "--porcelain", "--untracked-files=no"], text=True).strip()
-    if changed:
-        raise ValueError("Official tracked files have local changes; restore the pinned evaluator first")
-    return actual
+        ["git", "-C", str(directory), "status", "--porcelain", "--untracked-files=no"], text=True)
+    matches_reference = actual == OFFICIAL_COMMIT and not changed
+    if not matches_reference:
+        message = ("Evaluator differs from the pinned official source. "
+                   "Use --allow-modified-official for a labelled debugging run.")
+        if not allow_modified:
+            raise ValueError(message)
+        warnings.warn(message + " Results are not marked as official-protocol verified.")
+    return {"commit": actual, "tracked_changes": changed.splitlines(),
+            "matches_reference": matches_reference}
 
 
 def evaluate(official_directory: str | Path, data_directory: str | Path,
              embeddings_directory: str | Path, score_directory: str | Path,
              python: str = sys.executable, accelerator: str = "gpu", device: str = "0",
              num_workers: int = 0, validate_only: bool = False, seed: int = 42,
-             cache_targets: bool = False) -> dict:
+             cache_targets: bool = False, overwrite: bool = False,
+             allow_modified_official: bool = False) -> dict:
     official_directory = Path(official_directory).resolve()
     data_directory = Path(data_directory).resolve()
     embeddings_directory = Path(embeddings_directory).resolve()
@@ -59,10 +65,14 @@ def evaluate(official_directory: str | Path, data_directory: str | Path,
         if located is None:
             raise FileNotFoundError(f"Python interpreter was not found: {python}")
         python = str(Path(located).resolve())
-    check_official_code(official_directory)
+    official_state = check_official_code(official_directory, allow_modified_official)
     score_directory.mkdir(parents=True, exist_ok=True)
-    if any((score_directory / name).exists() for name in ("scores.json", "epochs.json", "evaluation.json")):
-        raise FileExistsError("Evaluation results already exist; use a new score directory")
+    result_names = ("scores.json", "epochs.json", "evaluation.json")
+    if not overwrite and any((score_directory / name).exists() for name in result_names):
+        raise FileExistsError("Evaluation results already exist; use --overwrite to replace this experiment")
+    if overwrite:
+        for name in result_names:
+            (score_directory / name).unlink(missing_ok=True)
     validation = [python, "-m", "validator.run", "--data-dir", str(data_directory),
                   "--embeddings-dir", str(embeddings_directory)]
     run_logged(validation, official_directory, score_directory / "validation.log")
@@ -89,7 +99,10 @@ def evaluate(official_directory: str | Path, data_directory: str | Path,
         if any(task not in scores or task not in epochs or not math.isfinite(scores[task]) for task in TASKS):
             raise ValueError("Official score files do not contain all three finite task results")
         commands.append(training)
-    result = {"official_repository": OFFICIAL_REPOSITORY, "official_commit": OFFICIAL_COMMIT,
+    result = {"official_repository": OFFICIAL_REPOSITORY, "official_commit": official_state["commit"],
+              "official_reference_commit": OFFICIAL_COMMIT,
+              "official_tracked_changes": official_state["tracked_changes"],
+              "official_protocol_verified": official_state["matches_reference"],
               "validation_passed": True, "training_completed": not validate_only,
               "tasks": list(TASKS) if not validate_only else [], "seed": seed,
               "target_cache_enabled": cache_targets, "commands": commands}
@@ -111,6 +124,9 @@ def main() -> None:
     parser.add_argument("--cache-targets", action="store_true",
                         help="Cache equivalent official targets in the downstream data loader only")
     parser.add_argument("--validate-only", action="store_true")
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--allow-modified-official", action="store_true",
+                        help="Allow a debugging evaluator and record it as non-reference")
     print(json.dumps(evaluate(**vars(parser.parse_args())), indent=2))
 
 

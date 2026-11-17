@@ -74,6 +74,39 @@ def test_outputs_are_not_silently_replaced(tmp_path):
     assert (output / "embeddings.npy").read_bytes() == before
 
 
+def test_enhanced_exact_preferences_prices_and_intervals_use_history_only(tmp_path):
+    source = example_data(tmp_path)
+    properties = pd.read_parquet(source / "product_properties.parquet")
+    properties["price"] = [1, 95]
+    properties.to_parquet(source / "product_properties.parquet", index=False)
+    first, second = tmp_path / "enhanced", tmp_path / "enhanced_again"
+    build_embeddings(source, first, mode="enhanced", batch_size=1)
+    (source / "target").mkdir()
+    np.save(source / "target" / "propensity_sku.npy", np.array([999]))
+    pd.DataFrame({"client_id": [20] * 100, "timestamp": ["2030-01-01"] * 100,
+                  "sku": [999] * 100}).to_parquet(source / "target" / "train_target.parquet", index=False)
+    build_embeddings(source, second, mode="enhanced", batch_size=100)
+    matrix = np.load(first / "embeddings.npy")
+    np.testing.assert_array_equal(matrix, np.load(second / "embeddings.npy"))
+    names = json.loads((first / "features.json").read_text())
+    values = {name: matrix[:, i] for i, name in enumerate(names)}
+    # Client 9 bought price-bucket indices 1 and 95, exactly 23 days apart.
+    np.testing.assert_allclose(values["product_buy.price_bucket_mean"], np.log1p([48, 1, 0]), atol=0.002)
+    np.testing.assert_allclose(values["product_buy.price_bucket_std"], np.log1p([47, 0, 0]), atol=0.002)
+    np.testing.assert_allclose(values["mean_purchase_interval_days"], np.log1p([23, 0, 0]), atol=0.002)
+    np.testing.assert_allclose(values["purchase_recency_to_interval_ratio"], np.log1p([7 / 24, 0, 0]), atol=0.001)
+    np.testing.assert_allclose(values["product_buy.popular_sku_100"], np.log1p([0.5, 2 ** (-1 / 30), 0]), atol=0.001)
+    np.testing.assert_allclose(values["product_buy.price_band_4"], np.log1p([2 ** (-7 / 30), 0, 0]), atol=0.001)
+    np.testing.assert_allclose(values["product_buy.has_history"], np.log1p([1, 1, 0]), atol=0.001)
+    assert "product_buy.price_bucket_0" not in names
+    assert not (first / "features.partial.npy").exists()
+    # A rerun replaces this builder's results and leaves unrelated user notes.
+    (first / "notes.txt").write_text("keep")
+    build_embeddings(source, first, mode="enhanced", standardize=True, overwrite=True)
+    assert (first / "notes.txt").read_text() == "keep"
+    assert json.loads((first / "manifest.json").read_text())["standardized"] is True
+
+
 @pytest.mark.parametrize("query", ["1 2", "[-1 2]", "[256]", "[1 evil]", "[]"])
 def test_malformed_query_codes_are_rejected(query):
     with pytest.raises(ValueError):
@@ -98,10 +131,43 @@ def test_relative_python_is_resolved_before_official_working_directory(tmp_path,
     interpreter.touch()
     calls = []
     monkeypatch.chdir(tmp_path)
-    monkeypatch.setattr(module, "check_official_code", lambda directory: module.OFFICIAL_COMMIT)
+    monkeypatch.setattr(module, "check_official_code", lambda directory, allow_modified: {
+        "commit": module.OFFICIAL_COMMIT, "tracked_changes": [], "matches_reference": True})
     monkeypatch.setattr(module, "run_logged", lambda command, directory, log: calls.append(command))
     module.evaluate("official", "data", "embeddings", "scores", python="environment/python.exe", validate_only=True)
     assert calls[0][0] == str(interpreter.resolve())
+
+
+def test_modified_evaluator_is_allowed_only_when_labelled(monkeypatch, tmp_path):
+    from extension import evaluate as module
+
+    def output(command, **kwargs):
+        return module.OFFICIAL_COMMIT if "rev-parse" in command else " M training_pipeline/model.py\n"
+    monkeypatch.setattr(module.subprocess, "check_output", output)
+    with pytest.raises(ValueError, match="allow-modified-official"):
+        module.check_official_code(tmp_path)
+    with pytest.warns(UserWarning, match="not marked"):
+        state = module.check_official_code(tmp_path, allow_modified=True)
+    assert state["matches_reference"] is False
+    assert state["tracked_changes"] == [" M training_pipeline/model.py"]
+
+
+def test_evaluation_overwrite_clears_stale_scores_but_keeps_notes(tmp_path, monkeypatch):
+    from extension import evaluate as module
+
+    output = tmp_path / "scores"
+    output.mkdir()
+    for name in ("scores.json", "epochs.json", "evaluation.json"):
+        (output / name).write_text('{}')
+    (output / "notes.txt").write_text("keep")
+    monkeypatch.setattr(module, "check_official_code", lambda *args: {
+        "commit": module.OFFICIAL_COMMIT, "tracked_changes": [], "matches_reference": True})
+    monkeypatch.setattr(module, "run_logged", lambda *args: None)
+    module.evaluate(tmp_path, tmp_path, tmp_path, output, validate_only=True, overwrite=True)
+    assert not (output / "scores.json").exists()
+    assert not (output / "epochs.json").exists()
+    assert (output / "notes.txt").read_text() == "keep"
+    assert json.loads((output / "evaluation.json").read_text())["official_protocol_verified"] is True
 
 
 def test_target_cache_preserves_order_and_binary_membership():

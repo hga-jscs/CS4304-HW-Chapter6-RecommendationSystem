@@ -1,6 +1,6 @@
 # 拓展任务：Synerise 用户行为表征
 
-本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。当前方法是本项目的轻量基线，已完成课程指定的三项官方公开任务的本地评估。
+本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。208 维基线已完成课程指定的三项官方公开任务的本地评估；另提供独立列标准化和历史热门商品/类目增强模式，用于后续受控对比。
 
 2026-11-17 已在完整官方预处理数据上生成 100 万用户的 208 维表征，耗时 109.4 秒，并通过固定版本的官方格式验证器。文件校验值与表征环境记录见 [baseline_validation.json](baseline_validation.json)；完整评估的成绩、环境和数据校验值见 [baseline_scores.json](baseline_scores.json)。
 
@@ -53,9 +53,33 @@ python -m extension.build_embeddings --data-directory data/extension --output-di
 - 散列直方图使用 30 天半衰期。`--decay-days 0` 可用于无衰减消融，其余统计保持一致。
 - 搜索量化代码按“坐标、类别编号”编码，不把类别编号大小当作连续语义距离；未使用商品名称量化表征。
 - 所有特征做 `log1p`，避免重度用户计数在 `float16` 中溢出。没有历史事件的目标用户仍保留对应行。
-- 流式读取 Parquet；100 万用户的主要 `float32` 累加矩阵约 832 MB，最终用户向量约 416 MB，另有分批数据、用户索引与商品属性的内存开销。`--batch-size` 控制分批内存。
+- 流式读取 Parquet；100 万用户的主要 `float32` 累加矩阵约 832 MB，最终用户向量约 416 MB。累加矩阵使用磁盘 memmap，另有分批数据、用户索引与商品属性的内存开销。`--batch-size` 控制分批读取，输出和标准化最多按 20,000 行分块。
 
-输出 `client_ids.npy`（一维 `int64`）和 `embeddings.npy`（二维 `float16`），行序与官方 `relevant_clients.npy` 一致；`features.json` 记录列定义，`manifest.json` 记录数据文件、时间边界、参数、版本和耗时。输出目录已有同名结果时停止，避免覆盖实验。
+输出 `client_ids.npy`（一维 `int64`）和 `embeddings.npy`（二维 `float16`），行序与官方 `relevant_clients.npy` 一致；`features.json` 记录列定义，`manifest.json` 记录数据文件、时间边界、参数、版本和耗时。重复运行可加 `--overwrite` 覆盖本流程的既定产物，目录中的其他文件保留，遗留临时矩阵会在重试时重建。
+
+### 独立标准化消融
+
+直接使用已生成的同一份表示，只增加按列标准化及 `[-10, 10]` 截断，不必重新扫描全部历史：
+
+```text
+python -m extension.standardize --embeddings-directory outputs/extension/aggregates --output-directory outputs/extension/standardized
+```
+
+均值和总体标准差使用全部已有用户向量计算，不读取下游标签；常量列的除数设为 1。处理分块进行，源表示保持不变，参数保存在 `standardization.json`。这可检验固定三轮训练下的尺度影响，但官方网络内部已有 LayerNorm，不能预先保证标准化会涨分。独立标准化以原始 `float16` 文件为输入；构建器的 `--standardize` 则作用在最终量化前的 `float32` 特征上，记录时区分这两种入口。
+
+### 历史信息增强模式
+
+```text
+python -m extension.build_embeddings --data-directory data/extension --output-directory outputs/extension/enhanced --mode enhanced --standardize
+```
+
+默认在实际数据上为 673 维，包含以下改动：
+
+- 从历史购买和加购频次中选出热门 SKU/类目，两者各自排序；购买保留 Top-128、加购 Top-64、移除 Top-32 的独立衰减计数，其余条目仍进长尾哈希桶。具体编号保存在 manifest，选择过程不读 `target/`。单个字段不足指定数量时按实际数量输出。
+- 价格字段改为桶编号的均值、最大值、标准差、30 天均值、观察数和五个有序区间的衰减计数。它们描述价格分位桶，不代表实际消费金额。
+- 增加各事件的历史存在指示、购买/加购/搜索等平滑计数比、浏览数与历史跨度之比，以及至少两次购买时的 `span / (count - 1)` 平均间隔和相对最近购买时间；单次或无购买用户的间隔特征为 0。
+
+默认增强矩阵临时文件约 2.69 GB（`float32`），输出约 1.35 GB（`float16`）；额外内存用于输入分块、热门项统计和属性映射。可用 `--top-k` 缩小精确偏好块。增加维度和消除部分碰撞不等于保证提升；商品名称 PQ 和图分解尚未加入这一轮改动。基础模式仍保留原来的 208 维计算，便于与历史结果比较。
 
 ## 官方验证与评测
 
@@ -73,7 +97,9 @@ python -m extension.evaluate --official-directory external/recsys2025 --data-dir
 python -m extension.evaluate --official-directory external/recsys2025 --data-directory data/extension --embeddings-directory outputs/extension/aggregates --score-directory outputs/extension/scores --accelerator gpu --device 0 --num-workers 0 --cache-targets
 ```
 
-也可通过 `--python` 指定官方环境的 Python 路径。入口核对官方提交及受版本控制文件未被修改，先运行原始 `validator.run`，初始化随机种子后再执行原始 `training_pipeline.train` 的 `churn`、`propensity_category`、`propensity_sku`。入口种子默认为 42；官方网络内部的 `torch.manual_seed(1278)` 保持原样，模型和训练参数均未修改。不提供关闭用户覆盖检查或替换官方指标的开关。CPU 支持 `--accelerator cpu`，但完整官方模型训练通常更适合 GPU。
+也可通过 `--python` 指定官方环境的 Python 路径。入口默认核对官方提交及受版本控制文件未被修改，先运行原始 `validator.run`，初始化随机种子后再执行原始 `training_pipeline.train` 的 `churn`、`propensity_category`、`propensity_sku`。入口种子默认为 42；官方网络内部的 `torch.manual_seed(1278)` 保持原样，模型和训练参数均未修改。不提供关闭用户覆盖检查或替换官方指标的开关。CPU 支持 `--accelerator cpu`，但完整官方模型训练通常更适合 GPU。
+
+实验重跑可加 `--overwrite`，只清除旧的三份结果 JSON，重新写入日志，其他文件不删除。调试修改过的官方代码时可显式加 `--allow-modified-official`；结果会记录真实提交和受版本控制文件的改动，并将 `official_protocol_verified` 设为 `false`。正式性能对比仍使用固定、无改动的官方代码，不能把调试结果与正式结果混为一谈。
 
 官方验证失败时进程返回非零退出码；只有三项训练成功且分数文件完整时才记录 `training_completed: true`。官方分数写入 `scores.json`，最佳 epoch 写入 `epochs.json`，执行命令与官方版本写入 `evaluation.json`，终端日志保留在 `validation.log` 和 `training.log`。
 
