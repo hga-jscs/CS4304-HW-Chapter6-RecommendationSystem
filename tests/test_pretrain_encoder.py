@@ -10,7 +10,7 @@ from extension.build_embeddings import EVENTS, build_embeddings
 from extension.pretrain_encoder import (EMPTY_TIME, SEQUENCE_DTYPE, extract_embeddings,
     multitask_loss, prepare_training_data, temporal_boundary, train_encoder, update_recent)
 from extension.pretrain_encoder import training_positive_weights
-from extension.pretrain_encoder import (binary_auc, make_encoder, prepare_multiwindow_data,
+from extension.pretrain_encoder import (binary_auc, load_windows, make_encoder, prepare_multiwindow_data,
                                        row_major_cache, train_multiwindow_encoder)
 
 
@@ -217,14 +217,35 @@ def test_multiwindow_boundaries_shared_coordinates_and_user_split(tmp_path, monk
     assert metadata["official_target_directory_read"] is False
 
 
-def test_multiwindow_training_isolates_validation_and_full_history(tmp_path):
+@pytest.mark.parametrize("include_delayed", [False, True])
+def test_multiwindow_training_isolates_validation_and_full_history(tmp_path, include_delayed):
     torch = pytest.importorskip("torch")
     torch.set_num_threads(1)
     source = multiwindow_example(tmp_path)
     cache, other_cache = tmp_path / "cache", tmp_path / "other_cache"
     first, second = tmp_path / "first", tmp_path / "second"
     prepare_multiwindow_data(source, cache, sequence_length=8, batch_size=4, validation_fraction=0.25,
-                             class_selection="training_targets")
+                             class_selection="training_targets", include_delayed_window=include_delayed)
+    metadata = json.loads((cache / "manifest.json").read_text())
+    windows = load_windows(cache, metadata)
+    pairs = 3 if include_delayed else 2
+    assert len(windows) == pairs
+    assert [window["head_group"] for window in windows[:2]] == [0, 0]
+    if include_delayed:
+        assert windows[2]["name"] == "earlier_delayed"
+        assert windows[2]["matrix"] is windows[0]["matrix"]
+        assert windows[2]["sequence"] is windows[0]["sequence"]
+        assert windows[2]["eligible"] is windows[0]["eligible"]
+        assert not windows[2]["eligible"][6] and windows[1]["eligible"][6]
+        assert windows[2]["labels"] is windows[1]["labels"]
+        assert windows[2]["input_cutoff_utc"] == windows[0]["input_cutoff_utc"]
+        assert windows[2]["target_start_inclusive_utc"] == "2022-10-27T00:00:00+00:00"
+        assert windows[2]["target_end_inclusive_utc"] == windows[1]["target_end_inclusive_utc"]
+        assert windows[2]["forecast_gap_days"] == 14
+        assert windows[2]["head_group"] == 1
+    assert not (cache / "earlier_delayed").exists()
+    assert metadata["class_selection_purchase_events"] == 6  # Later targets are not counted twice.
+    assert json.loads((cache / "classes.json").read_text()) == {"sku": [999, 100, 200], "category": [9, 1, 2]}
     result = train_multiwindow_encoder(cache, first, epochs=1, batch_size=3, device="cpu", seed=7,
                                       churn_weight_mode="unit", churn_multiplier=3)
     validation = np.load(cache / "validation_users.npy")
@@ -237,7 +258,7 @@ def test_multiwindow_training_isolates_validation_and_full_history(tmp_path):
     purchases.loc[changed, "sku"] = 100
     purchases.to_parquet(purchase_path, index=False)
     prepare_multiwindow_data(source, other_cache, sequence_length=8, batch_size=4, validation_fraction=0.25,
-                             class_selection="training_targets")
+                             class_selection="training_targets", include_delayed_window=include_delayed)
     assert (cache / "classes.json").read_bytes() == (other_cache / "classes.json").read_bytes()
     assert (cache / "earlier" / "feature_state.npz").read_bytes() == (other_cache / "earlier" / "feature_state.npz").read_bytes()
     np.testing.assert_array_equal(validation, np.load(other_cache / "validation_users.npy"))
@@ -267,16 +288,30 @@ def test_multiwindow_training_isolates_validation_and_full_history(tmp_path):
     for key in left["model"]:
         assert torch.equal(left["model"][key], right["model"][key])
     assert left["validation_weighted_bce"] != right["validation_weighted_bce"]
-    assert result["training_window_rows"] == 12
-    assert result["validation_window_rows"] == 4
+    assert result["training_window_rows"] == 6 * pairs
+    assert result["validation_window_rows"] == 2 * pairs
+    assert result["training_pairs"] == pairs
+    assert result["normalization_input_windows"] == 2
     assert result["churn_positive_weight"] == 1
-    assert set(result["epochs"][0]["validation"]["windows"]) == {"earlier", "later"}
+    assert set(result["epochs"][0]["validation"]["windows"]) == {window["name"] for window in windows}
+    head_groups = {"immediate", "delayed"} if include_delayed else {"immediate"}
+    assert set(result["epochs"][0]["validation"]["head_groups"]) == head_groups
+    assert set(result["epochs"][0]["training_head_groups"]) == head_groups
+    for group in range(len(head_groups)):
+        selected = [window for window in windows if window["head_group"] == group]
+        expected = training_positive_weights([window["labels"] for window in selected],
+            [window["eligible"] for window in selected], np.flatnonzero(~validation), 3, "unit")
+        np.testing.assert_array_equal(left["positive_weights"][group].numpy(), expected)
     manifest = extract_embeddings(cache, first, batch_size=3, device="cpu")
     values = np.load(first / "embeddings.npy")
-    assert values.shape == (8, 393)
+    assert values.shape == (8, 594 if include_delayed else 393)
     assert np.isfinite(values).all()
     assert ((values[:, 192:] >= 0) & (values[:, 192:] <= 1)).all()
-    assert manifest["blocks"][2] == {"name": "prediction_scores", "start": 192, "stop": 393, "kind": "probability"}
+    assert manifest["blocks"][2] == {"name": "immediate_scores" if include_delayed else "prediction_scores",
+                                     "start": 192, "stop": 393, "kind": "probability"}
+    if include_delayed:
+        assert manifest["blocks"][3] == {"name": "delayed_scores", "start": 393, "stop": 594, "kind": "probability"}
+    assert len(json.loads((first / "features.json").read_text())) == values.shape[1]
     np.testing.assert_array_equal(np.load(first / "client_ids.npy"), np.arange(10, 18))
 
 
@@ -325,3 +360,30 @@ def test_row_cache_layout_preserves_feature_values(tmp_path):
     actual = np.load(path, mmap_mode="r")
     assert actual.flags.c_contiguous
     np.testing.assert_array_equal(actual, expected)
+
+
+def test_delayed_head_routes_gradients_and_extracts_both_horizons():
+    torch = pytest.importorskip("torch")
+    torch.set_num_threads(1)
+    model = make_encoder(4, "multiwindow", include_delayed_window=True).eval()
+    inputs = (torch.ones((2, 4)), torch.ones((2, 3), dtype=torch.long),
+              torch.ones((2, 3), dtype=torch.long), torch.ones((2, 3), dtype=torch.long),
+              torch.zeros((2, 3, 3)), torch.tensor([3, 3]))
+    latent, immediate = model(*inputs, head_group=0)
+    immediate.sum().backward()
+    assert model.churn_head.weight.grad is not None
+    assert all(parameter.grad is None for parameter in model.delayed_heads.parameters())
+    model.zero_grad(set_to_none=True)
+    _, delayed = model(*inputs, head_group=1)
+    delayed.sum().backward()
+    assert model.churn_head.weight.grad is None
+    assert model.category_head.weight.grad is None
+    assert model.sku_head.weight.grad is None
+    assert all(parameter.grad is not None for parameter in model.delayed_heads.parameters())
+    assert model.shared[0].weight.grad is not None and model.churn[0].weight.grad is not None
+    with torch.no_grad():
+        both_latent, both = model(*inputs, head_group=None)
+    torch.testing.assert_close(both_latent, latent)
+    torch.testing.assert_close(both[:, :201], immediate)
+    torch.testing.assert_close(both[:, 201:], delayed)
+    assert torch.cat((both_latent, both.sigmoid()), dim=1).shape == (2, 594)

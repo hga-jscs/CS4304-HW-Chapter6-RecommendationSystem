@@ -1,4 +1,4 @@
-"""Learn historical encoders: legacy 457 dimensions or two-window 393 dimensions.
+"""Learn historical encoders: legacy 457, multiwindow 393, or delayed-head 594 dimensions.
 
 The official target directory is never read. Preparation, training and extraction
 are separate stages so the expensive historical caches can be reused.
@@ -185,7 +185,7 @@ def prepare_training_data(data_directory: str | Path, cache_directory: str | Pat
     return manifest
 
 
-def make_encoder(aggregate_dimensions: int, mode: str = "legacy"):
+def make_encoder(aggregate_dimensions: int, mode: str = "legacy", include_delayed_window: bool = False):
     """Import torch only for the optional pretraining path."""
     import torch
     from torch import nn
@@ -236,8 +236,10 @@ def make_encoder(aggregate_dimensions: int, mode: str = "legacy"):
             self.churn_head = nn.Linear(64, 1)
             self.category_head = nn.Linear(128, 100)
             self.sku_head = nn.Linear(128, 100)
+            if include_delayed_window:
+                self.delayed_heads = nn.ModuleList([nn.Linear(64, 1), nn.Linear(128, 100), nn.Linear(128, 100)])
 
-        def forward(self, aggregates, item, category, event, numeric, lengths):
+        def forward(self, aggregates, item, category, event, numeric, lengths, head_group=0):
             sequence = torch.cat((self.item(item), self.category(category), self.event(event), numeric), dim=-1)
             packed = nn.utils.rnn.pack_padded_sequence(sequence, lengths.clamp_min(1).cpu(),
                                                       batch_first=True, enforce_sorted=False)
@@ -252,7 +254,19 @@ def make_encoder(aggregate_dimensions: int, mode: str = "legacy"):
             joined = torch.cat((aggregate, hidden), dim=1)
             shared, churn = self.shared(joined), self.churn(joined)
             churn = self.churn_norm(churn + self.churn_residual(churn))
-            logits = torch.cat((self.churn_head(churn), self.category_head(shared), self.sku_head(shared)), dim=1)
+            if head_group == 0:
+                logits = torch.cat((self.churn_head(churn), self.category_head(shared), self.sku_head(shared)), dim=1)
+            elif head_group == 1 and include_delayed_window:
+                logits = torch.cat((self.delayed_heads[0](churn), self.delayed_heads[1](shared),
+                                    self.delayed_heads[2](shared)), dim=1)
+            elif head_group is None:
+                logits = torch.cat((self.churn_head(churn), self.category_head(shared), self.sku_head(shared)), dim=1)
+                if include_delayed_window:
+                    delayed = torch.cat((self.delayed_heads[0](churn), self.delayed_heads[1](shared),
+                                         self.delayed_heads[2](shared)), dim=1)
+                    logits = torch.cat((logits, delayed), dim=1)
+            else:
+                raise ValueError("Requested prediction head group was not configured")
             return torch.cat((shared, churn), dim=1), logits
 
     if mode != "multiwindow":
@@ -538,7 +552,7 @@ def prepare_multiwindow_data(data_directory: str | Path, cache_directory: str | 
                             pseudo_days: int = 14, sequence_length: int = 64,
                             batch_size: int = 50_000, validation_fraction: float = 0.1,
                             seed: int = 42, overwrite: bool = False,
-                            class_selection: str = "prefix") -> dict:
+                            class_selection: str = "prefix", include_delayed_window: bool = False) -> dict:
     """Build two historical forecast windows with one user split and frozen coordinates."""
     from .behavior_features import build_behavior
     started = time.perf_counter()
@@ -663,25 +677,41 @@ def prepare_multiwindow_data(data_directory: str | Path, cache_directory: str | 
     metadata_windows = []
     for window in windows:
         metadata_windows.append({"name": window["name"],
+            "feature_window": window["name"], "target_window": window["name"],
+            "eligibility_window": window["name"], "forecast_gap_days": 0, "head_group": 0,
             "input_cutoff_utc": pd.Timestamp(window["input_cutoff"], tz="UTC").isoformat(),
             "target_start_inclusive_utc": pd.Timestamp(window["target_start"], tz="UTC").isoformat(),
             "target_end_inclusive_utc": pd.Timestamp(window["target_end"], tz="UTC").isoformat(),
             "churn_eligible_users": int(eligible[window["name"]].sum()),
             "label_support": window_support(targets[window["name"]], eligible[window["name"]], validation,
                                             {name: len(values) for name, values in classes.items()}, batch_size)})
+    if include_delayed_window:
+        metadata_windows.append({"name": "earlier_delayed", "feature_window": "earlier",
+            "target_window": "later", "eligibility_window": "earlier", "forecast_gap_days": pseudo_days,
+            "head_group": 1,
+            "input_cutoff_utc": pd.Timestamp(earlier_boundary - 1, tz="UTC").isoformat(),
+            "target_start_inclusive_utc": pd.Timestamp(later_boundary, tz="UTC").isoformat(),
+            "target_end_inclusive_utc": pd.Timestamp(cutoff, tz="UTC").isoformat(),
+            "churn_eligible_users": int(eligible["earlier"].sum()),
+            "label_support": window_support(targets["later"], eligible["earlier"], validation,
+                                            {name: len(values) for name, values in classes.items()}, batch_size)})
     manifest = {"created_utc": datetime.now(timezone.utc).isoformat(), "mode": "multiwindow",
         "clients": len(ids), "aggregate_dimensions": len(names[0]), "sequence_length": sequence_length,
         "pseudo_days": pseudo_days, "windows": metadata_windows,
+        "include_delayed_window": include_delayed_window, "training_pairs": len(metadata_windows),
+        "prediction_head_groups": ["immediate", "delayed"] if include_delayed_window else ["immediate"],
+        "unique_input_windows": ["earlier", "later"],
         "full_input_inclusive_cutoff_utc": pd.Timestamp(cutoff, tz="UTC").isoformat(),
         "feature_state_sha256": features["earlier"]["state_sha256"],
         "feature_fit_cutoff_utc": features["earlier"]["fit_cutoff_utc"],
         "class_selection": class_selection,
         "class_selection_scope": ("Earliest pseudo-input purchases only" if class_selection == "prefix" else
                                    "Purchases of training users in both pseudo-target windows only; validation users excluded"),
+        "class_selection_purchase_events": int(sum(counts["sku"].values())),
         "classes_fixed_across_windows": True, "aggregate_cache_layout": "C-order for contiguous minibatch row reads",
         "class_counts": {name: len(values) for name, values in classes.items()},
         "validation_users": int(validation.sum()), "training_users": int((~validation).sum()),
-        "user_split": "One seed-random user split, reused by both windows; no row-level split",
+        "user_split": "One seed-random user split, reused by all training pairs; no row-level split",
         "query_sequence_encoding": "Stable CRC32 of PQ bytes modulo 8192; categorical content hash, not semantic alignment",
         "sequence_order": "Latest events, deterministic chronological/tie ordering",
         "official_target_directory_read": False, "seed": seed,
@@ -691,13 +721,21 @@ def prepare_multiwindow_data(data_directory: str | Path, cache_directory: str | 
 
 
 def load_windows(cache, metadata):
-    return [{**window,
-             "matrix": np.load(cache / window["name"] / "embeddings.npy", mmap_mode="r"),
-             "sequence": np.load(cache / f"{window['name']}_sequence.npy", mmap_mode="r"),
-             "labels": np.load(cache / f"{window['name']}_targets.npy", mmap_mode="r"),
-             "eligible": np.load(cache / f"{window['name']}_eligible.npy"),
-             "cutoff": pd.Timestamp(window["input_cutoff_utc"]).value}
-            for window in metadata["windows"]]
+    windows = metadata["windows"]
+    inputs = {name: (np.load(cache / name / "embeddings.npy", mmap_mode="r"),
+                    np.load(cache / f"{name}_sequence.npy", mmap_mode="r"))
+              for name in dict.fromkeys(window.get("feature_window", window["name"]) for window in windows)}
+    targets = {name: np.load(cache / f"{name}_targets.npy", mmap_mode="r")
+               for name in dict.fromkeys(window.get("target_window", window["name"]) for window in windows)}
+    eligible = {name: np.load(cache / f"{name}_eligible.npy")
+                for name in dict.fromkeys(window.get("eligibility_window", window["name"]) for window in windows)}
+    return [{**window, "feature_window": window.get("feature_window", window["name"]),
+             "head_group": window.get("head_group", 0),
+             "matrix": inputs[window.get("feature_window", window["name"])][0],
+             "sequence": inputs[window.get("feature_window", window["name"])][1],
+             "labels": targets[window.get("target_window", window["name"])],
+             "eligible": eligible[window.get("eligibility_window", window["name"])],
+             "cutoff": pd.Timestamp(window["input_cutoff_utc"]).value} for window in windows]
 
 
 def evaluate_windows(model, windows, indices, mean, scale, positive_weights, class_counts,
@@ -705,7 +743,7 @@ def evaluate_windows(model, windows, indices, mean, scale, positive_weights, cla
     import torch
     model.eval()
     totals, counts = np.zeros(3, np.float64), np.zeros(3, np.int64)
-    per_window = {}
+    per_window, per_head = {}, {}
     with torch.no_grad():
         for window in windows:
             sums = np.zeros(3, np.float64)
@@ -714,11 +752,11 @@ def evaluate_windows(model, windows, indices, mean, scale, positive_weights, cla
             for start in range(0, len(indices), batch_size):
                 rows = indices[start:start + batch_size]
                 _, logits = model(*model_inputs(window["matrix"], window["sequence"], rows,
-                                      window["cutoff"], mean, scale, device))
+                                      window["cutoff"], mean, scale, device), head_group=window["head_group"])
                 target = torch.from_numpy(window["labels"][rows].astype(np.float32)).to(device)
                 active = torch.from_numpy(window["eligible"][rows]).to(device)
                 losses = torch.nn.functional.binary_cross_entropy_with_logits(logits, target,
-                                            pos_weight=positive_weights, reduction="none")
+                                            pos_weight=positive_weights[window["head_group"]], reduction="none")
                 sums += [float(losses[active, 0].sum()),
                          float(losses[:, 1:1 + class_counts["category"]].sum()),
                          float(losses[:, 101:101 + class_counts["sku"]].sum())]
@@ -728,15 +766,28 @@ def evaluate_windows(model, windows, indices, mean, scale, positive_weights, cla
                                      len(indices) * class_counts["sku"]])
             values = sums / np.maximum(denominators, 1)
             per_window[window["name"]] = {
+                "head_group": window["head_group"],
                 "task_bce": dict(zip(("churn", "category", "sku"), values.tolist())),
                 "active_churn_auc": binary_auc(np.concatenate(labels), np.concatenate(scores)),
                 "active_users": active_count}
+            group = per_head.setdefault(window["head_group"], {"sums": np.zeros(3), "counts": np.zeros(3),
+                                                                "labels": [], "scores": []})
+            group["sums"] += sums
+            group["counts"] += denominators
+            group["labels"].extend(labels)
+            group["scores"].extend(scores)
             totals += sums
             counts += denominators
     task_losses = totals / np.maximum(counts, 1)
     return {"weighted_bce": float(task_losses @ np.array([churn_multiplier, 1, 1])),
             "task_bce": dict(zip(("churn", "category", "sku"), task_losses.tolist())),
-            "windows": per_window}
+            "windows": per_window,
+            "head_groups": {("immediate" if group == 0 else "delayed"): {
+                "task_bce": dict(zip(("churn", "category", "sku"),
+                                     (values["sums"] / np.maximum(values["counts"], 1)).tolist())),
+                "active_churn_auc": binary_auc(np.concatenate(values["labels"]), np.concatenate(values["scores"])),
+                "active_user_window_rows": int(values["counts"][0])}
+                for group, values in per_head.items()}}
 
 
 def train_multiwindow_encoder(cache_directory: str | Path, output_directory: str | Path,
@@ -758,16 +809,21 @@ def train_multiwindow_encoder(cache_directory: str | Path, output_directory: str
     windows = load_windows(cache, metadata)
     validation = np.load(cache / "validation_users.npy")
     training_indices, validation_indices = np.flatnonzero(~validation), np.flatnonzero(validation)
-    mean, scale = feature_statistics([window["matrix"] for window in windows], training_indices, batch_size)
-    weights = training_positive_weights([window["labels"] for window in windows],
-        [window["eligible"] for window in windows], training_indices, batch_size, churn_weight_mode)
+    unique_inputs = {window["feature_window"]: window["matrix"] for window in windows}
+    mean, scale = feature_statistics(list(unique_inputs.values()), training_indices, batch_size)
+    include_delayed = metadata.get("include_delayed_window", False)
+    head_groups = ["immediate", "delayed"] if include_delayed else ["immediate"]
+    weights = np.stack([training_positive_weights(
+        [window["labels"] for window in windows if window["head_group"] == group],
+        [window["eligible"] for window in windows if window["head_group"] == group],
+        training_indices, batch_size, churn_weight_mode) for group in range(len(head_groups))])
     positive_weights = torch.from_numpy(weights).to(device)
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
-    model = make_encoder(len(mean), mode="multiwindow").to(device)
+    model = make_encoder(len(mean), mode="multiwindow", include_delayed_window=include_delayed).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=0.0001)
     generator = np.random.default_rng(seed)
     best, stale, history = float("inf"), 0, []
@@ -779,16 +835,17 @@ def train_multiwindow_encoder(cache_directory: str | Path, output_directory: str
                    for start in range(0, len(shuffled), batch_size)]
         generator.shuffle(batches)
         training_sums, training_counts = np.zeros(3), np.zeros(3)
+        group_sums, group_counts = np.zeros((len(head_groups), 3)), np.zeros((len(head_groups), 3))
         for number, start in batches:
             window = windows[number]
             indices = shuffled[start:start + batch_size]
             optimizer.zero_grad(set_to_none=True)
             _, logits = model(*model_inputs(window["matrix"], window["sequence"], indices,
-                                  window["cutoff"], mean, scale, device))
+                                  window["cutoff"], mean, scale, device), head_group=window["head_group"])
             active = torch.from_numpy(window["eligible"][indices].astype(np.float32)).to(device)
             components = loss_components(logits,
                 torch.from_numpy(window["labels"][indices].astype(np.float32)).to(device),
-                active, positive_weights, metadata["class_counts"])
+                active, positive_weights[window["head_group"]], metadata["class_counts"])
             loss = churn_multiplier * components[0] + components[1] + components[2]
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 5)
@@ -796,19 +853,26 @@ def train_multiwindow_encoder(cache_directory: str | Path, output_directory: str
             counts = np.array([int(window["eligible"][indices].sum()),
                 len(indices) * metadata["class_counts"]["category"],
                 len(indices) * metadata["class_counts"]["sku"]])
-            training_sums += np.array([float(value.detach()) for value in components]) * counts
+            sums = np.array([float(value.detach()) for value in components]) * counts
+            training_sums += sums
             training_counts += counts
+            group_sums[window["head_group"]] += sums
+            group_counts[window["head_group"]] += counts
         validation_result = evaluate_windows(model, windows, validation_indices, mean, scale, positive_weights,
                             metadata["class_counts"], churn_multiplier, batch_size, device)
         history.append({"epoch_zero_based": epoch,
             "training_task_bce": dict(zip(("churn", "category", "sku"),
                                            (training_sums / np.maximum(training_counts, 1)).tolist())),
+            "training_head_groups": {name: dict(zip(("churn", "category", "sku"),
+                (group_sums[group] / np.maximum(group_counts[group], 1)).tolist()))
+                for group, name in enumerate(head_groups)},
             "validation": validation_result, "seconds": round(time.perf_counter() - epoch_start, 3)})
         print(json.dumps(history[-1]), flush=True)
         value = validation_result["weighted_bce"]
         if value < best:
             best, stale = value, 0
             torch.save({"model": model.state_dict(), "mode": "multiwindow", "aggregate_dimensions": len(mean),
+                "include_delayed_window": include_delayed, "prediction_head_groups": head_groups,
                 "mean": torch.from_numpy(mean), "scale": torch.from_numpy(scale),
                 "positive_weights": torch.from_numpy(weights), "epoch": epoch,
                 "validation_weighted_bce": value, "seed": seed,
@@ -818,17 +882,21 @@ def train_multiwindow_encoder(cache_directory: str | Path, output_directory: str
         if stale >= patience:
             break
     result = {"created_utc": datetime.now(timezone.utc).isoformat(), "mode": "multiwindow", "seed": seed,
-        "selection": "Minimum held-out-user weighted task BCE pooled over the two historical windows",
+        "selection": "Minimum held-out-user weighted task BCE pooled over the historical training pairs",
         "training_users": len(training_indices), "validation_users": len(validation_indices),
         "training_window_rows": len(training_indices) * len(windows),
         "validation_window_rows": len(validation_indices) * len(windows),
-        "normalization_scope": "Training users from both pseudo-input windows only; no full-history or validation rows",
+        "training_pairs": len(windows), "normalization_input_windows": len(unique_inputs),
+        "prediction_head_groups": head_groups,
+        "normalization_scope": "Training users from each unique pseudo-input window once; no full-history or validation rows",
         "user_split": metadata["user_split"], "official_target_directory_read": False,
         "class_selection": metadata["class_selection"], "class_selection_scope": metadata["class_selection_scope"],
         "feature_state_sha256": metadata["feature_state_sha256"],
         "class_counts": metadata["class_counts"], "best_validation_weighted_bce": best,
         "churn_weight_mode": churn_weight_mode, "churn_multiplier": churn_multiplier,
-        "churn_positive_weight": float(weights[0]), "epochs": history, "batch_size": batch_size,
+        "churn_positive_weight": float(weights[0, 0]),
+        "churn_positive_weights_by_head": {name: float(weights[group, 0]) for group, name in enumerate(head_groups)},
+        "epochs": history, "batch_size": batch_size,
         "learning_rate": learning_rate, "device": device, "torch_version": torch.__version__,
         "seconds": round(time.perf_counter() - started, 3)}
     write_json(output / "training.json", result)
@@ -847,33 +915,44 @@ def extract_multiwindow_embeddings(cache_directory, output_directory, batch_size
     checkpoint = torch.load(output / "encoder.pt", map_location="cpu", weights_only=True)
     matrix = np.load(cache / "full" / "embeddings.npy", mmap_mode="r")
     sequence = np.load(cache / "full_sequence.npy", mmap_mode="r")
-    model = make_encoder(checkpoint["aggregate_dimensions"], mode="multiwindow").to(device)
+    include_delayed = checkpoint.get("include_delayed_window", False)
+    head_groups = ["immediate", "delayed"] if include_delayed else ["immediate"]
+    dimensions = 192 + 201 * len(head_groups)
+    model = make_encoder(checkpoint["aggregate_dimensions"], mode="multiwindow",
+                         include_delayed_window=include_delayed).to(device)
     model.load_state_dict(checkpoint["model"])
     model.eval()
-    result = np.lib.format.open_memmap(path, mode="w+", dtype=np.float16, shape=(len(matrix), 393))
+    result = np.lib.format.open_memmap(path, mode="w+", dtype=np.float16, shape=(len(matrix), dimensions))
     classes = json.loads((cache / "classes.json").read_text(encoding="utf-8"))
     cutoff = pd.Timestamp(metadata["full_input_inclusive_cutoff_utc"]).value
     with torch.no_grad():
         for start in range(0, len(matrix), batch_size):
             rows = np.arange(start, min(start + batch_size, len(matrix)))
             latent, logits = model(*model_inputs(matrix, sequence, rows, cutoff,
-                                  checkpoint["mean"].numpy(), checkpoint["scale"].numpy(), device))
+                                  checkpoint["mean"].numpy(), checkpoint["scale"].numpy(), device), head_group=None)
             scores = logits.sigmoid()
-            scores[:, 1 + len(classes["category"]):101] = 0
-            scores[:, 101 + len(classes["sku"]):201] = 0
+            for group in range(len(head_groups)):
+                offset = group * 201
+                scores[:, offset + 1 + len(classes["category"]):offset + 101] = 0
+                scores[:, offset + 101 + len(classes["sku"]):offset + 201] = 0
             result[rows] = torch.cat((latent, scores), dim=1).cpu().numpy().astype(np.float16)
     result.flush()
     np.save(output / "client_ids.npy", np.load(cache / "client_ids.npy"), allow_pickle=False)
-    names = [f"shared_{i}" for i in range(128)] + [f"churn_{i}" for i in range(64)] + ["pseudo_churn_score"]
-    names += [f"pseudo_{kind}_score_{classes[kind][i] if i < len(classes[kind]) else 'unused_' + str(i)}"
-              for kind in ("category", "sku") for i in range(100)]
+    names = [f"shared_{i}" for i in range(128)] + [f"churn_{i}" for i in range(64)]
+    blocks = [{"name": "shared", "start": 0, "stop": 128, "kind": "bottleneck"},
+              {"name": "churn", "start": 128, "stop": 192, "kind": "bottleneck"}]
+    for group, name in enumerate(head_groups):
+        prefix = f"pseudo_{name}" if include_delayed else "pseudo"
+        names.append(f"{prefix}_churn_score")
+        names += [f"{prefix}_{kind}_score_{classes[kind][i] if i < len(classes[kind]) else 'unused_' + str(i)}"
+                  for kind in ("category", "sku") for i in range(100)]
+        blocks.append({"name": f"{name}_scores" if include_delayed else "prediction_scores",
+                       "start": 192 + group * 201, "stop": 192 + (group + 1) * 201, "kind": "probability"})
     write_json(output / "features.json", names)
     manifest = {"created_utc": datetime.now(timezone.utc).isoformat(), "mode": "multiwindow",
-        "method": "Two historical windows; residual aggregate encoder, attentive GRU, separate churn branch",
-        "clients": len(matrix), "dimensions": 393, "dtype": "float16", "standardized": False,
-        "blocks": [{"name": "shared", "start": 0, "stop": 128, "kind": "bottleneck"},
-                   {"name": "churn", "start": 128, "stop": 192, "kind": "bottleneck"},
-                   {"name": "prediction_scores", "start": 192, "stop": 393, "kind": "probability"}],
+        "method": "Historical residual encoder, attentive GRU, separate churn branch and horizon-specific prediction heads",
+        "clients": len(matrix), "dimensions": dimensions, "dtype": "float16", "standardized": False,
+        "blocks": blocks, "prediction_head_groups": head_groups,
         "score_interpretation": "Sigmoid outputs, not calibrated probabilities; propensity heads use weighted BCE",
         "official_target_directory_read": False, "pseudo_window": metadata,
         "checkpoint_epoch_zero_based": checkpoint["epoch"], "seed": checkpoint["seed"],
@@ -906,17 +985,22 @@ def main() -> None:
     parser.add_argument("--churn-multiplier", type=float, default=1.0)
     parser.add_argument("--class-selection", choices=("prefix", "training_targets"), default="prefix",
                         help="Preparation only: auxiliary head classes; feature vocabularies always fit the earliest input")
+    parser.add_argument("--include-delayed-window", action="store_true",
+                        help="Add earliest features paired with the later target window; reuse input files and user mask")
     parser.add_argument("--overwrite", action="store_true")
     arguments = parser.parse_args()
     if arguments.stage in ("prepare", "all"):
         mode = arguments.mode or "legacy"
         if mode == "legacy" and arguments.class_selection != "prefix":
             raise ValueError("training_targets class selection requires --mode multiwindow")
+        if mode == "legacy" and arguments.include_delayed_window:
+            raise ValueError("Delayed target pairing requires --mode multiwindow")
         prepare = prepare_multiwindow_data if mode == "multiwindow" else prepare_training_data
         prepare(arguments.data_directory, arguments.cache_directory, arguments.pseudo_days,
                 arguments.sequence_length if arguments.sequence_length is not None else (64 if mode == "multiwindow" else 32),
                 arguments.prepare_batch_size, arguments.validation_fraction, arguments.seed, arguments.overwrite,
-                **({"class_selection": arguments.class_selection} if mode == "multiwindow" else {}))
+                **({"class_selection": arguments.class_selection,
+                    "include_delayed_window": arguments.include_delayed_window} if mode == "multiwindow" else {}))
     if arguments.stage in ("train", "all"):
         metadata = json.loads((arguments.cache_directory / "manifest.json").read_text(encoding="utf-8"))
         mode = metadata.get("mode", "legacy")
