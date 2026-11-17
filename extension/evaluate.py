@@ -1,4 +1,4 @@
-"""Run the unchanged, pinned Synerise validator and three official downstream tasks."""
+"""Run pinned Synerise evaluation, optionally caching equivalent downstream targets."""
 
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ def run_logged(command: list[str], directory: Path, log_path: Path) -> None:
         for line in process.stdout:
             print(line, end="", flush=True)
             log.write(line)
+            log.flush()
         code = process.wait()
         if code:
             raise subprocess.CalledProcessError(code, command)
@@ -44,7 +45,8 @@ def check_official_code(directory: Path) -> str:
 def evaluate(official_directory: str | Path, data_directory: str | Path,
              embeddings_directory: str | Path, score_directory: str | Path,
              python: str = sys.executable, accelerator: str = "gpu", device: str = "0",
-             num_workers: int = 0, validate_only: bool = False, seed: int = 42) -> dict:
+             num_workers: int = 0, validate_only: bool = False, seed: int = 42,
+             cache_targets: bool = False) -> dict:
     official_directory = Path(official_directory).resolve()
     data_directory = Path(data_directory).resolve()
     embeddings_directory = Path(embeddings_directory).resolve()
@@ -68,10 +70,14 @@ def evaluate(official_directory: str | Path, data_directory: str | Path,
     if not validate_only:
         if num_workers < 0:
             raise ValueError("num_workers must be non-negative")
-        # Only initialize random generators; execute the unchanged official module.
+        # Initialize random generators and optionally install the equivalent loader.
         initialize = ("import sys,runpy; from pytorch_lightning import seed_everything; "
-                      "seed_everything(int(sys.argv.pop(1)), workers=True); "
-                      "runpy.run_module('training_pipeline.train', run_name='__main__')")
+                      "seed_everything(int(sys.argv.pop(1)), workers=True); ")
+        if cache_targets:
+            project_root = str(Path(__file__).resolve().parents[1])
+            initialize += (f"sys.path.insert(0, {project_root!r}); "
+                           "from extension.target_cache import install; install(); ")
+        initialize += "runpy.run_module('training_pipeline.train', run_name='__main__')"
         training = [python, "-c", initialize, str(seed), "--data-dir", str(data_directory),
                     "--embeddings-dir", str(embeddings_directory), "--tasks", *TASKS,
                     "--log-name", score_directory.name, "--accelerator", accelerator,
@@ -85,7 +91,8 @@ def evaluate(official_directory: str | Path, data_directory: str | Path,
         commands.append(training)
     result = {"official_repository": OFFICIAL_REPOSITORY, "official_commit": OFFICIAL_COMMIT,
               "validation_passed": True, "training_completed": not validate_only,
-              "tasks": list(TASKS) if not validate_only else [], "seed": seed, "commands": commands}
+              "tasks": list(TASKS) if not validate_only else [], "seed": seed,
+              "target_cache_enabled": cache_targets, "commands": commands}
     (score_directory / "evaluation.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return result
 
@@ -101,6 +108,8 @@ def main() -> None:
     parser.add_argument("--device", default="0")
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--cache-targets", action="store_true",
+                        help="Cache equivalent official targets in the downstream data loader only")
     parser.add_argument("--validate-only", action="store_true")
     print(json.dumps(evaluate(**vars(parser.parse_args())), indent=2))
 

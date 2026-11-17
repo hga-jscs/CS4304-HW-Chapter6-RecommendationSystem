@@ -60,12 +60,24 @@ python -m extension.evaluate --official-directory external/recsys2025 --data-dir
 格式验证仅需要 NumPy，可在表征环境运行。独立官方训练环境准备好后，用其 Python 运行：
 
 ```text
-python -m extension.evaluate --official-directory external/recsys2025 --data-directory data/extension --embeddings-directory outputs/extension/aggregates --score-directory outputs/extension/scores --accelerator gpu --device 0 --num-workers 0
+python -m extension.evaluate --official-directory external/recsys2025 --data-directory data/extension --embeddings-directory outputs/extension/aggregates --score-directory outputs/extension/scores --accelerator gpu --device 0 --num-workers 0 --cache-targets
 ```
 
-也可通过 `--python` 指定官方环境的 Python 路径。入口核对官方提交及受版本控制文件未被修改，先运行原始 `validator.run`，初始化随机种子后再执行原始 `training_pipeline.train` 的 `churn`、`propensity_category`、`propensity_sku`。种子默认为 42，可用 `--seed` 记录重复实验；未修改官方模型和训练参数。不提供关闭用户覆盖检查或替换官方指标的开关。CPU 支持 `--accelerator cpu`，但完整官方模型训练通常更适合 GPU。
+也可通过 `--python` 指定官方环境的 Python 路径。入口核对官方提交及受版本控制文件未被修改，先运行原始 `validator.run`，初始化随机种子后再执行原始 `training_pipeline.train` 的 `churn`、`propensity_category`、`propensity_sku`。入口种子默认为 42；官方网络内部的 `torch.manual_seed(1278)` 保持原样，模型和训练参数均未修改。不提供关闭用户覆盖检查或替换官方指标的开关。CPU 支持 `--accelerator cpu`，但完整官方模型训练通常更适合 GPU。
 
 官方验证失败时进程返回非零退出码；只有三项训练成功且分数文件完整时才记录 `training_completed: true`。官方分数写入 `scores.json`，最佳 epoch 写入 `epochs.json`，执行命令与官方版本写入 `evaluation.json`，终端日志保留在 `validation.log` 和 `training.log`。原始官方分数中的 `placeholder` 不是任务成绩。
+
+### 等价目标缓存
+
+`--cache-targets` 是可选的数据加载优化，省略时使用原版逐用户目标计算。原版每取一个用户都扫描完整目标表；缓存版在下游 Dataset 初始化时建立相同的购买集合和商品/类别成员矩阵，按原顺序返回新的 `float32` 标签数组。适配层仅在运行时替换 `training_pipeline.data_module.BehavioralDataset` 引用，官方源码文件保持不变；类别顺序、网络、优化器、指标、batch size 和三个 epoch 均不变。缓存只服务下游训练和验证，目标数据不会进入用户表征。
+
+验证命令：
+
+```text
+python -m extension.verify_target_cache --official-directory external/recsys2025 --data-directory data/extension --output outputs/extension/target_cache_validation.json
+```
+
+实测核对见 [target_cache_validation.json](target_cache_validation.json)：六个“任务 × 时间窗口”组合通过独立的全量正例集合及补集比较，覆盖 401,021,942 个标签单元；另对官方原函数抽样调用 17,193 个用户案例，并验证 18 个显式边界案例，均无差异。这里没有逐个调用全部用户的原函数。相同抽样集的目标查询加速约 328–466 倍，这个比例仅针对目标读取，不代表完整训练加速比例。
 
 ## 验证边界
 

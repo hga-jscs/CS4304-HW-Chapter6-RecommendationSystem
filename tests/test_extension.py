@@ -102,3 +102,28 @@ def test_relative_python_is_resolved_before_official_working_directory(tmp_path,
     monkeypatch.setattr(module, "run_logged", lambda command, directory, log: calls.append(command))
     module.evaluate("official", "data", "embeddings", "scores", python="environment/python.exe", validate_only=True)
     assert calls[0][0] == str(interpreter.resolve())
+
+
+def test_target_cache_preserves_order_and_binary_membership():
+    from extension.target_cache import create_target_cache
+
+    clients = np.array([7, 2, 9], dtype=np.int64)
+    targets = pd.DataFrame({"client_id": [7, 7, 7, 2, 99], "sku": [10, 10, 30, 99, 30]})
+    # Class order is deliberately reversed; duplicate events do not add counts.
+    result = create_target_cache(clients, targets, "sku", np.array([30, 10]))
+    np.testing.assert_array_equal(result, [[1, 1], [0, 0], [0, 0]])
+    np.testing.assert_array_equal(create_target_cache(clients, targets), [[0], [0], [1]])
+    assert result[0].astype(np.float32).dtype == np.float32
+
+
+def test_target_cache_empty_window_and_invalid_orders():
+    from extension.target_cache import create_target_cache
+
+    empty = pd.DataFrame({"client_id": pd.Series(dtype="int64"), "sku": pd.Series(dtype="int64")})
+    clients = np.array([8, 2])
+    np.testing.assert_array_equal(create_target_cache(clients, empty), [[1], [1]])
+    np.testing.assert_array_equal(create_target_cache(clients, empty, "sku", np.array([5])), [[0], [0]])
+    with pytest.raises(ValueError, match="unique client"):
+        create_target_cache(np.array([8, 8]), empty)
+    with pytest.raises(ValueError, match="unique"):
+        create_target_cache(clients, empty, "sku", np.array([5, 5]))
