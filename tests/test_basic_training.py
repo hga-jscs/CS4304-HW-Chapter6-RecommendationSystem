@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from basic.features import FeatureBuilder, load_training, read_interactions
+from basic.features import FeatureBuilder, INTERACTION_COLUMNS, load_training, load_unlabeled, read_interactions
 from basic.predict import predict
 from basic.train import parser, train
 
@@ -169,6 +169,9 @@ def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode, user_
     assert "sha256" not in manifest["train.csv"]
     configuration = json.loads((model_dir/"configuration.json").read_text(encoding="utf-8"))
     assert configuration["user_context_features"] is user_context_features
+    assert configuration["effective_statistics"]["rows"] == 400
+    assert metrics["unsupervised_statistics"]["validation_fit_rows"] == 320
+    assert metrics["unsupervised_statistics"]["final_fit_rows"] == 400
     if collaborative_features:
         assert metrics["validation_collaborative_fit"]["song"]["rank"] > 0
         assert metrics["final_collaborative_fit"]["artist"]["rank"] > 0
@@ -244,3 +247,127 @@ def test_tail_sampling_preserves_original_row_numbers(data_dir):
     frame, info = load_training(data_dir / "train.csv", max_rows=37, chunksize=41, sampling_mode="tail")
     assert frame.row_id.tolist() == list(range(363, 400))
     assert info["sampling"] == "tail_rows_not_verified_time"
+
+
+def test_unlabeled_reader_never_parses_labels_or_test_identifiers(data_dir, monkeypatch):
+    original = pd.read_csv
+    training = original(data_dir / "train.csv")
+    training["target"] = "not-a-label"
+    training.to_csv(data_dir / "train.csv", index=False)
+    test = original(data_dir / "test.csv")
+    test["id"] = "not-an-integer"
+    test["target"] = "hidden-label-must-not-be-read"
+    test.to_csv(data_dir / "test.csv", index=False)
+    observed = []
+
+    def read(path, **kwargs):
+        observed.append(kwargs["usecols"])
+        return original(path, **kwargs)
+
+    monkeypatch.setattr(pd, "read_csv", read)
+    universe, count = load_unlabeled(data_dir)
+    assert observed == [INTERACTION_COLUMNS, INTERACTION_COLUMNS]
+    assert count == 400 and len(universe) == 403
+    assert universe.global_row_id.tolist() == list(range(403))
+    assert "target" not in universe and "id" not in universe
+
+
+def test_transductive_statistics_row_proxies_and_graph_are_shared(data_dir, monkeypatch):
+    from basic.collaborative import CollaborativeFeatures
+    training, _ = load_training(data_dir / "train.csv")
+    universe = training.iloc[:10].copy()
+    universe["msno"] = pd.Series(["user_0", "user_1", "user_0", "user_0", "user_1",
+                                  "user_2", "user_0", "user_2", "user_2", "user_1"], dtype="string[pyarrow]")
+    universe["song_id"] = pd.Series(["song_0", "song_1", "song_0", "song_2", "song_1",
+                                     "song_3", "song_0", "song_4", "song_0", "song_4"], dtype="string[pyarrow]")
+    universe["global_row_id"] = np.arange(10)
+    fit_calls = []
+    original_fit = CollaborativeFeatures.fit
+
+    def counted_fit(self, rows, artists, genres=None):
+        assert "target" not in rows
+        fit_calls.append(len(rows))
+        return original_fit(self, rows, artists, genres)
+
+    monkeypatch.setattr(CollaborativeFeatures, "fit", counted_fit)
+    builder = FeatureBuilder(data_dir, "enhanced", transductive=True, row_order_features=True,
+                             user_context_features=True, user_preference_features=True,
+                             collaborative_features=True).fit(universe.iloc[:6], unlabeled_frames=universe, train_rows=6)
+    expected = builder.transform(universe)
+    pd.testing.assert_frame_equal(expected, builder.transform(universe, training_context=True))
+    assert expected.msno_frequency.iloc[0] == pytest.approx(0.4)
+    assert builder.categories["msno"].get_indexer(["user_2"])[0] >= 0
+    assert builder.collaborative.metadata["genre"]["requested_rank"] == 16
+    assert expected.user_next_row_gap.iloc[0] == pytest.approx(np.log1p(2))
+    assert expected.user_prev_row_gap.iloc[2] == pytest.approx(np.log1p(2))
+    assert expected.user_next_row_gap.iloc[2] == pytest.approx(np.log1p(1))
+    assert expected.user_cum_count.iloc[[0, 2, 3, 6]].tolist() == [0, 1, 2, 3]
+    assert expected.user_rev_cum_count.iloc[[0, 2, 3, 6]].tolist() == [3, 2, 1, 0]
+    assert np.isnan(expected.user_prev_row_gap.iloc[0])
+    assert np.isnan(expected.user_next_row_gap.iloc[6])
+    assert expected.global_time_pos.iloc[6] == pytest.approx(0.6)
+    assert expected.song_recent_pop_ratio.iloc[0] == pytest.approx(5 / 6)
+    assert expected.song_recent_pop_ratio.iloc[7] == pytest.approx(10 / 3)
+    assert expected.song_recent_pop_ratio.iloc[1] == 0
+    row_values = builder.row_values
+    builder.fit(universe.assign(target=1-universe.target))
+    assert builder.row_values is row_values and fit_calls == [10]
+    restored = pickle.loads(pickle.dumps(builder))
+    pd.testing.assert_frame_equal(restored.transform(universe), expected)
+    pd.testing.assert_frame_equal(pd.concat([restored.transform(universe.iloc[:7]),
+                                             restored.transform(universe.iloc[7:])]), expected)
+
+
+@pytest.mark.parametrize("no_refit", [False, True])
+def test_transductive_target_encoding_pipeline_reuses_graph_and_test_offsets(data_dir, tmp_path, monkeypatch, no_refit):
+    from basic.collaborative import CollaborativeFeatures
+    output = tmp_path / "transductive"
+    arguments = ["--data-dir", str(data_dir), "--output-dir", str(output),
+        "--feature-mode", "enhanced", "--transductive", "--row-order-features",
+        "--target-encoding", "--collaborative-features", "--user-context-features",
+        "--user-preference-features", "--max-train-rows", "200", "--sampling-mode", "tail",
+        "--split-mode", "row_order", "--num-boost-round", "5", "--num-leaves", "7",
+        "--min-child-samples", "5", "--threads", "1"]
+    if no_refit:
+        arguments.append("--no-refit")
+    fit_calls = []
+    original_fit = CollaborativeFeatures.fit
+
+    def counted_fit(self, rows, artists, genres=None):
+        fit_calls.append(len(rows))
+        return original_fit(self, rows, artists, genres)
+
+    monkeypatch.setattr(CollaborativeFeatures, "fit", counted_fit)
+    metrics = train(parser().parse_args(arguments))
+    assert fit_calls == [403]
+    assert metrics["segments"]["new_user"]["rows"] == 40
+    assert metrics["validation_target_encoding"]["fit_rows"] == 160
+    assert metrics["final_target_encoding"]["fit_rows"] == (160 if no_refit else 200)
+    assert metrics["unsupervised_statistics"]["validation_fit_rows"] == 403
+    assert metrics["unsupervised_statistics"]["final_fit_rows"] == 403
+    assert metrics["unsupervised_statistics"]["frequency_mode"] == "relative"
+    assert metrics["unsupervised_statistics"]["context_counting"] == "full"
+    assert metrics["unsupervised_statistics"]["reused_for_refit"] is (not no_refit)
+    observed_positions = []
+    original_transform = FeatureBuilder.transform
+
+    def transform(self, frame, **kwargs):
+        if "id" in frame:
+            observed_positions.extend(frame.global_row_id.tolist())
+        return original_transform(self, frame, **kwargs)
+
+    monkeypatch.setattr(FeatureBuilder, "transform", transform)
+    predict(data_dir, output, tmp_path / "small_chunks.csv", chunk_size=1, threads=1)
+    assert observed_positions == [400, 401, 402]
+    observed_positions.clear()
+    predict(data_dir, output, tmp_path / "one_chunk.csv", chunk_size=3, threads=1)
+    assert observed_positions == [400, 401, 402]
+    assert (tmp_path / "small_chunks.csv").read_bytes() == (tmp_path / "one_chunk.csv").read_bytes()
+    with (output / "features.pkl").open("rb") as stream:
+        saved = pickle.load(stream)
+    training, _ = load_training(data_dir / "train.csv", max_rows=200, sampling_mode="tail")
+    training["global_row_id"] = training.row_id
+    before = saved.transform(training)
+    pd.testing.assert_frame_equal(before, saved.transform(training.assign(target=1-training.target)))
+    with pytest.raises(ValueError, match="OOF"):
+        saved.transform(training, training_context=True)

@@ -117,3 +117,37 @@ def test_generator_rejects_overwrite_and_invalid_identity(tmp_path):
     assert settings["num_leaves"] == 127 and settings["max_cat_threshold"] == 64
     with pytest.raises(ValueError, match="owner"):
         generate_job("../user", "kkbox-baseline", tmp_path / "other")
+
+
+def test_generated_runner_passes_transductive_encoding_and_capacity_options(tmp_path):
+    output = tmp_path / "job"
+    generate_job("exampleuser", "kkbox-transductive", output, feature_modes=["enhanced"],
+                 transductive=True, row_order_features=True, target_encoding=True,
+                 collaborative_features=True, song_components=48, artist_components=24, genre_components=16,
+                 no_refit=True, split_mode="row_order", num_leaves=255, learning_rate=0.05,
+                 min_child_samples=100, max_cat_threshold=64, feature_fraction=0.8)
+    namespace = {"__name__": "generated_script_for_test"}
+    exec((output / "run.py").read_text(encoding="utf-8"), namespace)
+    working = tmp_path / "working"
+    namespace["WORKING_ROOT"] = working
+    namespace["prepare_data"] = lambda: tmp_path / "data"
+    namespace["check_runtime_dependencies"] = lambda: {}
+    calls = []
+
+    def run(arguments, *unused):
+        calls.append(arguments)
+        if arguments[2] == "basic.train":
+            directory = working / "enhanced"
+            directory.mkdir()
+            (directory / "metrics.json").write_text("{}")
+
+    namespace["run_checked"] = run
+    namespace["main"]()
+    training = calls[0]
+    for flag in ("--transductive", "--row-order-features", "--target-encoding", "--collaborative-features", "--no-refit"):
+        assert flag in training
+    for flag, value in {"--song-components": "48", "--artist-components": "24", "--genre-components": "16",
+                        "--num-leaves": "255", "--min-child-samples": "100", "--max-cat-threshold": "64",
+                        "--feature-fraction": "0.8", "--learning-rate": "0.05", "--split-mode": "row_order"}.items():
+        assert training[training.index(flag) + 1] == value
+    assert (working / "code" / "basic" / "target_encoding.py").is_file()

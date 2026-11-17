@@ -14,7 +14,7 @@ COMPETITION = "kkbox-music-recommendation-challenge"
 SOURCE_FILES = [
     "basic/__init__.py", "basic/features.py", "basic/train.py",
     "basic/predict.py", "basic/submission.py",
-    "basic/collaborative.py",
+    "basic/collaborative.py", "basic/target_encoding.py",
 ]
 RUNTIME_PACKAGES = {"numpy", "pandas", "scipy", "scikit-learn", "lightgbm", "pyarrow", "py7zr"}
 
@@ -208,9 +208,13 @@ def main():
             training_command.append("--disable-frequency-features")
         if JOB_SETTINGS["user_context_features"]:
             training_command.append("--user-context-features")
-        for option in ("user_preference_features", "collaborative_features", "no_refit", "overwrite"):
+        for option in ("user_preference_features", "collaborative_features", "transductive",
+                       "row_order_features", "target_encoding", "no_refit", "overwrite"):
             if JOB_SETTINGS[option]:
                 training_command.append("--" + option.replace("_", "-"))
+        for option in ("song_components", "artist_components", "genre_components"):
+            if JOB_SETTINGS[option] is not None:
+                training_command.extend(["--" + option.replace("_", "-"), str(JOB_SETTINGS[option])])
         run_checked(training_command, code_root, env, WORKING_ROOT / (feature_mode + "_training.log"))
         prediction_command = [sys.executable, "-m", "basic.predict", "--data-dir", str(data_root),
             "--model-dir", str(output), "--output", str(output / "submission.csv"),
@@ -240,6 +244,9 @@ def generate_job(
     numeric_features: str = "calendar", frequency_mode: str = "count",
     context_counting: str = "leave_one_out", user_preference_features: bool = False,
     collaborative_features: bool = False,
+    transductive: bool = False, row_order_features: bool = False, target_encoding: bool = False,
+    song_components: int | None = None, artist_components: int | None = None,
+    genre_components: int | None = None,
     sampling_mode: str = "uniform", split_mode: str = "random", no_refit: bool = False,
     learning_rate: float = 0.08, num_leaves: int = 63, min_child_samples: int = 50,
     max_cat_threshold: int = 32, feature_fraction: float = 0.9, overwrite: bool = False,
@@ -272,6 +279,9 @@ def generate_job(
         "frequency_mode": frequency_mode, "context_counting": context_counting,
         "user_preference_features": user_preference_features, "sampling_mode": sampling_mode,
         "collaborative_features": collaborative_features,
+        "transductive": transductive, "row_order_features": row_order_features,
+        "target_encoding": target_encoding, "song_components": song_components,
+        "artist_components": artist_components, "genre_components": genre_components,
         "split_mode": split_mode, "no_refit": no_refit, "learning_rate": learning_rate,
         "num_leaves": num_leaves, "min_child_samples": min_child_samples,
         "max_cat_threshold": max_cat_threshold, "feature_fraction": feature_fraction,
@@ -321,6 +331,12 @@ def main():
     parser.add_argument("--context-counting", choices=["leave_one_out", "full"], default="leave_one_out")
     parser.add_argument("--user-preference-features", action="store_true")
     parser.add_argument("--collaborative-features", action="store_true")
+    parser.add_argument("--transductive", action="store_true")
+    parser.add_argument("--row-order-features", action="store_true")
+    parser.add_argument("--target-encoding", action="store_true")
+    parser.add_argument("--song-components", type=int, default=None)
+    parser.add_argument("--artist-components", type=int, default=None)
+    parser.add_argument("--genre-components", type=int, default=None)
     parser.add_argument("--sampling-mode", choices=["uniform", "tail"], default="uniform")
     parser.add_argument("--split-mode", choices=["random", "row_order"], default="random")
     parser.add_argument("--no-refit", action="store_true")

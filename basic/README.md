@@ -97,13 +97,40 @@ python -m kaggle kernels output YOUR_KAGGLE_USERNAME/kkbox-baseline -p outputs/b
 
 上述用户场景特征借鉴[冠军作者原代码](https://github.com/lystdo/Codes-for-WSDM-CUP-Music-Rec-1st-place-solution/blob/master/input/training/script/cnt_log_process.py#L59-L86)的按用户场景比例。本项目将统计范围限制为训练集，并新增强度为 10 的平滑与训练行留一处理；原代码合并了训练和测试交互，未使用这里的平滑与留一方式。
 
-类别词表与频次只从本次训练部分拟合，不使用验证标签或测试集统计。未知类别编码为 `-1`，由 LightGBM 按缺失处理；未知频次为零。元数据以唯一 ID 查表，拒绝重复键，防止合并导致记录膨胀。日期无效、年龄不在 1–100 或歌曲时长非正数时按缺失处理。ISRC 信息可能有误，其增益需要实测确认。
+默认模式的类别词表与频次只从本次训练部分拟合，不使用验证标签或测试集统计；下面的转导模式显式改变无标签统计范围。未知类别编码为 `-1`，由 LightGBM 按缺失处理；未知频次为零。元数据以唯一 ID 查表，拒绝重复键，防止合并导致记录膨胀。日期无效、年龄不在 1–100 或歌曲时长非正数时按缺失处理。ISRC 信息可能有误，其增益需要实测确认。
 
 默认 `--split-mode random` 保留固定种子的分层随机留出，便于与早期实验比较。推荐同时使用 `--split-mode row_order`，按原文件前后顺序留出末段；[第 8 名作者论文](https://web-ainf.aau.at/pub/jannach/files/Workshop_WSDMCUP_2018.pdf)第 2.3.2/3.2 节报告了按顺序切分的做法。代码仍将它标为行序验证，公开交互没有明确时间戳，行号差也不等于秒数或会话间隔。若换用含重复用户/歌曲对的自定义数据，需自行去重或采用分组划分；随机留出不会自动防止重复对泄漏。
 
 程序先训练并早停，用验证结果确定 `best_iteration`，默认随后重新拟合特征状态，在全部所选训练行上训练最终模型；`--no-refit` 则保存早停模型及其原始训练部分的特征状态，两者始终成对。若指定抽样，上述“全部”指抽样后的训练数据。冷启动分组分数只作诊断；当组内没有两种标签时，其 AUC 记为 `null`。
 
 `--sampling-mode uniform` 默认按种子从全文件无放回均匀选择行号；`--sampling-mode tail` 配合 `--max-train-rows N` 保留最后 N 行，并保存原始行号，用于末段快速实验。原始字符串使用 Arrow 紧凑存储，类别特征为 `int32`、数值特征为 `float32`。分块推理降低测试集的峰值内存；全量训练仍需同时容纳训练特征，具体资源占用以实测为准。
+
+## 转导统计与目标编码
+
+`--transductive` 显式使用完整 `train.csv + test.csv` 的无标签交互，读取时严格限定为五个 `INTERACTION_COLUMNS`，不读取其中的 `target` 或测试 `id`。抽样只限制有监督训练行数，无标签范围仍是完整约 993 万行。类别、相对频次、已启用的用户场景/艺人/曲风概率以及可选 SVD 在这一范围拟合一次；全量 refit 复用同一份状态。该模式统一使用相对频次和完整无标签计数，不只对训练行扣减自身；`configuration.json` 的 `effective_statistics` 记录实际生效的范围和模式。`--disable-frequency-features` 仍可单独关闭五个频次列。
+
+转导 SVD 默认歌曲 48 维、艺人 24 维、曲风组合 16 维，输出三组内积和余弦共六列；`--song-components`、`--artist-components`、`--genre-components` 可调整，设为 0 可关闭对应因子。旧训练范围模式仍默认 32/16/0，旧四列模型可继续推理。完整无标签图让验证与测试交互也参与拓扑统计，但不保证涨分；仅训练图中缺少某条边，也不意味着其低秩重构内积一定为零。未知用户或物品与“已知节点之间缺边”是两种情况。
+
+`--row-order-features` 要求 `--transductive`，增加六列：
+
+| 特征 | 定义 |
+| --- | --- |
+| `global_time_pos` | 原始全局行号除以完整 train+test 行数 |
+| `user_prev_row_gap` / `user_next_row_gap` | 同用户相邻记录的行号差取 `log1p`；首/末记录缺少邻居时为缺失值 |
+| `user_cum_count` / `user_rev_cum_count` | 当前行之前/之后同用户的出现次数，均不计当前行 |
+| `song_recent_pop_ratio` | 后 30% 行中歌曲频率除以全序列频率 |
+
+训练使用原始 `row_id`；测试使用“官方完整训练行数 + 测试原始位置”，与抽样大小、CSV 的 `id` 值、推理块大小无关。行号差是文件顺序代理，不是秒数，也不能保证识别真实会话。未来无标签交互参与这些特征，因此应按转导式离线评测理解，不把它表述为只能看到过去数据的在线预测。
+
+`--target-encoding` 独立增加用户、歌曲、艺人、用户×系统入口、用户×播放来源五个标签统计。每个类别的编码为 `(positive_count + 20 × prior) / (count + 20)`。随机划分使用固定种子 5 折 OOF，各折的计数和先验都只来自其他折；`row_order` 使用按原始行号排序的五个连续块，每块只用严格前序块，首块固定 0.5，不使用未来全局标签均值。验证/测试仅使用当前有监督训练部分的标签统计，未知类别回退其训练先验。refit 时重新生成 OOF 特征和全训练标签统计，`--no-refit` 则保留验证模型与其对应的训练分区状态。
+
+这些选项均保持显式开启。一个待验证的完整候选命令如下；拆分消融时逐项添加开关，不能预设各项都会涨分：
+
+```powershell
+python -m basic.train --data-dir data/basic --output-dir outputs/basic/transductive_sample --feature-mode enhanced --max-train-rows 500000 --sampling-mode tail --split-mode row_order --no-refit --disable-frequency-features --user-context-features --transductive --row-order-features --collaborative-features --target-encoding
+```
+
+Kaggle 生成器透传同名选项以及树容量参数。Linux 训练记录进程峰值 RSS；500,000 行标签抽样仍需处理全量无标签图，全量训练建议在 Kaggle CPU 实测内存，不能把小数据测试通过解释为 16 GB 本机全量已验证。
 
 ## 实验产物
 

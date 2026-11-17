@@ -1,7 +1,7 @@
-"""Training-only category/frequency fitting with compact metadata lookup.
+"""Category/count fitting with explicit inductive or transductive scope.
 
-Neither fitting nor transformation reads target labels. Song/member tables are
-looked up by unique identifiers, avoiding many-to-many joins and row expansion.
+Unsupervised fitting never reads labels. Optional target encoding has its own
+training-label-only state. Metadata uses unique keys to prevent row expansion.
 """
 
 from __future__ import annotations
@@ -100,6 +100,22 @@ def load_training(
     }
 
 
+def load_unlabeled(data_dir: Path) -> tuple[pd.DataFrame, int]:
+    """Read only interaction columns, retaining train-then-test file order.
+
+    Test ids and all target columns are deliberately excluded by usecols.
+    The global index is a row-order proxy, not a timestamp.
+    """
+    frames = [pd.read_csv(Path(data_dir) / name, usecols=INTERACTION_COLUMNS,
+                          dtype=STRING_DTYPE) for name in ("train.csv", "test.csv")]
+    train_rows = len(frames[0])
+    frame = pd.concat(frames, ignore_index=True)
+    if frame[["msno", "song_id"]].isna().any().any():
+        raise ValueError("The unlabeled interaction universe contains missing user/song ids")
+    frame["global_row_id"] = np.arange(len(frame), dtype=np.int64)
+    return frame, train_rows
+
+
 def _metadata(path: Path, key: str, columns: list[str]) -> pd.DataFrame:
     table = pd.read_csv(path, usecols=[key, *columns], dtype=STRING_DTYPE)
     if table[key].isna().any() or table[key].duplicated().any():
@@ -119,7 +135,10 @@ class FeatureBuilder:
     def __init__(self, data_dir: Path, mode: str = "baseline", *, disable_frequency_features: bool = False,
                  user_context_features: bool = False, numeric_features: str = "calendar",
                  frequency_mode: str = "count", context_counting: str = "leave_one_out",
-                 user_preference_features: bool = False, collaborative_features: bool = False):
+                 user_preference_features: bool = False, collaborative_features: bool = False,
+                 transductive: bool = False, row_order_features: bool = False,
+                 target_encoding: bool = False, song_components: int | None = None,
+                 artist_components: int | None = None, genre_components: int | None = None):
         if mode not in {"baseline", "enhanced"}:
             raise ValueError("feature mode must be baseline or enhanced")
         self.mode = mode
@@ -136,6 +155,16 @@ class FeatureBuilder:
         self.context_counting = context_counting
         self.user_preference_features = user_preference_features
         self.collaborative_features = collaborative_features
+        self.transductive = transductive
+        self.row_order_features = row_order_features
+        self.target_encoding = target_encoding
+        if row_order_features and not transductive:
+            raise ValueError("Global row-order features require --transductive")
+        self.song_components = song_components if song_components is not None else (48 if transductive else 32)
+        self.artist_components = artist_components if artist_components is not None else (24 if transductive else 16)
+        self.genre_components = genre_components if genre_components is not None else (16 if transductive else 0)
+        if min(self.song_components, self.artist_components, self.genre_components) < 0:
+            raise ValueError("Embedding component counts must be nonnegative")
         self.members = _metadata(Path(data_dir) / "members.csv", "msno", [
             "city", "bd", "gender", "registered_via", "registration_init_time",
             "expiration_date",
@@ -198,7 +227,24 @@ class FeatureBuilder:
                 yield "isrc_year_code", isrc.str[5:7], False
             yield "song_name_length", frame["song_id"].map(self.extra["name"]).str.len(), False
 
-    def fit(self, frame: pd.DataFrame) -> "FeatureBuilder":
+    def fit(self, frame: pd.DataFrame, *, unlabeled_frames=None, train_rows: int | None = None) -> "FeatureBuilder":
+        """Fit unsupervised state once on the chosen scope; never inspect target.
+
+        A transductive state is reused when refitting the supervised model. Its
+        universe is the complete official train+test interactions, even if the
+        supervised experiment uses a sample or a validation partition.
+        """
+        if getattr(self, "transductive", False):
+            if getattr(self, "transductive_fitted", False):
+                return self
+            if unlabeled_frames is None or train_rows is None:
+                raise ValueError("Transductive fitting requires the unlabeled universe and official train row count")
+            if isinstance(unlabeled_frames, pd.DataFrame):
+                frame = unlabeled_frames.loc[:, INTERACTION_COLUMNS]
+            else:
+                frame = pd.concat([part.loc[:, INTERACTION_COLUMNS] for part in unlabeled_frames], ignore_index=True)
+            self.official_train_rows = train_rows
+            self.unlabeled_rows = len(frame)
         self.categories = {}
         self.frequencies = {}
         self.categorical_columns = []
@@ -211,7 +257,7 @@ class FeatureBuilder:
                 self.categorical_columns.append(name)
             if self.mode == "enhanced" and not self.disable_frequency_features and name in counted:
                 counts = values.value_counts(dropna=True, sort=False).astype("float32")
-                if getattr(self, "frequency_mode", "count") == "relative":
+                if getattr(self, "transductive", False) or getattr(self, "frequency_mode", "count") == "relative":
                     counts /= len(frame)
                 self.frequencies[name] = counts
                 self.feature_names.append(name + "_frequency")
@@ -235,11 +281,67 @@ class FeatureBuilder:
                 self.feature_names.append("msno_" + name + "_probability")
         if getattr(self, "collaborative_features", False):
             from .collaborative import CollaborativeFeatures
-            self.collaborative = CollaborativeFeatures().fit(
-                frame, frame["song_id"].map(self.songs["artist_name"])
+            self.collaborative = CollaborativeFeatures(
+                self.song_components, self.artist_components, genre_components=self.genre_components
+            ).fit(
+                frame, frame["song_id"].map(self.songs["artist_name"]),
+                frame["song_id"].map(self.songs["genre_ids"]),
             )
             self.feature_names.extend(self.collaborative.feature_names)
+        if getattr(self, "row_order_features", False):
+            self._fit_row_features(frame)
+            self.feature_names.extend(self.row_feature_names)
+        if getattr(self, "target_encoding", False):
+            from .target_encoding import TargetEncoder
+            self.feature_names.extend(TargetEncoder.feature_names)
+        if getattr(self, "transductive", False):
+            self.transductive_fitted = True
         return self
+
+    row_feature_names = ["global_time_pos", "user_prev_row_gap", "user_next_row_gap",
+                         "user_cum_count", "user_rev_cum_count", "song_recent_pop_ratio"]
+
+    def _fit_row_features(self, frame: pd.DataFrame):
+        """Cache four user-order arrays; compute global position on demand."""
+        total = len(frame)
+        users = self.categories["msno"].get_indexer(frame["msno"])
+        order = np.argsort(users, kind="stable")
+        ordered_users = users[order]
+        same = ordered_users[1:] == ordered_users[:-1]
+        within = np.flatnonzero(same)
+        self.row_values = np.full((total, 4), np.nan, dtype=np.float32)
+        gaps = np.log1p(order[within + 1] - order[within]).astype(np.float32)
+        self.row_values[order[within + 1], 0] = gaps
+        self.row_values[order[within], 1] = gaps
+        starts = np.r_[0, np.flatnonzero(~same) + 1]
+        lengths = np.diff(np.r_[starts, total])
+        counts = np.arange(total) - np.repeat(starts, lengths)
+        self.row_values[order, 2] = counts
+        self.row_values[order, 3] = np.repeat(lengths - 1, lengths) - counts
+        boundary = int(total * 0.7)
+        all_counts = frame["song_id"].value_counts(sort=False)
+        recent = frame["song_id"].iloc[boundary:].value_counts(sort=False)
+        self.song_recent_ratio = ((recent.reindex(all_counts.index, fill_value=0) / (total - boundary))
+                                  / (all_counts / total)).astype(np.float32)
+
+    def _row_columns(self, frame: pd.DataFrame):
+        if "global_row_id" not in frame:
+            raise ValueError("Row-order features require global_row_id from original CSV positions")
+        positions = frame["global_row_id"].to_numpy(dtype=np.int64)
+        if ((positions < 0) | (positions >= self.unlabeled_rows)).any():
+            raise ValueError("global_row_id falls outside the fitted train+test universe")
+        values = self.row_values[positions]
+        yield "global_time_pos", (positions / self.unlabeled_rows).astype(np.float32)
+        for column, name in enumerate(self.row_feature_names[1:5]):
+            yield name, values[:, column]
+        yield "song_recent_pop_ratio", frame["song_id"].map(self.song_recent_ratio).fillna(0).to_numpy(dtype=np.float32)
+
+    def fit_target_encoding(self, frame: pd.DataFrame, *, split_mode: str, seed: int):
+        """Return ephemeral OOF training values and retain training-only inference statistics."""
+        from .target_encoding import TargetEncoder
+        self.target_encoder = TargetEncoder(seed=seed)
+        return self.target_encoder.fit_transform(frame, frame["song_id"].map(self.songs["artist_name"]),
+                                                 split_mode=split_mode)
 
     def _probability_values(self, frame: pd.DataFrame, name: str) -> pd.Series:
         values = frame[name] if name in CONTEXT_COLUMNS else frame["song_id"].map(self.songs[name])
@@ -258,7 +360,7 @@ class FeatureBuilder:
             prior[known_context] = self.context_probabilities[name][codes[known_context]]
             pairs = user_codes.astype(np.int64) * (len(categories) + 1) + codes + 1
             pair_counts = self.context_pair_counts[name].reindex(pairs, fill_value=0).to_numpy(dtype=np.float64)
-            if training_context and getattr(self, "context_counting", "leave_one_out") == "leave_one_out":
+            if training_context and not getattr(self, "transductive", False) and getattr(self, "context_counting", "leave_one_out") == "leave_one_out":
                 if not known_users.all() or (pair_counts < 1).any():
                     raise ValueError("Training context transformation requires rows included in feature fitting")
                 numerator, denominator = pair_counts - 1, user_counts - 1
@@ -266,7 +368,8 @@ class FeatureBuilder:
                 numerator, denominator = pair_counts, user_counts
             yield "msno_" + name + "_probability", ((numerator + 10 * prior) / (denominator + 10)).astype(np.float32)
 
-    def transform(self, frame: pd.DataFrame, *, training_context: bool = False) -> pd.DataFrame:
+    def transform(self, frame: pd.DataFrame, *, training_context: bool = False,
+                  target_values: dict | None = None) -> pd.DataFrame:
         if not self.feature_names:
             raise RuntimeError("Fit the feature builder before transforming")
         columns = {}
@@ -281,7 +384,15 @@ class FeatureBuilder:
         if getattr(self, "user_context_features", False) or getattr(self, "user_preference_features", False):
             columns.update(self._user_context_columns(frame, training_context))
         if getattr(self, "collaborative_features", False):
-            columns.update(self.collaborative.transform(frame, frame["song_id"].map(self.songs["artist_name"])))
+            columns.update(self.collaborative.transform(frame, frame["song_id"].map(self.songs["artist_name"]),
+                                                       frame["song_id"].map(self.songs["genre_ids"])))
+        if getattr(self, "row_order_features", False):
+            columns.update(self._row_columns(frame))
+        if getattr(self, "target_encoding", False):
+            if training_context and target_values is None:
+                raise ValueError("Training target features must use the OOF values returned by fit_target_encoding")
+            columns.update(target_values if target_values is not None else self.target_encoder.transform(
+                frame, frame["song_id"].map(self.songs["artist_name"])))
         if list(columns) != self.feature_names:
             raise RuntimeError("Feature order differs from the fitted feature state")
         return pd.DataFrame(columns, index=frame.index, copy=False)

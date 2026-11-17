@@ -4,8 +4,19 @@ import pickle
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from basic.collaborative import CollaborativeFeatures, InteractionEmbedding
+
+
+def test_known_ids_can_reconstruct_an_edge_missing_from_fit():
+    # The leading rank-one component of this cycle has positive missing edges.
+    users = pd.Series(["u0", "u0", "u1", "u1", "u2", "u2"])
+    items = pd.Series(["i0", "i1", "i1", "i2", "i0", "i2"])
+    embedding = InteractionEmbedding(components=1).fit(users, items)
+    dot, cosine = embedding.transform(pd.Series(["u0"]), pd.Series(["i2"]))
+    assert dot[0] == pytest.approx(np.sqrt(2) / 3, abs=1e-6)
+    assert cosine[0] == pytest.approx(1, abs=1e-6)
 
 
 def test_rank_one_reconstruction_includes_singular_values():

@@ -36,6 +36,9 @@ def predict(data_dir: Path, model_dir: Path, output: Path, *, chunk_size: int = 
     rows = 0
     try:
         for frame in read_interactions(data_dir / "test.csv", training=False, chunksize=chunk_size):
+            if getattr(builder, "transductive", False):
+                # The offset is the complete official train size, never the sample size.
+                frame["global_row_id"] = builder.official_train_rows + np.arange(rows, rows + len(frame))
             features = builder.transform(frame)
             probabilities = model.predict(features, num_threads=threads)
             if not np.isfinite(probabilities).all() or ((probabilities < 0) | (probabilities > 1)).any():

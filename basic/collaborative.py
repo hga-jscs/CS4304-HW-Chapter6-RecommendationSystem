@@ -1,4 +1,4 @@
-"""Training-only sparse interaction embeddings for LightGBM features."""
+"""Sparse interaction embeddings fitted on the explicitly selected graph."""
 
 from __future__ import annotations
 
@@ -73,18 +73,34 @@ class CollaborativeFeatures:
     feature_names = ["song_embedding_dot", "song_embedding_cosine",
                      "artist_embedding_dot", "artist_embedding_cosine"]
 
-    def __init__(self, song_components: int = 32, artist_components: int = 16, seed: int = 42):
+    def __init__(self, song_components: int = 32, artist_components: int = 16, seed: int = 42,
+                 genre_components: int = 0):
         self.song = InteractionEmbedding(song_components, seed)
         self.artist = InteractionEmbedding(artist_components, seed)
+        self.genre = InteractionEmbedding(genre_components, seed) if genre_components else None
+        self.feature_names = list(type(self).feature_names)
+        if self.genre is not None:
+            self.feature_names += ["genre_embedding_dot", "genre_embedding_cosine"]
 
-    def fit(self, frame: pd.DataFrame, artists: pd.Series) -> "CollaborativeFeatures":
+    def fit(self, frame: pd.DataFrame, artists: pd.Series, genres: pd.Series | None = None) -> "CollaborativeFeatures":
         self.song.fit(frame["msno"], frame["song_id"])
         self.artist.fit(frame["msno"], artists)
         self.metadata = {"weighting": "log1p_counts_then_item_idf_then_row_l2",
                          "song": self.song.metadata, "artist": self.artist.metadata}
+        if self.genre is not None:
+            if genres is None:
+                raise ValueError("Genre values are required when genre_components is positive")
+            self.genre.fit(frame["msno"], genres)
+            self.metadata["genre"] = self.genre.metadata
         return self
 
-    def transform(self, frame: pd.DataFrame, artists: pd.Series) -> dict[str, np.ndarray]:
+    def transform(self, frame: pd.DataFrame, artists: pd.Series,
+                  genres: pd.Series | None = None) -> dict[str, np.ndarray]:
         values = (*self.song.transform(frame["msno"], frame["song_id"]),
                   *self.artist.transform(frame["msno"], artists))
+        # Old serialized embeddings contain only song and artist factors.
+        if getattr(self, "genre", None) is not None:
+            if genres is None:
+                raise ValueError("Genre values are required for genre similarity features")
+            values += self.genre.transform(frame["msno"], genres)
         return dict(zip(self.feature_names, values))
