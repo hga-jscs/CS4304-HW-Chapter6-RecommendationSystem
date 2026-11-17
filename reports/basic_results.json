@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "recorded_date": "2026-11-17",
+  "competition": "kkbox-music-recommendation-challenge",
+  "experiment": "baseline_sample",
+  "status": "scored",
+  "scope": "300000 uniformly sampled training rows; predictions cover the entire official test set",
+  "configuration": {
+    "feature_mode": "baseline",
+    "max_train_rows": 300000,
+    "validation_fraction": 0.2,
+    "seed": 42,
+    "num_boost_round": 200,
+    "early_stopping_rounds": 30,
+    "learning_rate": 0.08,
+    "num_leaves": 63,
+    "min_child_samples": 50,
+    "threads": 4,
+    "chunk_size": 200000,
+    "lightgbm_parameters": {
+      "objective": "binary",
+      "metric": "auc",
+      "learning_rate": 0.08,
+      "num_leaves": 63,
+      "min_data_in_leaf": 50,
+      "feature_fraction": 0.9,
+      "bagging_fraction": 0.9,
+      "bagging_freq": 1,
+      "lambda_l2": 1.0,
+      "max_bin": 255,
+      "max_cat_threshold": 32,
+      "cat_smooth": 10.0,
+      "num_threads": 4,
+      "verbosity": -1,
+      "seed": 42,
+      "feature_fraction_seed": 42,
+      "bagging_seed": 42,
+      "data_random_seed": 42,
+      "deterministic": true,
+      "force_col_wise": true
+    },
+    "git_revision": "63749fd82b82f265a1c59522554715a02bb17fc3",
+    "working_tree_dirty": true,
+    "python": "3.11.3",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "2.3.3",
+      "pyarrow": "23.0.1",
+      "scikit-learn": "1.9.1",
+      "lightgbm": "4.7.0"
+    }
+  },
+  "code_provenance_note": "Training ran from an uncommitted implementation. The recorded git_revision is the base commit, not a commit containing all executed source code.",
+  "local_validation_and_training": {
+    "available_rows": 7377418,
+    "selected_rows": 300000,
+    "sampling": "uniform_without_replacement",
+    "sampling_seed": 42,
+    "split": "stratified_random_holdout_not_chronological",
+    "split_seed": 42,
+    "training_rows": 240000,
+    "validation_rows": 60000,
+    "feature_mode": "baseline",
+    "feature_count": 17,
+    "best_iteration": 66,
+    "validation_auc": 0.7257947463534034,
+    "validation_log_loss": 0.6112660062248723,
+    "constant_baseline_auc": 0.5,
+    "constant_baseline_log_loss": 0.6931299715723399,
+    "validation_training_seconds": 5.920413999992888,
+    "segments": {
+      "known_user_and_song": {
+        "rows": 50177,
+        "auc": 0.7204741015368421
+      },
+      "new_user": {
+        "rows": 869,
+        "auc": 0.6735483294622118
+      },
+      "new_song": {
+        "rows": 9055,
+        "auc": 0.7324253760423973
+      }
+    },
+    "final_training_rows": 300000,
+    "final_training_seconds": 9.005680600006599,
+    "total_seconds": 35.69770819999394
+  },
+  "prediction": {
+    "rows": 2556790,
+    "validation": {
+      "valid": true,
+      "rows": 2556790,
+      "minimum_probability": 0.03555404212,
+      "maximum_probability": 0.9865808969,
+      "sha256": "1d4c1d8aae0e0688f0c244b91a3655cfb6105ccf26e9389efccff1f09891f50b"
+    },
+    "seconds": 38.495766300009564,
+    "model_sha256": "952c76b8ebb49ff154a88292d8ce1523daef2792eb441bd09825ff8eff6451e7",
+    "test_sha256": "b5bac50fd7d93ee04e9567e61de3bb89d6dec225b2b80474a0cacc85056c91f4",
+    "submission_sha256": "1d4c1d8aae0e0688f0c244b91a3655cfb6105ccf26e9389efccff1f09891f50b"
+  },
+  "platform_submission": {
+    "reference": 58453167,
+    "status": "COMPLETE",
+    "submitted_at_utc": "2026-11-17T02:43:33.607Z",
+    "description": "CS4304 baseline: uniform 300k seed42, LightGBM 66 rounds",
+    "public_score": 0.65287,
+    "private_score": 0.65598,
+    "score_metric": "ROC-AUC",
+    "submission_sha256": "1d4c1d8aae0e0688f0c244b91a3655cfb6105ccf26e9389efccff1f09891f50b",
+    "source": "Kaggle competitions submissions response"
+  },
+  "training_data_manifest": {
+    "train.csv": {
+      "bytes": 971675848,
+      "sha256": "ff19a9d3fd1def1494082fbee833fd2470ce3342aabdc8de1eb87ee578692934"
+    },
+    "members.csv": {
+      "bytes": 2503827,
+      "sha256": "a3cd1b868d5d32df23ed99f2609d3675f48a5d3ecef35eb591eced3f9b9939ee"
+    },
+    "songs.csv": {
+      "bytes": 221828666,
+      "sha256": "56c8ee6914fbb5d41ee378fa28d0e1505211886b01d5772944246e24cb26098c"
+    }
+  },
+  "limitations": [
+    "Random stratified local holdout is not a chronological validation split.",
+    "The model was refitted on all 300000 sampled rows, not all 7377418 official training rows.",
+    "Scores do not establish a historical leaderboard rank."
+  ],
+  "pending_experiments": [
+    {
+      "experiment": "baseline_full",
+      "execution": "private Kaggle CPU job",
+      "kernel": "gaoanghe/kkbox-baseline",
+      "last_observed_status": "ERROR",
+      "failed_stage": "dependency_installation",
+      "failure": "pypi.org DNS resolution failed",
+      "training_started": false,
+      "next_action": "Reuse compatible preinstalled dependencies and restart the full-data job",
+      "results_recorded": false
+    }
+  ],
+  "local_comparisons": [
+    {
+      "experiment": "enhanced_sample",
+      "status": "locally_validated_not_submitted",
+      "configuration": {
+        "feature_mode": "enhanced",
+        "max_train_rows": 300000,
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 300,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": "63749fd82b82f265a1c59522554715a02bb17fc3",
+        "working_tree_dirty": true,
+        "python": "3.11.3",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "packages": {
+          "numpy": "2.4.6",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.9.1",
+          "lightgbm": "4.7.0"
+        }
+      },
+      "local_validation_and_training": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 32,
+        "best_iteration": 67,
+        "validation_auc": 0.7320454603779785,
+        "validation_log_loss": 0.6063985437671019,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723399,
+        "validation_training_seconds": 12.040197499998612,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.725734618604897
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.68244297540349
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7374182308635316
+          }
+        },
+        "final_training_rows": 300000,
+        "final_training_seconds": 28.009782499982975,
+        "total_seconds": 104.71641260001343
+      },
+      "baseline_experiment": "baseline_sample",
+      "validation_auc_difference": 0.00625071402457511,
+      "platform_score_recorded": false
+    }
+  ]
+}
