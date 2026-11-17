@@ -6,11 +6,11 @@ This document supplies methodology, architecture figures, and experiment materia
 
 The requested targets are KKBox Public and Private ROC-AUC ≥ 0.7050, Synerise churn AUROC ≥ 0.7500, and both propensity scores ≥ 0.8150. They are acceptance targets, not predicted outcomes. The propensity score is `0.8 × AUROC + 0.1 × Diversity + 0.1 × Novelty`; it must not be reported as plain AUROC.
 
-The preceding recommended models achieved 0.67905/0.68125 on KKBox and 0.7286/0.7961/0.7881 on the three Synerise tasks. Historical results remain in their original records. New formal results will be inserted only after the platform or unmodified evaluator returns them.
+The preceding recommended models achieved 0.67905/0.68125 on KKBox and 0.7286/0.7961/0.7881 on the three Synerise tasks. Historical results remain in their original records. The new KKBox submission reaches both targets. Both new Synerise representations improve all three scores relative to the preceding representation, but neither reaches any of the three Synerise targets.
 
 ## KKBox: separating unlabeled structure from supervised statistics
 
-The transductive branch fits categorical vocabularies, relative frequencies, context/preference probabilities, and sparse interaction factors on the complete train-plus-test interaction universe. The CSV reader excludes the label column from this branch. The same fitted state is used for model training, validation, inference, and optional supervised refitting.
+The transductive branch fits categorical vocabularies and, when enabled, relative frequencies, context/preference probabilities, and sparse interaction factors on the complete train-plus-test interaction universe. The CSV reader excludes the label column from this branch. The same fitted state is used for model training, validation, inference, and optional supervised refitting. The selected 49-feature configuration disables frequency features.
 
 ```mermaid
 flowchart LR
@@ -37,7 +37,35 @@ Five smoothed label features cover user, song, artist, user/source-system-tab, a
 
 The first ablation uses the final 500,000 training rows, a fixed 400,000/100,000 row-order split, and seed 42. It compares training-only statistics, global unlabeled statistics, row-order features, graph factors, target encoding, preferences, larger trees, and a separate relative-frequency variant. These share validation row identities. Their AUC values are not directly comparable with the earlier random holdout or with a different full-data holdout.
 
+| Sample configuration | Validation ROC-AUC | Selected rounds |
+| --- | ---: | ---: |
+| Training-only reference | 0.671636410 | 166 |
+| Global unlabeled statistics | 0.671505145 | 152 |
+| Add row-order features | 0.688348418 | 142 |
+| Add transductive graph factors | 0.708989698 | 84 |
+| Add preceding-block target encoding | 0.709750066 | 85 |
+| Add user preferences | 0.712585319 | 78 |
+| Replace tree settings with the proposed larger configuration | 0.707270530 | 95 |
+| Add global frequencies to the 63-leaf preference configuration | 0.712614053 | 87 |
+
+All eight sets of 100,000 validation predictions were independently recomputed and matched the same official labels and row IDs (`7,277,418` through `7,377,417`, zero-based). The sequential graph addition improved AUC by approximately 0.02064128. The larger-tree configuration reduced it by approximately 0.00531479 relative to the 63-leaf preference configuration. Frequency features added only 0.00002873 AUC and worsened log loss in this one split; no stable benefit is established, so the simpler no-frequency configuration was selected. The full-data experiment separately compares retaining the holdout model with refitting on all labeled rows, without changing the unlabeled feature universe.
+
+The sample job took 2,328.832 seconds in total. Its largest Linux process peak RSS was 7,579.07 MiB, explaining why an experiment with only 500,000 labeled rows still used Kaggle CPU: its unlabeled graph and vocabulary cover all train and test interactions. These are single-run measurements.
+
 The transductive graph directly addresses a limitation of the previous training-only graph: training interactions were present during graph fitting while held-out interactions were absent. An absent edge between known nodes does not imply a zero reconstructed inner product, but the structural mismatch can still affect the feature distribution. A negative result from that earlier configuration is not a verdict on all collaborative methods.
+
+### Full-data refit comparison
+
+Both full-data jobs use 7,377,418 labeled rows, a 5,901,934/1,475,484 row-order split, 49 features, and seed 42. The model has 63 leaves, learning rate 0.08, a maximum of 1200 iterations, and early stopping patience 30. Both select 165 iterations and achieve validation ROC-AUC 0.7317389601.
+
+| Final supervised training | Public ROC-AUC | Private ROC-AUC | Submission |
+| --- | ---: | ---: | --- |
+| Keep the holdout model | 0.69701 | 0.69844 | 58464162 |
+| Refit on all labeled rows | **0.71053** | **0.71070** | 58464307 |
+
+Both submissions are COMPLETE. The two jobs have identical validation row IDs, labels, elementwise predictions, validation-model SHA-256, execution sources, and dependency versions. Their only configuration difference is `no_refit`. Refitting therefore improves Public/Private scores by 0.01352/0.01226 in this controlled pair. Compared with the preceding recommended model, the new refit model improves the two scores by 0.03148/0.02945 and exceeds both 0.7050 targets. The result does not support the review's unconditional preference for skipping refit.
+
+Training pipeline times are 807.138 seconds without refit and 1169.732 seconds with refit; corresponding inference/check times are 159.299 and 145.872 seconds. The refit stage itself takes 404.814 seconds. Peak Linux RSS is 8536.125 and 9806.129 MiB. These separate cloud runs are not a controlled timing benchmark. Precise measurements and provenance are retained in [the experiment record](basic_transductive_results.json).
 
 ## Synerise: historical pseudo-target pretraining
 
@@ -81,9 +109,21 @@ The formal Synerise comparison uses standardized 544-dimensional history feature
 
 This isolates the pretrained block within the new feature family. A comparison against the earlier 673-dimensional representation additionally changes the historical feature design; it cannot attribute all differences to pretraining, PQ pooling, or graph factors individually. Results are from one seed and do not establish statistical significance.
 
+| Complete representation | Churn AUROC | Category weighted score | SKU weighted score | Best epoch indices |
+| --- | ---: | ---: | ---: | --- |
+| Previous enhanced 673 dimensions | 0.7286 | 0.7961 | 0.7881 | 2 / 1 / 2 |
+| Historical 544 dimensions | 0.7293 | 0.8054 | 0.7972 | 1 / 1 / 2 |
+| Combined 1001 dimensions | 0.7299 | 0.8053 | 0.7985 | 2 / 2 / 2 |
+| Combined minus historical | +0.0006 | −0.0001 | +0.0013 | — |
+| Requested minimum | 0.7500 | 0.8150 | 0.8150 | Neither new representation meets any target |
+
+Compared with the previous 673-dimensional representation, the combined representation improves churn/category/SKU by 0.0013/0.0092/0.0104. However, pretraining introduces a trade-off relative to the new 544-dimensional control: a small category decrease accompanies the churn and SKU increases. Both complete representations are retained; taskwise maxima from different representations are not presented as one submission. The churn gap remains substantial. Exact scores, provenance, and per-task target checks are retained in [the advanced experiment record](../extension/advanced_results.json).
+
 ## Runtime evidence and limitations
 
 Pseudo-window preparation took 627.634 seconds, encoder training 147.545 seconds, and full-user extraction 35.761 seconds, measured around the actual subprocesses. The historical 544-dimensional build took 514.621 seconds including startup (511.159 seconds inside the builder). Its first memory monitor observed the Windows Python launcher rather than its worker, so that value is invalid as a peak-memory estimate and has been marked accordingly. A separate worker snapshot is not substituted for a true peak measurement.
+
+The historical 544-dimensional representation completed its continuous official evaluation in 3405.726 seconds. The combined-representation evaluation was interrupted after completing churn and before completing category. Its three exact churn AUROC values were preserved in the official offline Neptune log and verified against the run identity and log SHA-256. Applying the unmodified official aggregator recovers 0.7299 at zero-based epoch 2; no rounded progress-bar values are used. Category and SKU were restarted separately on the same representation under the same protocol and completed in 1251.872 and 1246.732 seconds. The official model resets the Torch seed for each task, and the data loader is sequential with zero workers. The original interrupted segment has no reliable monotonic duration, so the complete evaluation duration is unavailable. This is a recovered evaluation, not one uninterrupted run.
 
 The code checks target isolation, prefix boundaries, frozen vocabularies, user alignment, graph zero rows, and prediction-row offsets. These tests are complemented by full-data platform and official-evaluator runs; synthetic test AUC values are not reported as model performance.
 
