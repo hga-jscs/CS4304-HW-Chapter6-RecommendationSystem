@@ -52,7 +52,9 @@ def evaluate(official_directory: str | Path, data_directory: str | Path,
              python: str = sys.executable, accelerator: str = "gpu", device: str = "0",
              num_workers: int = 0, validate_only: bool = False, seed: int = 42,
              cache_targets: bool = False, overwrite: bool = False,
-             allow_modified_official: bool = False) -> dict:
+             allow_modified_official: bool = False, tasks: tuple[str, ...] = TASKS) -> dict:
+    if not tasks or len(set(tasks)) != len(tasks) or not set(tasks).issubset(TASKS):
+        raise ValueError("Select distinct coursework tasks")
     official_directory = Path(official_directory).resolve()
     data_directory = Path(data_directory).resolve()
     embeddings_directory = Path(embeddings_directory).resolve()
@@ -89,22 +91,22 @@ def evaluate(official_directory: str | Path, data_directory: str | Path,
                            "from extension.target_cache import install; install(); ")
         initialize += "runpy.run_module('training_pipeline.train', run_name='__main__')"
         training = [python, "-c", initialize, str(seed), "--data-dir", str(data_directory),
-                    "--embeddings-dir", str(embeddings_directory), "--tasks", *TASKS,
+                    "--embeddings-dir", str(embeddings_directory), "--tasks", *tasks,
                     "--log-name", score_directory.name, "--accelerator", accelerator,
                     "--devices", "auto" if accelerator == "cpu" else device,
                     "--num-workers", str(num_workers), "--score-dir", str(score_directory)]
         run_logged(training, official_directory, score_directory / "training.log")
         scores = json.loads((score_directory / "scores.json").read_text(encoding="utf-8"))
         epochs = json.loads((score_directory / "epochs.json").read_text(encoding="utf-8"))
-        if any(task not in scores or task not in epochs or not math.isfinite(scores[task]) for task in TASKS):
-            raise ValueError("Official score files do not contain all three finite task results")
+        if any(task not in scores or task not in epochs or not math.isfinite(scores[task]) for task in tasks):
+            raise ValueError("Official score files do not contain all selected finite task results")
         commands.append(training)
     result = {"official_repository": OFFICIAL_REPOSITORY, "official_commit": official_state["commit"],
               "official_reference_commit": OFFICIAL_COMMIT,
               "official_tracked_changes": official_state["tracked_changes"],
               "official_protocol_verified": official_state["matches_reference"],
               "validation_passed": True, "training_completed": not validate_only,
-              "tasks": list(TASKS) if not validate_only else [], "seed": seed,
+              "tasks": list(tasks) if not validate_only else [], "seed": seed,
               "target_cache_enabled": cache_targets, "commands": commands}
     (score_directory / "evaluation.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     return result
@@ -127,6 +129,8 @@ def main() -> None:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--allow-modified-official", action="store_true",
                         help="Allow a debugging evaluator and record it as non-reference")
+    parser.add_argument("--tasks", nargs="+", choices=TASKS, default=TASKS,
+                        help="Evaluate selected tasks separately to retain completed scores")
     print(json.dumps(evaluate(**vars(parser.parse_args())), indent=2))
 
 

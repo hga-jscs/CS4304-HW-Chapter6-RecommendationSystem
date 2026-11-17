@@ -182,6 +182,27 @@ def test_target_cache_preserves_order_and_binary_membership():
     assert result[0].astype(np.float32).dtype == np.float32
 
 
+def test_evaluator_records_a_completed_task_without_requiring_other_tasks(tmp_path, monkeypatch):
+    from extension import evaluate as module
+
+    output = tmp_path / "scores"
+    commands = []
+    monkeypatch.setattr(module, "check_official_code", lambda *args: {
+        "commit": module.OFFICIAL_COMMIT, "tracked_changes": [], "matches_reference": True})
+
+    def run(command, directory, log):
+        commands.append(command)
+        if "--tasks" in command:
+            assert command[command.index("--tasks") + 1:command.index("--log-name")] == ["propensity_sku"]
+            (output / "scores.json").write_text('{"propensity_sku": 0.8}')
+            (output / "epochs.json").write_text('{"propensity_sku": 2}')
+
+    monkeypatch.setattr(module, "run_logged", run)
+    result = module.evaluate(tmp_path, tmp_path, tmp_path, output, tasks=("propensity_sku",))
+    assert len(commands) == 2
+    assert result["tasks"] == ["propensity_sku"] and result["training_completed"]
+
+
 def test_target_cache_empty_window_and_invalid_orders():
     from extension.target_cache import create_target_cache
 
