@@ -17,6 +17,7 @@ import pandas as pd
 INTERACTION_COLUMNS = [
     "msno", "song_id", "source_system_tab", "source_screen_name", "source_type"
 ]
+CONTEXT_COLUMNS = ["source_type", "source_screen_name", "source_system_tab"]
 STRING_DTYPE = "string[pyarrow]"
 
 
@@ -107,10 +108,13 @@ def _numeric(values: pd.Series) -> pd.Series:
 class FeatureBuilder:
     """Serializable feature state fitted on the current training partition."""
 
-    def __init__(self, data_dir: Path, mode: str = "baseline"):
+    def __init__(self, data_dir: Path, mode: str = "baseline", *, disable_frequency_features: bool = False,
+                 user_context_features: bool = False):
         if mode not in {"baseline", "enhanced"}:
             raise ValueError("feature mode must be baseline or enhanced")
         self.mode = mode
+        self.disable_frequency_features = disable_frequency_features
+        self.user_context_features = user_context_features
         self.members = _metadata(Path(data_dir) / "members.csv", "msno", [
             "city", "bd", "gender", "registered_via", "registration_init_time",
             "expiration_date",
@@ -172,13 +176,50 @@ class FeatureBuilder:
             if categorical:
                 self.categories[name] = pd.Index(values.dropna().unique())
                 self.categorical_columns.append(name)
-            if self.mode == "enhanced" and name in counted:
+            if self.mode == "enhanced" and not self.disable_frequency_features and name in counted:
                 counts = values.value_counts(dropna=True, sort=False).astype("float32")
                 self.frequencies[name] = counts
                 self.feature_names.append(name + "_frequency")
+        if getattr(self, "user_context_features", False):
+            user_codes = self.categories["msno"].get_indexer(frame["msno"])
+            self.context_user_counts = np.bincount(user_codes, minlength=len(self.categories["msno"]))
+            self.context_categories = {}
+            self.context_probabilities = {}
+            self.context_pair_counts = {}
+            for name in CONTEXT_COLUMNS:
+                # Preserve NA as a category, distinct from a new context value.
+                values = frame[name].astype(STRING_DTYPE)
+                categories = pd.Index(values.unique())
+                codes = categories.get_indexer(values)
+                self.context_categories[name] = categories
+                self.context_probabilities[name] = np.bincount(codes, minlength=len(categories)) / len(frame)
+                pairs = user_codes.astype(np.int64) * (len(categories) + 1) + codes + 1
+                self.context_pair_counts[name] = pd.Series(pairs).value_counts(sort=False)
+                self.feature_names.append("msno_" + name + "_probability")
         return self
 
-    def transform(self, frame: pd.DataFrame) -> pd.DataFrame:
+    def _user_context_columns(self, frame: pd.DataFrame, training_context: bool):
+        user_codes = self.categories["msno"].get_indexer(frame["msno"])
+        known_users = user_codes >= 0
+        user_counts = np.zeros(len(frame), dtype=np.float64)
+        user_counts[known_users] = self.context_user_counts[user_codes[known_users]]
+        for name in CONTEXT_COLUMNS:
+            categories = self.context_categories[name]
+            codes = categories.get_indexer(frame[name].astype(STRING_DTYPE))
+            known_context = codes >= 0
+            prior = np.zeros(len(frame), dtype=np.float64)
+            prior[known_context] = self.context_probabilities[name][codes[known_context]]
+            pairs = user_codes.astype(np.int64) * (len(categories) + 1) + codes + 1
+            pair_counts = self.context_pair_counts[name].reindex(pairs, fill_value=0).to_numpy(dtype=np.float64)
+            if training_context:
+                if not known_users.all() or (pair_counts < 1).any():
+                    raise ValueError("Training context transformation requires rows included in feature fitting")
+                numerator, denominator = pair_counts - 1, user_counts - 1
+            else:
+                numerator, denominator = pair_counts, user_counts
+            yield "msno_" + name + "_probability", ((numerator + 10 * prior) / (denominator + 10)).astype(np.float32)
+
+    def transform(self, frame: pd.DataFrame, *, training_context: bool = False) -> pd.DataFrame:
         if not self.feature_names:
             raise RuntimeError("Fit the feature builder before transforming")
         columns = {}
@@ -189,6 +230,9 @@ class FeatureBuilder:
                 columns[name] = _numeric(values).to_numpy(dtype=np.float32, na_value=np.nan)
             if name in self.frequencies:
                 columns[name + "_frequency"] = values.map(self.frequencies[name]).fillna(0).to_numpy(dtype=np.float32)
+        # Older serialized states have no user_context_features attribute.
+        if getattr(self, "user_context_features", False):
+            columns.update(self._user_context_columns(frame, training_context))
         if list(columns) != self.feature_names:
             raise RuntimeError("Feature order differs from the fitted feature state")
         return pd.DataFrame(columns, index=frame.index, copy=False)

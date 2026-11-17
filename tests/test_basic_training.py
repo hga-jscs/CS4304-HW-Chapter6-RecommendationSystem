@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import pickle
 from pathlib import Path
 
 import numpy as np
@@ -78,6 +79,58 @@ def test_duplicate_metadata_is_rejected(data_dir):
         FeatureBuilder(data_dir)
 
 
+def test_disabling_frequencies_only_removes_five_columns(data_dir):
+    frame, _ = load_training(data_dir / "train.csv")
+    training, heldout = frame.iloc[:200], frame.iloc[200:]
+    complete = FeatureBuilder(data_dir, "enhanced").fit(training)
+    ablation = FeatureBuilder(data_dir, "enhanced", disable_frequency_features=True).fit(training)
+    expected_removed = {name + "_frequency" for name in ["msno", "song_id", "artist_name", "genre_ids", "source_type"]}
+    assert set(complete.feature_names) - set(ablation.feature_names) == expected_removed
+    assert len(complete.feature_names) - len(ablation.feature_names) == 5
+    assert ablation.frequencies == {}
+    assert complete.categorical_columns == ablation.categorical_columns
+    for name in complete.categorical_columns:
+        pd.testing.assert_index_equal(complete.categories[name], ablation.categories[name])
+    expected = complete.transform(heldout).drop(columns=sorted(expected_removed))
+    pd.testing.assert_frame_equal(ablation.transform(heldout), expected)
+    restored = pickle.loads(pickle.dumps(ablation))
+    assert restored.disable_frequency_features is True
+    pd.testing.assert_frame_equal(restored.transform(heldout), expected)
+
+
+def test_user_context_probabilities_leave_out_self_and_use_training_only(data_dir):
+    frame, _ = load_training(data_dir / "train.csv")
+    training = frame.iloc[:4].copy()
+    training["msno"] = pd.Series(["user_0", "user_0", "user_0", "user_1"], dtype="string[pyarrow]")
+    training["source_type"] = pd.Series(["a", "a", "b", None], dtype="string[pyarrow]")
+    builder = FeatureBuilder(data_dir, user_context_features=True).fit(training)
+    column = "msno_source_type_probability"
+    fitted = builder.transform(training)
+    leave_one_out = builder.transform(training, training_context=True)
+    assert fitted[column].iloc[0] == pytest.approx((2 + 10 * 0.5) / (3 + 10))
+    assert leave_one_out[column].iloc[0] == pytest.approx((1 + 10 * 0.5) / (2 + 10))
+    assert leave_one_out[column].iloc[3] == pytest.approx(0.25)
+    unseen = training.copy()
+    unseen["msno"] = pd.Series(["new_user", "new_user", "user_0", "new_user"], dtype="string[pyarrow]")
+    unseen["source_type"] = pd.Series(["a", "new_context", "new_context", None], dtype="string[pyarrow]")
+    np.testing.assert_allclose(builder.transform(unseen)[column], [0.5, 0.0, 0.0, 0.25])
+    relabeled = FeatureBuilder(data_dir, user_context_features=True).fit(training.assign(target=1-training.target))
+    pd.testing.assert_frame_equal(builder.transform(unseen), relabeled.transform(unseen))
+    restored = pickle.loads(pickle.dumps(builder))
+    pd.testing.assert_frame_equal(restored.transform(unseen), builder.transform(unseen))
+    with pytest.raises(ValueError, match="included"):
+        builder.transform(unseen, training_context=True)
+
+
+def test_default_and_old_feature_states_keep_existing_output(data_dir):
+    frame, _ = load_training(data_dir / "train.csv")
+    builder = FeatureBuilder(data_dir, "enhanced").fit(frame)
+    expected = builder.transform(frame)
+    assert not any(column.endswith("_probability") for column in expected)
+    del builder.user_context_features
+    pd.testing.assert_frame_equal(builder.transform(frame), expected)
+
+
 def test_invalid_training_target_is_rejected_before_narrowing(data_dir):
     frame = pd.read_csv(data_dir / "train.csv")
     frame.loc[0, "target"] = 256
@@ -86,12 +139,13 @@ def test_invalid_training_target_is_rejected_before_narrowing(data_dir):
         list(read_interactions(data_dir / "train.csv", training=True))
 
 
-@pytest.mark.parametrize("feature_mode", ["baseline", "enhanced"])
-def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode):
+@pytest.mark.parametrize("feature_mode,user_context_features", [("baseline", False), ("enhanced", False), ("enhanced", True)])
+def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode, user_context_features):
     model_dir = tmp_path / feature_mode
     args = parser().parse_args(["--data-dir", str(data_dir), "--output-dir", str(model_dir),
         "--feature-mode", feature_mode, "--threads", "1", "--num-boost-round", "12",
         "--early-stopping-rounds", "4", "--num-leaves", "7", "--min-child-samples", "5"])
+    args.user_context_features = user_context_features
     metrics = train(args)
     assert metrics["training_rows"] + metrics["validation_rows"] == 400
     assert metrics["final_training_rows"] == 400
@@ -107,6 +161,8 @@ def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode):
     assert not output.with_name(output.name+".partial").exists()
     manifest = json.loads((model_dir/"data_manifest.json").read_text(encoding="utf-8"))
     assert len(manifest["train.csv"]["sha256"]) == 64
+    configuration = json.loads((model_dir/"configuration.json").read_text(encoding="utf-8"))
+    assert configuration["user_context_features"] is user_context_features
 
 
 def test_training_refuses_to_overwrite_existing_experiment(data_dir, tmp_path):

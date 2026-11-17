@@ -7,9 +7,12 @@ import pytest
 from basic.kaggle_job import COMPETITION, RUNTIME_PACKAGES, SOURCE_FILES, generate_job
 
 
-def test_job_is_private_cpu_and_embeds_only_runtime_sources(tmp_path):
+@pytest.mark.parametrize("disable_frequency_features", [False, True])
+def test_job_is_private_cpu_and_embeds_only_runtime_sources(tmp_path, disable_frequency_features):
     output = tmp_path / "job"
-    result = generate_job("exampleuser", "kkbox-baseline", output, feature_modes=["baseline"])
+    result = generate_job("exampleuser", "kkbox-baseline", output, feature_modes=["baseline"],
+                          disable_frequency_features=disable_frequency_features,
+                          user_context_features=disable_frequency_features)
     metadata = json.loads((output / "kernel-metadata.json").read_text())
     assert metadata["id"] == "exampleuser/kkbox-baseline"
     assert metadata["is_private"] is True
@@ -30,6 +33,8 @@ def test_job_is_private_cpu_and_embeds_only_runtime_sources(tmp_path):
     assert namespace["JOB_SETTINGS"]["enhanced_rounds"] == 600
     assert namespace["JOB_SETTINGS"]["feature_modes"] == ["baseline"]
     assert namespace["JOB_SETTINGS"]["install_dependencies"] is False
+    assert namespace["JOB_SETTINGS"]["disable_frequency_features"] is disable_frequency_features
+    assert namespace["JOB_SETTINGS"]["user_context_features"] is disable_frequency_features
     assert len(result["run_script_sha256"]) == 64
 
 

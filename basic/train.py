@@ -51,8 +51,9 @@ def train(args: argparse.Namespace) -> dict:
     )
     training = frame.iloc[train_indices]
     validation = frame.iloc[validation_indices]
-    builder = FeatureBuilder(data_dir, args.feature_mode).fit(training)
-    training_features = builder.transform(training)
+    builder = FeatureBuilder(data_dir, args.feature_mode, disable_frequency_features=args.disable_frequency_features,
+                             user_context_features=args.user_context_features).fit(training)
+    training_features = builder.transform(training, training_context=True)
     validation_features = builder.transform(validation)
     labels = training["target"].to_numpy()
     validation_labels = validation["target"].to_numpy()
@@ -107,7 +108,7 @@ def train(args: argparse.Namespace) -> dict:
     print(f"Validation ROC-AUC={metrics['validation_auc']:.6f}; refit {best_iteration} iterations on {len(frame):,} rows", flush=True)
     final_started = time.perf_counter()
     builder.fit(frame)
-    final_features = builder.transform(frame)
+    final_features = builder.transform(frame, training_context=True)
     final_set = lgb.Dataset(final_features, label=frame["target"].to_numpy(), categorical_feature=builder.categorical_columns)
     final_model = lgb.train(params, final_set, num_boost_round=best_iteration, callbacks=[lgb.log_evaluation(25)])
     (output_dir / "model.txt").write_text(final_model.model_to_string(), encoding="utf-8")
@@ -139,6 +140,8 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument("--data-dir", required=True)
     result.add_argument("--output-dir", required=True)
     result.add_argument("--feature-mode", choices=["baseline", "enhanced"], default="baseline")
+    result.add_argument("--disable-frequency-features", action="store_true", help="Ablation: omit the five enhanced-mode frequency features; keep other features unchanged")
+    result.add_argument("--user-context-features", action="store_true", help="Add training-only smoothed user/context probabilities with leave-one-out training counts")
     result.add_argument("--max-train-rows", type=int, default=0, help="Uniform sample size over the whole CSV; 0 uses all records")
     result.add_argument("--validation-fraction", type=float, default=0.2)
     result.add_argument("--seed", type=int, default=42)

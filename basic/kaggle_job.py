@@ -176,6 +176,10 @@ def main():
             "--num-boost-round", str(rounds), "--early-stopping-rounds", str(JOB_SETTINGS["early_stopping_rounds"]),
             "--threads", str(JOB_SETTINGS["threads"]), "--seed", str(JOB_SETTINGS["seed"]),
             "--max-train-rows", str(JOB_SETTINGS["max_train_rows"])]
+        if JOB_SETTINGS["disable_frequency_features"]:
+            training_command.append("--disable-frequency-features")
+        if JOB_SETTINGS["user_context_features"]:
+            training_command.append("--user-context-features")
         run_checked(training_command, code_root, env, WORKING_ROOT / (feature_mode + "_training.log"))
         prediction_command = [sys.executable, "-m", "basic.predict", "--data-dir", str(data_root),
             "--model-dir", str(output), "--output", str(output / "submission.csv"),
@@ -198,6 +202,8 @@ def generate_job(
     owner: str, slug: str, output_directory: Path, *, feature_modes: list[str] | None = None,
     baseline_rounds: int = 400, enhanced_rounds: int = 600, early_stopping_rounds: int = 30,
     threads: int = 4, seed: int = 42, max_train_rows: int = 0, install_dependencies: bool = False,
+    disable_frequency_features: bool = False,
+    user_context_features: bool = False,
 ) -> dict:
     """Write metadata/run.py only; never authenticate, upload, or start a job."""
     if not re.fullmatch(r"[A-Za-z0-9_-]+", owner):
@@ -223,7 +229,9 @@ def generate_job(
         raise ValueError("Could not identify all seven runtime dependencies")
     settings = {"feature_modes": modes, "baseline_rounds": baseline_rounds, "enhanced_rounds": enhanced_rounds,
         "early_stopping_rounds": early_stopping_rounds, "threads": threads, "seed": seed,
-        "max_train_rows": max_train_rows, "install_dependencies": install_dependencies}
+        "max_train_rows": max_train_rows, "install_dependencies": install_dependencies,
+        "disable_frequency_features": disable_frequency_features,
+        "user_context_features": user_context_features}
     try:
         revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source_root, text=True, stderr=subprocess.DEVNULL).strip()
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=source_root, text=True, stderr=subprocess.DEVNULL).strip())
@@ -262,6 +270,8 @@ def main():
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-train-rows", type=int, default=0)
+    parser.add_argument("--disable-frequency-features", action="store_true", help="Pass the frequency-feature ablation flag to every training mode")
+    parser.add_argument("--user-context-features", action="store_true", help="Pass the smoothed user/context probability option to every training mode")
     parser.add_argument("--install-dependencies", action="store_true", help="Explicitly enable network and pip installation; default reuses the Kaggle image")
     print(json.dumps(generate_job(**vars(parser.parse_args())), indent=2))
 

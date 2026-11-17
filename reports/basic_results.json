@@ -136,18 +136,24 @@
       "experiment": "baseline_full",
       "execution": "private Kaggle CPU job",
       "kernel": "gaoanghe/kkbox-baseline",
-      "last_observed_status": "ERROR",
-      "failed_stage": "dependency_installation",
-      "failure": "pypi.org DNS resolution failed",
-      "training_started": false,
-      "next_action": "Reuse compatible preinstalled dependencies and restart the full-data job",
-      "results_recorded": false
+      "kernel_version": 2,
+      "last_observed_status": "RUNNING",
+      "stage": "final_refit_in_progress",
+      "runtime": "Use Kaggle preinstalled packages without network installation",
+      "validation_log_observation": {
+        "rounds": 400,
+        "auc_approximate": 0.795648,
+        "source": "Kaggle training log",
+        "precision": "Rounded log value; complete metrics.json not yet retrieved"
+      },
+      "final_metrics_retrieved": false,
+      "platform_score_recorded": false
     }
   ],
   "local_comparisons": [
     {
       "experiment": "enhanced_sample",
-      "status": "locally_validated_not_submitted",
+      "status": "scored",
       "configuration": {
         "feature_mode": "enhanced",
         "max_train_rows": 300000,
@@ -231,7 +237,370 @@
       },
       "baseline_experiment": "baseline_sample",
       "validation_auc_difference": 0.00625071402457511,
-      "platform_score_recorded": false
+      "platform_score_recorded": true,
+      "platform_submission": {
+        "reference": 58453417,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17T02:53:04.663Z",
+        "description": "CS4304 enhanced: uniform 300k seed42, LightGBM 67 rounds",
+        "public_score": 0.64723,
+        "private_score": 0.65049,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "bdc6f53834439641f264f0863ff99b7b507d960908af0ee2c47deca6916256cd",
+        "source": "Kaggle competitions submissions response"
+      },
+      "conclusion": "Local validation improved but both platform scores decreased; do not replace the submitted baseline with this sampled enhanced model."
+    },
+    {
+      "experiment": "metadata_sample",
+      "status": "scored",
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "max_train_rows": 300000,
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 300,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": "e1ad64d9d635d5d62c61dc3cc13a3e0d62b047c1",
+        "working_tree_dirty": true,
+        "python": "3.11.3",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "packages": {
+          "numpy": "2.4.6",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.9.1",
+          "lightgbm": "4.7.0"
+        }
+      },
+      "local_validation_and_training": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 27,
+        "best_iteration": 79,
+        "validation_auc": 0.7256308918250057,
+        "validation_log_loss": 0.6119914480809238,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723399,
+        "validation_training_seconds": 20.29745399998501,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7202952448086783
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6668572449526532
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7319624377967484
+          }
+        },
+        "final_training_rows": 300000,
+        "final_training_seconds": 23.963157999998657,
+        "total_seconds": 101.65516150000622
+      },
+      "prediction": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.02419665939,
+          "maximum_probability": 0.9880334274,
+          "sha256": "763e04cf224b4eb5ebd8ee5818005636cb4d77760760352a74ca49b128f4ec9f"
+        },
+        "seconds": 105.82223269998212,
+        "model_sha256": "c0e9b45d207d72528a9a6934d08bc9aea7074c1d1c67e099b97f980e43ac24c9",
+        "test_sha256": "b5bac50fd7d93ee04e9567e61de3bb89d6dec225b2b80474a0cacc85056c91f4",
+        "submission_sha256": "763e04cf224b4eb5ebd8ee5818005636cb4d77760760352a74ca49b128f4ec9f"
+      },
+      "training_data_manifest": {
+        "train.csv": {
+          "bytes": 971675848,
+          "sha256": "ff19a9d3fd1def1494082fbee833fd2470ce3342aabdc8de1eb87ee578692934"
+        },
+        "members.csv": {
+          "bytes": 2503827,
+          "sha256": "a3cd1b868d5d32df23ed99f2609d3675f48a5d3ecef35eb591eced3f9b9939ee"
+        },
+        "songs.csv": {
+          "bytes": 221828666,
+          "sha256": "56c8ee6914fbb5d41ee378fa28d0e1505211886b01d5772944246e24cb26098c"
+        },
+        "song_extra_info.csv": {
+          "bytes": 181010294,
+          "sha256": "8a4083603ee8f9de1a81a23635d116dd7a5d2f8061397a149a9f4cece4273e6e"
+        }
+      },
+      "baseline_experiment": "baseline_sample",
+      "validation_auc_difference": -0.00016385452839762227,
+      "platform_score_recorded": true,
+      "platform_submission": {
+        "reference": 58453740,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17T03:04:57.573Z",
+        "description": "CS4304 metadata ablation: 300k seed42, no frequency, 79 rounds",
+        "public_score": 0.65317,
+        "private_score": 0.656,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "763e04cf224b4eb5ebd8ee5818005636cb4d77760760352a74ca49b128f4ec9f",
+        "source": "Kaggle competitions submissions response"
+      },
+      "platform_difference_from_baseline": {
+        "public": 0.0003,
+        "private": 2e-05
+      },
+      "statistical_significance_tested": false
+    },
+    {
+      "experiment": "context_sample",
+      "status": "scored",
+      "configuration": {
+        "feature_mode": "enhanced",
+        "disable_frequency_features": true,
+        "user_context_features": true,
+        "max_train_rows": 300000,
+        "validation_fraction": 0.2,
+        "seed": 42,
+        "num_boost_round": 300,
+        "early_stopping_rounds": 30,
+        "learning_rate": 0.08,
+        "num_leaves": 63,
+        "min_child_samples": 50,
+        "threads": 4,
+        "chunk_size": 200000,
+        "lightgbm_parameters": {
+          "objective": "binary",
+          "metric": "auc",
+          "learning_rate": 0.08,
+          "num_leaves": 63,
+          "min_data_in_leaf": 50,
+          "feature_fraction": 0.9,
+          "bagging_fraction": 0.9,
+          "bagging_freq": 1,
+          "lambda_l2": 1.0,
+          "max_bin": 255,
+          "max_cat_threshold": 32,
+          "cat_smooth": 10.0,
+          "num_threads": 4,
+          "verbosity": -1,
+          "seed": 42,
+          "feature_fraction_seed": 42,
+          "bagging_seed": 42,
+          "data_random_seed": 42,
+          "deterministic": true,
+          "force_col_wise": true
+        },
+        "git_revision": "e1ad64d9d635d5d62c61dc3cc13a3e0d62b047c1",
+        "working_tree_dirty": true,
+        "python": "3.11.3",
+        "platform": "Windows-10-10.0.26200-SP0",
+        "packages": {
+          "numpy": "2.4.6",
+          "pandas": "2.3.3",
+          "pyarrow": "23.0.1",
+          "scikit-learn": "1.9.1",
+          "lightgbm": "4.7.0"
+        }
+      },
+      "local_validation_and_training": {
+        "available_rows": 7377418,
+        "selected_rows": 300000,
+        "sampling": "uniform_without_replacement",
+        "sampling_seed": 42,
+        "split": "stratified_random_holdout_not_chronological",
+        "split_seed": 42,
+        "training_rows": 240000,
+        "validation_rows": 60000,
+        "feature_mode": "enhanced",
+        "feature_count": 30,
+        "best_iteration": 75,
+        "validation_auc": 0.7273300103048881,
+        "validation_log_loss": 0.610399543176094,
+        "constant_baseline_auc": 0.5,
+        "constant_baseline_log_loss": 0.6931299715723399,
+        "validation_training_seconds": 15.463092399993911,
+        "segments": {
+          "known_user_and_song": {
+            "rows": 50177,
+            "auc": 0.7221102223691
+          },
+          "new_user": {
+            "rows": 869,
+            "auc": 0.6701923649574176
+          },
+          "new_song": {
+            "rows": 9055,
+            "auc": 0.7328732793425371
+          }
+        },
+        "final_training_rows": 300000,
+        "final_training_seconds": 23.02317899998161,
+        "total_seconds": 104.82149120001122
+      },
+      "prediction": {
+        "rows": 2556790,
+        "validation": {
+          "valid": true,
+          "rows": 2556790,
+          "minimum_probability": 0.03104061879,
+          "maximum_probability": 0.9872640079,
+          "sha256": "19501c9fa9f3dd41c5245a6c07310743dbadc5ba43d9bcd68d97ac25c23a5600"
+        },
+        "seconds": 105.33680069999536,
+        "model_sha256": "46ae96a16e334d7de585a86833495fecb63f23452c9af673cf48ec905553138b",
+        "test_sha256": "b5bac50fd7d93ee04e9567e61de3bb89d6dec225b2b80474a0cacc85056c91f4",
+        "submission_sha256": "19501c9fa9f3dd41c5245a6c07310743dbadc5ba43d9bcd68d97ac25c23a5600"
+      },
+      "training_data_manifest": {
+        "train.csv": {
+          "bytes": 971675848,
+          "sha256": "ff19a9d3fd1def1494082fbee833fd2470ce3342aabdc8de1eb87ee578692934"
+        },
+        "members.csv": {
+          "bytes": 2503827,
+          "sha256": "a3cd1b868d5d32df23ed99f2609d3675f48a5d3ecef35eb591eced3f9b9939ee"
+        },
+        "songs.csv": {
+          "bytes": 221828666,
+          "sha256": "56c8ee6914fbb5d41ee378fa28d0e1505211886b01d5772944246e24cb26098c"
+        },
+        "song_extra_info.csv": {
+          "bytes": 181010294,
+          "sha256": "8a4083603ee8f9de1a81a23635d116dd7a5d2f8061397a149a9f4cece4273e6e"
+        }
+      },
+      "baseline_experiment": "baseline_sample",
+      "validation_auc_difference": 0.0015352639514847333,
+      "platform_score_recorded": true,
+      "platform_submission": {
+        "reference": 58453892,
+        "status": "COMPLETE",
+        "submitted_at_utc": "2026-11-17T03:10:45.373Z",
+        "description": "CS4304 context: 300k seed42, metadata plus user context, 75 rounds",
+        "public_score": 0.65373,
+        "private_score": 0.65697,
+        "score_metric": "ROC-AUC",
+        "submission_sha256": "19501c9fa9f3dd41c5245a6c07310743dbadc5ba43d9bcd68d97ac25c23a5600",
+        "source": "Kaggle competitions submissions response"
+      },
+      "platform_difference_from_baseline": {
+        "public": 0.00086,
+        "private": 0.00099
+      },
+      "statistical_significance_tested": false
+    }
+  ],
+  "current_best_scored_sample": {
+    "experiment": "context_sample",
+    "submission_reference": 58453892,
+    "selection_scope": "Four completed 300000-row sample experiments only",
+    "public_score": 0.65373,
+    "private_score": 0.65697,
+    "statistical_significance_tested": false,
+    "full_data_improvement_established": false
+  },
+  "distribution_diagnostics": {
+    "method": "Streamed msno, song_id and source_type only; full-file uniform sample without replacement using NumPy default_rng(42). No test labels were accessed.",
+    "sample_rows": 300000,
+    "sample_seed": 42,
+    "sample_unique_users": 24638,
+    "sample_unique_songs": 67232,
+    "validation": {
+      "rows": 60000,
+      "reference_training_rows": 240000,
+      "new_user": {
+        "rows": 869,
+        "share": 0.014483333333333334
+      },
+      "new_song": {
+        "rows": 9055,
+        "share": 0.15091666666666667
+      },
+      "known_user_and_song": {
+        "rows": 50177,
+        "share": 0.8362833333333334
+      }
+    },
+    "test": {
+      "rows": 2556790,
+      "reference_training_rows": 300000,
+      "new_user": {
+        "rows": 236947,
+        "share": 0.09267362591374341
+      },
+      "new_song": {
+        "rows": 664355,
+        "share": 0.25983948623078157
+      },
+      "known_user_and_song": {
+        "rows": 1707727,
+        "share": 0.6679183663891051
+      }
+    },
+    "source_type_shares": {
+      "sample_reference_rows": 300000,
+      "test_rows": 2556790,
+      "test_shares_precision": "Rounded to six decimal places",
+      "local-library": {
+        "sample": 0.30771,
+        "test": 0.227765
+      },
+      "online-playlist": {
+        "sample": 0.26676,
+        "test": 0.302931
+      }
+    },
+    "interpretation": "Validation and test have different reference-set coverage and context distributions. This motivates ablations but does not identify one feature as the sole cause of the score gap."
+  },
+  "method_sources": [
+    {
+      "method": "frequency_ablation_motivation",
+      "url": "https://www.researchgate.net/publication/328838360",
+      "location": "Section 4 Conclusion, penultimate paragraph",
+      "authors": "Jianyu Zhang and Francoise Fogelman-Soulie",
+      "note": "First-hand sixth-place report discusses a popularity count improving validation while hurting test due to distribution differences."
+    },
+    {
+      "method": "user_context_conditional_probabilities",
+      "url": "https://github.com/lystdo/Codes-for-WSDM-CUP-Music-Rec-1st-place-solution/blob/master/input/training/script/cnt_log_process.py#L59-L86",
+      "note": "First-place author implementation. This project keeps fitting limited to the training partition rather than combining train and test statistics."
     }
   ]
 }
