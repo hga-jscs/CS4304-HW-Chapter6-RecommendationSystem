@@ -24,6 +24,46 @@
 
 完整 SKU 验证集的 100 类中有 3 类没有正例；保留了固定版本 TorchMetrics 的官方宏平均 AUROC 处理，未剔除类别或改变指标。小批量 sanity validation 也可能出现无正例提示，类别支持数已记录在成绩文件中。
 
+## 多窗口与延迟预测候选
+
+**以下候选尚待正式评测，不属于上表已完成的五组实验。** 本轮将历史行为拆分为购买、加购与近 7 日 `cart−remove−buy` 余额代理，加入活跃度速度比、独立购买日节律、精确 URL 和带 IDF 的图特征；历史块为 1203 维。余额是事件计数代理，不是真实订单余额。意见核验与设计依据见[第三轮诊断](../reports/third_review.md)。
+
+先在完整 `input/` 内拟合独立历史块，保留同一份原始矩阵供历史单独对照和预训练拼接使用：
+
+```powershell
+python -m extension.behavior_features --data-directory data/extension --output-directory outputs/extension/behavior --batch-size 50000 --seed 42
+python -m extension.standardize --embeddings-directory outputs/extension/behavior --output-directory outputs/extension/behavior_scaled --method block
+```
+
+在包含 PyTorch 的拓展训练环境中准备、训练、提取延迟候选。三个阶段可分别执行；`prepare` 自动构建其内部的 earlier、later、full 特征与序列缓存，无需手动先建这些子目录：
+
+```powershell
+python -m extension.pretrain_encoder --stage prepare --mode multiwindow --data-directory data/extension --cache-directory outputs/extension/delayed_cache --output-directory outputs/extension/delayed_encoder --pseudo-days 14 --sequence-length 64 --prepare-batch-size 50000 --validation-fraction 0.1 --class-selection training_targets --include-delayed-window --seed 42
+python -m extension.pretrain_encoder --stage train --data-directory data/extension --cache-directory outputs/extension/delayed_cache --output-directory outputs/extension/delayed_encoder --epochs 10 --patience 2 --batch-size 1024 --learning-rate 0.001 --churn-weight-mode unit --churn-multiplier 3 --device cuda --seed 42
+python -m extension.pretrain_encoder --stage extract --data-directory data/extension --cache-directory outputs/extension/delayed_cache --output-directory outputs/extension/delayed_encoder --batch-size 1024 --device cuda
+```
+
+多窗口预训练有两套明确的拟合范围。其内部特征词表、PQ 基底、图 IDF 与投影基底只在最早输入 A 拟合，B 及完整历史推理均复用同一份 `feature_state.npz`；`training_targets` 仅用训练用户在两个历史伪目标窗内的购买选择辅助头类别，排除验证用户，且不读取官方 `target/`。省略该选项时采用 `prefix`，只按 A 的历史购买选类。共享用户划分覆盖所有配对，内部标准化只统计训练用户的 A/B 输入各一次，正例权重按预测头组分别拟合。上面的独立 `behavior` 历史块则在完整 `input/` 拟合；两套基底无需相同，最终按用户行序拼接，不把对应因子当成同一坐标。
+
+默认多窗口模式用 A/B 各自紧接输入的 14 日目标训练 immediate 头；延迟选项再以 A 的输入、序列及买家掩码配 B 的目标，使用独立的 delayed 头。当前数据的 A 输入止于 10 月 12 日，A 目标为 10 月 13–26 日；B 输入止于 10 月 26 日，B 目标为 10 月 27 日–11 月 9 日。每组头均含 1 个 churn、100 个 category、100 个 SKU 输出。提取时使用完整历史，输出瓶颈与 sigmoid 分数；这些分数未经概率校准，不能将加权 BCE 输出直接解释为真实购买概率。
+
+| 多窗口路径 | 预训练输出 | 与同一 1203 维历史块拼接 |
+| --- | ---: | ---: |
+| 默认 immediate | 128 + 64 + 201 = 393 | 1596 |
+| `--include-delayed-window` | 128 + 64 + 201 + 201 = 594 | 1797 |
+
+要复现默认 393 维对照，移除准备命令的 `--include-delayed-window`，并将三条命令中的缓存/模型目录分别换为 `outputs/extension/immediate_cache`、`outputs/extension/immediate_encoder`；其余参数保持一致。训练与提取会从缓存和 checkpoint 识别模式。准备阶段必须保留 `--mode multiwindow`，否则仍进入下文旧 457 维 legacy 路径。
+
+将延迟预训练块与前面独立构建的历史块拼接，输出官方要求的 `float16` 1797 维矩阵：
+
+```powershell
+python -m extension.standardize --embeddings-directory outputs/extension/behavior --pretrained-directory outputs/extension/delayed_encoder --output-directory outputs/extension/delayed_combined --method block
+```
+
+393 维对照使用 `--pretrained-directory outputs/extension/immediate_encoder` 和单独的 `outputs/extension/immediate_combined` 输出目录。`--method block` 根据元数据将统计列按列标准化、PQ/图向量按行 L2 缩放、瓶颈按行归一化；已输出的 sigmoid 分数只乘块权重，不再次 sigmoid。参数保存在 `standardization.json`，原始矩阵保持不变。旧 `--method column` 仍是默认值；两条数值路径可能有极少量 `float16` 双重舍入差异，不声称共同统计列逐元素恒等，量化核验见第三轮诊断。
+
+最后将 `delayed_combined`、`immediate_combined` 或 `behavior_scaled` 作为下文评测的 `--embeddings-directory`，各用独立评分目录完成格式验证和三项任务。内部验证 BCE/AUROC 只用于选择候选，不能代替正式分数或保证达标。
+
 ## 历史预训练与 1001 维实验流程
 
 新增流程由三部分组成：`pretrain_encoder` 使用历史内伪未来学习 457 维表征，`history_representation build` 生成 544 维统计/内容/协同特征，`combine` 拼接并按列标准化为 1001 维。544 与 1001 维的正式对照结果见上表。
@@ -74,6 +114,8 @@ target/
 ```
 
 保留完整官方目录。已预处理的数据无需再次运行官方 `split_data`。表征只读取 `input/` 和根目录商品属性，两个目标窗口仅交给官方下游评测。
+
+当前下载版本的 input 截至 2022-11-09；本地下游训练目标为 11 月 10–23 日，验证目标为 11 月 24 日–12 月 7 日。官方 DataModule 对两者使用同一批用户和同一份输入表征，验证前不更新表征：对应输入截止后的第 1–14 天和第 15–28 天。延迟伪任务据此设计，尚未证明它能改善成绩。这些是当前本地固定官方评测的数据边界，不代表已核验线上隐藏目标日期。原始时间戳未带时区；代码按 UTC 解释是本项目的约定。
 
 Python 3.11 下安装表征依赖；以下命令均在本项目仓库根目录执行：
 
@@ -139,9 +181,17 @@ python -m extension.evaluate --official-directory external/recsys2025 --data-dir
 
 也可通过 `--python` 指定官方环境的 Python 路径。入口默认核对官方提交及受版本控制文件未被修改，先运行原始 `validator.run`，初始化随机种子后再执行原始 `training_pipeline.train` 的 `churn`、`propensity_category`、`propensity_sku`。入口种子默认为 42；官方网络内部的 `torch.manual_seed(1278)` 保持原样，模型和训练参数均未修改。不提供关闭用户覆盖检查或替换官方指标的开关。CPU 支持 `--accelerator cpu`，但完整官方模型训练通常更适合 GPU。
 
+省略 `--tasks` 时运行全部三项；也可先单独运行指定任务，保留各次结果，例如：
+
+```text
+python -m extension.evaluate --official-directory external/recsys2025 --data-directory data/extension --embeddings-directory outputs/extension/delayed_combined --score-directory outputs/extension/delayed_churn_scores --tasks churn --accelerator gpu --device 0 --num-workers 0 --cache-targets
+```
+
+其余任务可指定 `--tasks propensity_category propensity_sku`，使用另一个评分目录。选择任务不改变其模型、指标或每任务三轮协议；跨次汇总应使用同一表征与相同参数，不能拼接不同表征的单项最好分。
+
 实验重跑可加 `--overwrite`，只清除旧的三份结果 JSON，重新写入日志，其他文件不删除。调试修改过的官方代码时可显式加 `--allow-modified-official`；结果会记录真实提交和受版本控制文件的改动，并将 `official_protocol_verified` 设为 `false`。正式性能对比仍使用固定、无改动的官方代码，不能把调试结果与正式结果混为一谈。
 
-官方验证失败时进程返回非零退出码；只有三项训练成功且分数文件完整时才记录 `training_completed: true`。官方分数写入 `scores.json`，最佳 epoch 写入 `epochs.json`，执行命令与官方版本写入 `evaluation.json`，终端日志保留在 `validation.log` 和 `training.log`。
+官方验证失败时进程返回非零退出码；只有本次所选任务训练成功且对应分数/epoch 文件完整时才记录 `training_completed: true`。必须同时查看 `evaluation.json` 的 `tasks`：单项完成不代表三项均完成；`--validate-only` 的任务列表为空，`training_completed` 为 `false`。官方分数写入 `scores.json`，最佳 epoch 写入 `epochs.json`，执行命令与官方版本写入 `evaluation.json`，终端日志保留在 `validation.log` 和 `training.log`。
 
 `churn` 的分数是 AUROC；两个 `propensity` 任务的分数是 `0.8 × AUROC + 0.1 × Diversity + 0.1 × Novelty`。官方在三个 epoch 中按此分数取最大值，再四舍五入到四位小数。`epochs.json` 的 0/1/2 分别对应第 1/2/3 轮；`scores.json` 中的 `placeholder` 不是任务成绩。
 
