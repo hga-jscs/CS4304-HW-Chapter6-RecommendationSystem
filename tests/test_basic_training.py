@@ -139,13 +139,17 @@ def test_invalid_training_target_is_rejected_before_narrowing(data_dir):
         list(read_interactions(data_dir / "train.csv", training=True))
 
 
-@pytest.mark.parametrize("feature_mode,user_context_features", [("baseline", False), ("enhanced", False), ("enhanced", True)])
-def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode, user_context_features):
+@pytest.mark.parametrize("feature_mode,user_context_features,collaborative_features", [
+    ("baseline", False, False), ("enhanced", False, False),
+    ("enhanced", True, False), ("enhanced", True, True),
+])
+def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode, user_context_features, collaborative_features):
     model_dir = tmp_path / feature_mode
     args = parser().parse_args(["--data-dir", str(data_dir), "--output-dir", str(model_dir),
         "--feature-mode", feature_mode, "--threads", "1", "--num-boost-round", "12",
         "--early-stopping-rounds", "4", "--num-leaves", "7", "--min-child-samples", "5"])
     args.user_context_features = user_context_features
+    args.collaborative_features = collaborative_features
     metrics = train(args)
     assert metrics["training_rows"] + metrics["validation_rows"] == 400
     assert metrics["final_training_rows"] == 400
@@ -160,16 +164,83 @@ def test_training_and_chunked_prediction(data_dir, tmp_path, feature_mode, user_
     assert submission.target.between(0, 1).all()
     assert not output.with_name(output.name+".partial").exists()
     manifest = json.loads((model_dir/"data_manifest.json").read_text(encoding="utf-8"))
-    assert len(manifest["train.csv"]["sha256"]) == 64
+    assert manifest["train.csv"]["bytes"] == (data_dir / "train.csv").stat().st_size
+    assert manifest["train.csv"]["mtime_ns"] == (data_dir / "train.csv").stat().st_mtime_ns
+    assert "sha256" not in manifest["train.csv"]
     configuration = json.loads((model_dir/"configuration.json").read_text(encoding="utf-8"))
     assert configuration["user_context_features"] is user_context_features
+    if collaborative_features:
+        assert metrics["validation_collaborative_fit"]["song"]["rank"] > 0
+        assert metrics["final_collaborative_fit"]["artist"]["rank"] > 0
 
 
-def test_training_refuses_to_overwrite_existing_experiment(data_dir, tmp_path):
+def test_no_refit_and_explicit_overwrite_preserve_matching_state(data_dir, tmp_path):
     output = tmp_path / "existing"
     output.mkdir()
     (output / "keep.txt").write_text("keep")
-    args = parser().parse_args(["--data-dir", str(data_dir), "--output-dir", str(output)])
-    with pytest.raises(ValueError, match="not empty"):
+    args = parser().parse_args(["--data-dir", str(data_dir), "--output-dir", str(output),
+        "--split-mode", "row_order", "--no-refit", "--threads", "1", "--num-boost-round", "5",
+        "--num-leaves", "7", "--min-child-samples", "5"])
+    metrics = train(args)
+    assert metrics["final_training_rows"] == metrics["training_rows"] == 320
+    assert metrics["refit_performed"] is False
+    with (output / "features.pkl").open("rb") as stream:
+        builder = pickle.load(stream)
+    assert len(builder.categories["msno"]) == 16
+    with pytest.raises(ValueError, match="overwrite"):
         train(args)
+    args.overwrite = True
+    train(args)
     assert (output / "keep.txt").read_text() == "keep"
+    prediction = tmp_path / "prediction.csv"
+    partial = prediction.with_name("prediction.csv.partial")
+    partial.write_text("unfinished")
+    predict(data_dir, output, prediction, threads=1)
+    assert not partial.exists()
+    with pytest.raises(ValueError, match="overwrite"):
+        predict(data_dir, output, prediction, threads=1)
+    before = prediction.read_bytes()
+    predict(data_dir, output, prediction, threads=1, overwrite=True)
+    assert prediction.read_bytes() == before
+
+
+def test_calendar_features_keep_days_and_reference_year_order(data_dir):
+    members = pd.read_csv(data_dir / "members.csv")
+    members.loc[:2, "registration_init_time"] = [20161231, 20170101, 20170102]
+    members.to_csv(data_dir / "members.csv", index=False)
+    extra = pd.read_csv(data_dir / "song_extra_info.csv")
+    extra.loc[:2, "isrc"] = ["TWAAA9900001", "TWAAA1700001", "invalid"]
+    extra.to_csv(data_dir / "song_extra_info.csv", index=False)
+    frame, _ = load_training(data_dir / "train.csv")
+    rows = frame.iloc[[0, 21, 42]]
+    values = FeatureBuilder(data_dir, "enhanced").fit(rows).transform(rows)
+    np.testing.assert_array_equal(np.diff(values.registration_days), [1, 1])
+    np.testing.assert_array_equal(values.isrc_reference_year.iloc[:2], [1999, 2017])
+    assert np.isnan(values.isrc_reference_year.iloc[2])
+    legacy = FeatureBuilder(data_dir, "enhanced", numeric_features="legacy").fit(rows)
+    expected = legacy.transform(rows)
+    del legacy.numeric_features
+    pd.testing.assert_frame_equal(pickle.loads(pickle.dumps(legacy)).transform(rows), expected)
+
+
+def test_relative_frequency_full_counts_and_preferences(data_dir):
+    frame, _ = load_training(data_dir / "train.csv")
+    rows = frame.iloc[:10]
+    builder = FeatureBuilder(data_dir, "enhanced", frequency_mode="relative",
+        context_counting="full", user_context_features=True, user_preference_features=True).fit(rows)
+    expected = builder.transform(rows)
+    pd.testing.assert_frame_equal(builder.transform(rows, training_context=True), expected)
+    assert (expected.msno_frequency == 1).all()
+    assert (expected.song_id_frequency == np.float32(0.1)).all()
+    assert "msno_artist_name_probability" in expected
+    assert "msno_genre_ids_probability" in expected
+    assert expected.msno_artist_name_probability.iloc[0] == pytest.approx(0.2)
+    other = FeatureBuilder(data_dir, "enhanced", frequency_mode="relative",
+        context_counting="full", user_context_features=True, user_preference_features=True).fit(rows.assign(target=1-rows.target))
+    pd.testing.assert_frame_equal(other.transform(rows), expected)
+
+
+def test_tail_sampling_preserves_original_row_numbers(data_dir):
+    frame, info = load_training(data_dir / "train.csv", max_rows=37, chunksize=41, sampling_mode="tail")
+    assert frame.row_id.tolist() == list(range(363, 400))
+    assert info["sampling"] == "tail_rows_not_verified_time"

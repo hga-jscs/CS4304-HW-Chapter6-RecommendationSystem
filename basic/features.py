@@ -29,6 +29,12 @@ def file_digest(path: Path) -> str:
     return digest.hexdigest()
 
 
+def file_fingerprint(path: Path) -> dict:
+    """Cheap experiment metadata; content hashes remain in the download manifest."""
+    stat = path.stat()
+    return {"bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+
+
 def read_interactions(
     path: Path, *, training: bool, chunksize: int = 200_000
 ) -> Iterator[pd.DataFrame]:
@@ -47,16 +53,19 @@ def read_interactions(
 
 
 def load_training(
-    path: Path, *, max_rows: int = 0, seed: int = 42, chunksize: int = 200_000
+    path: Path, *, max_rows: int = 0, seed: int = 42, chunksize: int = 200_000,
+    sampling_mode: str = "uniform",
 ) -> tuple[pd.DataFrame, dict]:
-    """Take an exact uniform sample over the whole file, or use every row.
+    """Use all rows, an exact uniform sample, or an explicitly selected tail.
 
-    Sampling is two-pass: count CSV records, choose row numbers, then read only
-    selected records into the retained frame. A prefix is never used as a
-    substitute for a random or chronological split.
+    Sampling is two-pass: count CSV records, choose original row numbers, then
+    retain those records. Tail selection preserves row order without inventing
+    timestamps or physical time intervals.
     """
     if max_rows < 0 or chunksize <= 0:
         raise ValueError("max_rows must be nonnegative and chunksize positive")
+    if sampling_mode not in {"uniform", "tail"}:
+        raise ValueError("sampling_mode must be uniform or tail")
     selected = None
     total_rows = None
     if max_rows:
@@ -64,9 +73,8 @@ def load_training(
             path, usecols=["target"], chunksize=chunksize
         ))
         if max_rows < total_rows:
-            selected = np.sort(np.random.default_rng(seed).choice(
-                total_rows, size=max_rows, replace=False
-            ))
+            selected = (np.arange(total_rows - max_rows, total_rows) if sampling_mode == "tail"
+                        else np.sort(np.random.default_rng(seed).choice(total_rows, size=max_rows, replace=False)))
     retained = []
     offset = 0
     for frame in read_interactions(path, training=True, chunksize=chunksize):
@@ -87,7 +95,7 @@ def load_training(
     return result, {
         "available_rows": offset,
         "selected_rows": len(result),
-        "sampling": "uniform_without_replacement" if selected is not None else "all_rows",
+        "sampling": ("tail_rows_not_verified_time" if sampling_mode == "tail" else "uniform_without_replacement") if selected is not None else "all_rows",
         "sampling_seed": seed,
     }
 
@@ -109,12 +117,25 @@ class FeatureBuilder:
     """Serializable feature state fitted on the current training partition."""
 
     def __init__(self, data_dir: Path, mode: str = "baseline", *, disable_frequency_features: bool = False,
-                 user_context_features: bool = False):
+                 user_context_features: bool = False, numeric_features: str = "calendar",
+                 frequency_mode: str = "count", context_counting: str = "leave_one_out",
+                 user_preference_features: bool = False, collaborative_features: bool = False):
         if mode not in {"baseline", "enhanced"}:
             raise ValueError("feature mode must be baseline or enhanced")
         self.mode = mode
         self.disable_frequency_features = disable_frequency_features
         self.user_context_features = user_context_features
+        if numeric_features not in {"legacy", "calendar"}:
+            raise ValueError("numeric_features must be legacy or calendar")
+        self.numeric_features = numeric_features
+        if frequency_mode not in {"count", "relative"}:
+            raise ValueError("frequency_mode must be count or relative")
+        if context_counting not in {"leave_one_out", "full"}:
+            raise ValueError("context_counting must be leave_one_out or full")
+        self.frequency_mode = frequency_mode
+        self.context_counting = context_counting
+        self.user_preference_features = user_preference_features
+        self.collaborative_features = collaborative_features
         self.members = _metadata(Path(data_dir) / "members.csv", "msno", [
             "city", "bd", "gender", "registered_via", "registration_init_time",
             "expiration_date",
@@ -137,8 +158,20 @@ class FeatureBuilder:
             yield name, frame["msno"].map(self.members[name]), True
         age = _numeric(frame["msno"].map(self.members["bd"]))
         yield "age", age.where(age.between(1, 100)), False
-        for name in ["registration_init_time", "expiration_date"]:
-            yield name, frame["msno"].map(self.members[name]), False
+        # Old pickles predate this setting and must retain their original columns.
+        calendar = getattr(self, "numeric_features", "legacy") == "calendar"
+        dates = {}
+        if calendar or self.mode == "enhanced":
+            for name in ["registration_init_time", "expiration_date"]:
+                dates[name] = pd.to_datetime(frame["msno"].map(self.members[name]),
+                                             format="%Y%m%d", errors="coerce")
+        if calendar:
+            base_date = pd.Timestamp("2000-01-01")
+            yield "registration_days", (dates["registration_init_time"] - base_date).dt.days, False
+            yield "expiration_days", (dates["expiration_date"] - base_date).dt.days, False
+        else:
+            for name in ["registration_init_time", "expiration_date"]:
+                yield name, frame["msno"].map(self.members[name]), False
         for name in ["genre_ids", "artist_name", "composer", "lyricist", "language"]:
             yield name, frame["song_id"].map(self.songs[name]), True
         length = _numeric(frame["song_id"].map(self.songs["song_length"]))
@@ -148,21 +181,21 @@ class FeatureBuilder:
                 values = frame["song_id"].map(self.songs[name])
                 count = values.str.count(r"\|") + 1
                 yield name + "_count", count.where(values.notna()), False
-            registered = pd.to_datetime(
-                frame["msno"].map(self.members["registration_init_time"]),
-                format="%Y%m%d", errors="coerce",
-            )
-            expires = pd.to_datetime(
-                frame["msno"].map(self.members["expiration_date"]),
-                format="%Y%m%d", errors="coerce",
-            )
+            registered = dates["registration_init_time"]
+            expires = dates["expiration_date"]
             yield "registration_year", registered.dt.year, False
             yield "registration_month", registered.dt.month, False
             yield "membership_days", (expires - registered).dt.days, False
             assert self.extra is not None
             isrc = frame["song_id"].map(self.extra["isrc"]).str.upper()
             yield "isrc_country", isrc.str[:2], True
-            yield "isrc_year_code", isrc.str[5:7], False
+            if calendar:
+                # ISRC reference year is an assignment-year proxy, not a release date.
+                code = _numeric(isrc.str[5:7]).where(isrc.str.fullmatch(r"[A-Z]{2}[A-Z0-9]{3}[0-9]{7}", na=False))
+                reference_year = code + np.where(code > 17, 1900, 2000)
+                yield "isrc_reference_year", reference_year, False
+            else:
+                yield "isrc_year_code", isrc.str[5:7], False
             yield "song_name_length", frame["song_id"].map(self.extra["name"]).str.len(), False
 
     def fit(self, frame: pd.DataFrame) -> "FeatureBuilder":
@@ -178,17 +211,21 @@ class FeatureBuilder:
                 self.categorical_columns.append(name)
             if self.mode == "enhanced" and not self.disable_frequency_features and name in counted:
                 counts = values.value_counts(dropna=True, sort=False).astype("float32")
+                if getattr(self, "frequency_mode", "count") == "relative":
+                    counts /= len(frame)
                 self.frequencies[name] = counts
                 self.feature_names.append(name + "_frequency")
-        if getattr(self, "user_context_features", False):
+        if getattr(self, "user_context_features", False) or getattr(self, "user_preference_features", False):
             user_codes = self.categories["msno"].get_indexer(frame["msno"])
             self.context_user_counts = np.bincount(user_codes, minlength=len(self.categories["msno"]))
             self.context_categories = {}
             self.context_probabilities = {}
             self.context_pair_counts = {}
-            for name in CONTEXT_COLUMNS:
+            self.probability_fields = (CONTEXT_COLUMNS if getattr(self, "user_context_features", False) else []) + (
+                ["artist_name", "genre_ids"] if getattr(self, "user_preference_features", False) else [])
+            for name in self.probability_fields:
                 # Preserve NA as a category, distinct from a new context value.
-                values = frame[name].astype(STRING_DTYPE)
+                values = self._probability_values(frame, name)
                 categories = pd.Index(values.unique())
                 codes = categories.get_indexer(values)
                 self.context_categories[name] = categories
@@ -196,22 +233,32 @@ class FeatureBuilder:
                 pairs = user_codes.astype(np.int64) * (len(categories) + 1) + codes + 1
                 self.context_pair_counts[name] = pd.Series(pairs).value_counts(sort=False)
                 self.feature_names.append("msno_" + name + "_probability")
+        if getattr(self, "collaborative_features", False):
+            from .collaborative import CollaborativeFeatures
+            self.collaborative = CollaborativeFeatures().fit(
+                frame, frame["song_id"].map(self.songs["artist_name"])
+            )
+            self.feature_names.extend(self.collaborative.feature_names)
         return self
+
+    def _probability_values(self, frame: pd.DataFrame, name: str) -> pd.Series:
+        values = frame[name] if name in CONTEXT_COLUMNS else frame["song_id"].map(self.songs[name])
+        return values.astype(STRING_DTYPE)
 
     def _user_context_columns(self, frame: pd.DataFrame, training_context: bool):
         user_codes = self.categories["msno"].get_indexer(frame["msno"])
         known_users = user_codes >= 0
         user_counts = np.zeros(len(frame), dtype=np.float64)
         user_counts[known_users] = self.context_user_counts[user_codes[known_users]]
-        for name in CONTEXT_COLUMNS:
+        for name in getattr(self, "probability_fields", CONTEXT_COLUMNS):
             categories = self.context_categories[name]
-            codes = categories.get_indexer(frame[name].astype(STRING_DTYPE))
+            codes = categories.get_indexer(self._probability_values(frame, name))
             known_context = codes >= 0
             prior = np.zeros(len(frame), dtype=np.float64)
             prior[known_context] = self.context_probabilities[name][codes[known_context]]
             pairs = user_codes.astype(np.int64) * (len(categories) + 1) + codes + 1
             pair_counts = self.context_pair_counts[name].reindex(pairs, fill_value=0).to_numpy(dtype=np.float64)
-            if training_context:
+            if training_context and getattr(self, "context_counting", "leave_one_out") == "leave_one_out":
                 if not known_users.all() or (pair_counts < 1).any():
                     raise ValueError("Training context transformation requires rows included in feature fitting")
                 numerator, denominator = pair_counts - 1, user_counts - 1
@@ -231,8 +278,10 @@ class FeatureBuilder:
             if name in self.frequencies:
                 columns[name + "_frequency"] = values.map(self.frequencies[name]).fillna(0).to_numpy(dtype=np.float32)
         # Older serialized states have no user_context_features attribute.
-        if getattr(self, "user_context_features", False):
+        if getattr(self, "user_context_features", False) or getattr(self, "user_preference_features", False):
             columns.update(self._user_context_columns(frame, training_context))
+        if getattr(self, "collaborative_features", False):
+            columns.update(self.collaborative.transform(frame, frame["song_id"].map(self.songs["artist_name"])))
         if list(columns) != self.feature_names:
             raise RuntimeError("Feature order differs from the fitted feature state")
         return pd.DataFrame(columns, index=frame.index, copy=False)

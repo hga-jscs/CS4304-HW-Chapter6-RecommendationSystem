@@ -1,6 +1,7 @@
 """Validate generated job contracts without starting a remote Kaggle run."""
 
 import json
+import re
 
 import pytest
 
@@ -25,7 +26,7 @@ def test_job_is_private_cpu_and_embeds_only_runtime_sources(tmp_path, disable_fr
     # main is guarded; evaluating definitions cannot install or start training.
     exec(compile(script, "run.py", "exec"), namespace)
     assert set(namespace["SOURCES"]) == set(SOURCE_FILES)
-    packages = {entry.split("==")[0] for entry in namespace["RUNTIME_REQUIREMENTS"]}
+    packages = {re.split(r"[<>=!~\[]", entry, maxsplit=1)[0] for entry in namespace["RUNTIME_REQUIREMENTS"]}
     assert packages == RUNTIME_PACKAGES
     assert "kaggle" not in packages and "pytest" not in packages
     assert namespace["JOB_SETTINGS"]["max_train_rows"] == 0
@@ -52,9 +53,15 @@ def test_generated_data_preparation_handles_official_archives(tmp_path, monkeypa
     for filename in namespace["EXPECTED_FILES"]:
         with py7zr.SevenZipFile(input_root / (filename + ".7z"), mode="w") as archive:
             archive.write(source, arcname=filename)
-    result = namespace["prepare_data"](input_root, tmp_path / "prepared")
+    prepared = tmp_path / "prepared"
+    prepared.mkdir()
+    # Earlier versions wrote directly to the final path before extraction ended.
+    (prepared / "train.csv").write_text("old truncated nonempty CSV")
+    result = namespace["prepare_data"](input_root, prepared)
     for filename in namespace["EXPECTED_FILES"]:
         assert (result / filename).read_text() == "example\n1\n"
+    namespace["prepare_data"](input_root, result)
+    assert not list(result.glob("*.partial"))
 
 
 def test_system_seven_zip_is_used_without_py7zr(tmp_path, monkeypatch):
@@ -93,7 +100,20 @@ def test_runtime_check_and_explicit_install_option(tmp_path):
 
 def test_generator_rejects_overwrite_and_invalid_identity(tmp_path):
     generate_job("exampleuser", "kkbox-baseline", tmp_path / "job")
-    with pytest.raises(ValueError, match="empty"):
+    with pytest.raises(ValueError, match="overwrite"):
         generate_job("exampleuser", "kkbox-baseline", tmp_path / "job")
+    (tmp_path / "job" / "notes.txt").write_text("keep")
+    generate_job("exampleuser", "kkbox-baseline", tmp_path / "job", overwrite=True,
+        numeric_features="legacy", context_counting="full", user_preference_features=True,
+        collaborative_features=True, split_mode="row_order", no_refit=True, num_leaves=127, max_cat_threshold=64)
+    assert (tmp_path / "job" / "notes.txt").read_text() == "keep"
+    settings = json.loads((tmp_path / "job" / "job_configuration.json").read_text())["settings"]
+    assert settings["numeric_features"] == "legacy"
+    assert settings["context_counting"] == "full"
+    assert settings["user_preference_features"] is True
+    assert settings["collaborative_features"] is True
+    assert settings["split_mode"] == "row_order"
+    assert settings["no_refit"] is True
+    assert settings["num_leaves"] == 127 and settings["max_cat_threshold"] == 64
     with pytest.raises(ValueError, match="owner"):
         generate_job("../user", "kkbox-baseline", tmp_path / "other")

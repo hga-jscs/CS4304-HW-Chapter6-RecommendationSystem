@@ -14,6 +14,7 @@ COMPETITION = "kkbox-music-recommendation-challenge"
 SOURCE_FILES = [
     "basic/__init__.py", "basic/features.py", "basic/train.py",
     "basic/predict.py", "basic/submission.py",
+    "basic/collaborative.py",
 ]
 RUNTIME_PACKAGES = {"numpy", "pandas", "scipy", "scikit-learn", "lightgbm", "pyarrow", "py7zr"}
 
@@ -102,21 +103,38 @@ def extract_archive(archive_path, filename, destination):
 def prepare_data(input_root=INPUT_ROOT, data_root=DATA_ROOT):
     """Use mounted CSVs or extract only the six expected official CSV members."""
     data_root.mkdir(parents=True, exist_ok=True)
+    record_path = data_root / "prepared_files.json"
+    completed = json.loads(record_path.read_text()) if record_path.exists() else {}
+    def fingerprint(path):
+        stat = path.stat()
+        return {"bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+    def record_complete(filename, destination):
+        completed[filename] = fingerprint(destination)
+        temporary_record = record_path.with_suffix(".json.partial")
+        temporary_record.write_text(json.dumps(completed, indent=2) + "\n")
+        temporary_record.replace(record_path)
     for filename in EXPECTED_FILES:
         destination = data_root / filename
-        if destination.exists():
-            raise FileExistsError(f"Fresh job expected; data destination already exists: {destination}")
+        if destination.is_file() and destination.stat().st_size > 0 and completed.get(filename) == fingerprint(destination):
+            print(f"Reusing prepared CSV: {filename}", flush=True)
+            continue
+        destination.unlink(missing_ok=True)
         direct = list(input_root.rglob(filename))
         if len(direct) > 1:
             raise ValueError(f"Ambiguous mounted input for {filename}: {direct}")
         if direct:
             destination.symlink_to(direct[0].resolve())
+            record_complete(filename, destination)
             print(f"Using mounted CSV: {direct[0]}", flush=True)
             continue
         archives = list(input_root.rglob(filename + ".7z"))
         if len(archives) != 1:
             raise FileNotFoundError(f"Need one official {filename} or {filename}.7z under {input_root}; found {archives}")
-        extract_archive(archives[0], filename, destination)
+        temporary = destination.with_name(filename + ".partial")
+        temporary.unlink(missing_ok=True)
+        extract_archive(archives[0], filename, temporary)
+        temporary.replace(destination)
+        record_complete(filename, destination)
         print(f"Extracted {filename}: {destination.stat().st_size:,} bytes", flush=True)
     return data_root
 
@@ -175,15 +193,30 @@ def main():
             "--output-dir", str(output), "--feature-mode", feature_mode,
             "--num-boost-round", str(rounds), "--early-stopping-rounds", str(JOB_SETTINGS["early_stopping_rounds"]),
             "--threads", str(JOB_SETTINGS["threads"]), "--seed", str(JOB_SETTINGS["seed"]),
-            "--max-train-rows", str(JOB_SETTINGS["max_train_rows"])]
+            "--max-train-rows", str(JOB_SETTINGS["max_train_rows"]),
+            "--numeric-features", JOB_SETTINGS["numeric_features"],
+            "--frequency-mode", JOB_SETTINGS["frequency_mode"],
+            "--context-counting", JOB_SETTINGS["context_counting"],
+            "--sampling-mode", JOB_SETTINGS["sampling_mode"],
+            "--split-mode", JOB_SETTINGS["split_mode"],
+            "--learning-rate", str(JOB_SETTINGS["learning_rate"]),
+            "--num-leaves", str(JOB_SETTINGS["num_leaves"]),
+            "--min-child-samples", str(JOB_SETTINGS["min_child_samples"]),
+            "--max-cat-threshold", str(JOB_SETTINGS["max_cat_threshold"]),
+            "--feature-fraction", str(JOB_SETTINGS["feature_fraction"])]
         if JOB_SETTINGS["disable_frequency_features"]:
             training_command.append("--disable-frequency-features")
         if JOB_SETTINGS["user_context_features"]:
             training_command.append("--user-context-features")
+        for option in ("user_preference_features", "collaborative_features", "no_refit", "overwrite"):
+            if JOB_SETTINGS[option]:
+                training_command.append("--" + option.replace("_", "-"))
         run_checked(training_command, code_root, env, WORKING_ROOT / (feature_mode + "_training.log"))
         prediction_command = [sys.executable, "-m", "basic.predict", "--data-dir", str(data_root),
             "--model-dir", str(output), "--output", str(output / "submission.csv"),
             "--threads", str(JOB_SETTINGS["threads"])]
+        if JOB_SETTINGS["overwrite"]:
+            prediction_command.append("--overwrite")
         run_checked(prediction_command, code_root, env, WORKING_ROOT / (feature_mode + "_prediction.log"))
         metrics = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
         completed.append({"feature_mode": feature_mode, "metrics": metrics,
@@ -204,6 +237,12 @@ def generate_job(
     threads: int = 4, seed: int = 42, max_train_rows: int = 0, install_dependencies: bool = False,
     disable_frequency_features: bool = False,
     user_context_features: bool = False,
+    numeric_features: str = "calendar", frequency_mode: str = "count",
+    context_counting: str = "leave_one_out", user_preference_features: bool = False,
+    collaborative_features: bool = False,
+    sampling_mode: str = "uniform", split_mode: str = "random", no_refit: bool = False,
+    learning_rate: float = 0.08, num_leaves: int = 63, min_child_samples: int = 50,
+    max_cat_threshold: int = 32, feature_fraction: float = 0.9, overwrite: bool = False,
 ) -> dict:
     """Write metadata/run.py only; never authenticate, upload, or start a job."""
     if not re.fullmatch(r"[A-Za-z0-9_-]+", owner):
@@ -216,8 +255,8 @@ def generate_job(
     if min(baseline_rounds, enhanced_rounds, early_stopping_rounds, threads) <= 0 or max_train_rows < 0:
         raise ValueError("Rounds/threads must be positive and max_train_rows nonnegative")
     output_directory = Path(output_directory)
-    if output_directory.exists() and any(output_directory.iterdir()):
-        raise ValueError("Choose a new, empty job output directory")
+    if not overwrite and any((output_directory / name).exists() for name in ("run.py", "kernel-metadata.json", "job_configuration.json")):
+        raise ValueError("Generated job already exists; use --overwrite to replace its files")
     source_root = Path(__file__).resolve().parent.parent
     sources = {name: (source_root / name).read_text(encoding="utf-8") for name in SOURCE_FILES}
     requirements = []
@@ -225,13 +264,18 @@ def generate_job(
         line = line.strip()
         if line and not line.startswith("#") and re.split(r"[<>=!~\[]", line, maxsplit=1)[0] in RUNTIME_PACKAGES:
             requirements.append(line)
-    if len(requirements) != len(RUNTIME_PACKAGES):
-        raise ValueError("Could not identify all seven runtime dependencies")
     settings = {"feature_modes": modes, "baseline_rounds": baseline_rounds, "enhanced_rounds": enhanced_rounds,
         "early_stopping_rounds": early_stopping_rounds, "threads": threads, "seed": seed,
         "max_train_rows": max_train_rows, "install_dependencies": install_dependencies,
         "disable_frequency_features": disable_frequency_features,
-        "user_context_features": user_context_features}
+        "user_context_features": user_context_features, "numeric_features": numeric_features,
+        "frequency_mode": frequency_mode, "context_counting": context_counting,
+        "user_preference_features": user_preference_features, "sampling_mode": sampling_mode,
+        "collaborative_features": collaborative_features,
+        "split_mode": split_mode, "no_refit": no_refit, "learning_rate": learning_rate,
+        "num_leaves": num_leaves, "min_child_samples": min_child_samples,
+        "max_cat_threshold": max_cat_threshold, "feature_fraction": feature_fraction,
+        "overwrite": overwrite}
     try:
         revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source_root, text=True, stderr=subprocess.DEVNULL).strip()
         dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=source_root, text=True, stderr=subprocess.DEVNULL).strip())
@@ -272,6 +316,20 @@ def main():
     parser.add_argument("--max-train-rows", type=int, default=0)
     parser.add_argument("--disable-frequency-features", action="store_true", help="Pass the frequency-feature ablation flag to every training mode")
     parser.add_argument("--user-context-features", action="store_true", help="Pass the smoothed user/context probability option to every training mode")
+    parser.add_argument("--numeric-features", choices=["legacy", "calendar"], default="calendar")
+    parser.add_argument("--frequency-mode", choices=["count", "relative"], default="count")
+    parser.add_argument("--context-counting", choices=["leave_one_out", "full"], default="leave_one_out")
+    parser.add_argument("--user-preference-features", action="store_true")
+    parser.add_argument("--collaborative-features", action="store_true")
+    parser.add_argument("--sampling-mode", choices=["uniform", "tail"], default="uniform")
+    parser.add_argument("--split-mode", choices=["random", "row_order"], default="random")
+    parser.add_argument("--no-refit", action="store_true")
+    parser.add_argument("--learning-rate", type=float, default=0.08)
+    parser.add_argument("--num-leaves", type=int, default=63)
+    parser.add_argument("--min-child-samples", type=int, default=50)
+    parser.add_argument("--max-cat-threshold", type=int, default=32)
+    parser.add_argument("--feature-fraction", type=float, default=0.9)
+    parser.add_argument("--overwrite", action="store_true", help="Replace generated job files and allow experiment outputs to be replaced on rerun")
     parser.add_argument("--install-dependencies", action="store_true", help="Explicitly enable network and pip installation; default reuses the Kaggle image")
     print(json.dumps(generate_job(**vars(parser.parse_args())), indent=2))
 
