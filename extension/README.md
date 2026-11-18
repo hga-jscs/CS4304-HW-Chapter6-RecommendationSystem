@@ -1,8 +1,8 @@
 # 拓展任务：Synerise 用户行为表征
 
-本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。以下八组表征均已完成课程指定的三项官方公开任务的本地评估，包含标准化、分组缩放和历史预训练对照。
+本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。以下十组表征均已完成课程指定的三项官方公开任务的本地评估，包含标准化、分组缩放、历史预训练和购买节律/商品共现对照。
 
-截至 2026-11-18，在完整官方预处理数据的 100 万用户上完成以下对照。原始基线记录保留在 [baseline_validation.json](baseline_validation.json) 和 [baseline_scores.json](baseline_scores.json)；标准化与 673 维实验见 [review_results.json](review_results.json)，旧 544/1001 维实验见 [advanced_results.json](advanced_results.json)，第三轮分组缩放与 1203/1797 维实验见 [behavior_results.json](behavior_results.json)。各组用户行序一致，均通过固定版本的官方格式验证器。
+截至 2026-11-18，在完整官方预处理数据的 100 万用户上完成以下对照。原始基线记录保留在 [baseline_validation.json](baseline_validation.json) 和 [baseline_scores.json](baseline_scores.json)；标准化与 673 维实验见 [review_results.json](review_results.json)，旧 544/1001 维实验见 [advanced_results.json](advanced_results.json)，第三轮分组缩放与 1203/1797 维实验见 [behavior_results.json](behavior_results.json)，1874/2002 维实验见 [purchase_results.json](purchase_results.json)。各组用户行序一致，均通过固定版本的官方格式验证器。
 
 | 表征 | 维数 | `churn` AUROC | `propensity_category` 官方分数 | `propensity_sku` 官方分数 |
 | --- | ---: | ---: | ---: | ---: |
@@ -13,13 +13,15 @@
 | 上述特征加历史预训练并标准化 | 1001 | 0.7299 | 0.8053 | 0.7985 |
 | 同一历史内容改为分组缩放 | 544 | 0.7305 | 0.8058 | 0.7963 |
 | 分离行为历史与分组缩放 | 1203 | 0.7302 | 0.8058 | 0.7927 |
-| 分离行为历史加多窗口延迟预训练 | 1797 | **0.7340** | **0.8067** | **0.8057** |
+| 分离行为历史加多窗口延迟预训练 | 1797 | 0.7340 | 0.8067 | **0.8057** |
+| 再加活跃节律与历史复购分数 | 1874 | 0.7348 | 0.8068 | 0.8054 |
+| 再加购买/加购商品共现向量 | 2002 | **0.7349** | **0.8069** | **0.8057** |
 
 独立标准化使 churn 下降 0.0016，SKU 分数提高 0.0022，说明标准化并非普遍有利。增强表征相对原基线的三项变化为 +0.0001、+0.0072、+0.0082：主要改善出现在两个 propensity 任务，churn 基本持平。每行使用同一份表征完成三项任务，没有拼接不同表征的单项最好成绩。增强实验同时改动多个特征块并做标准化，不能将涨分单独归因于某一块。
 
 544 维相对旧 673 维的三项变化为 +0.0007、+0.0093、+0.0091；统计、PQ 和图特征在这一组同时改动，不能单独归因。1001 维与 544 维的共同 544 列逐元素完全一致，新增预训练块后变化为 **+0.0006、-0.0001、+0.0013**：churn/SKU 略升，category 略降，两套保留为不同取舍。两组均未达到 `churn ≥ 0.7500`、`category ≥ 0.8150`、`SKU ≥ 0.8150` 中的任何一项目标。
 
-第三轮分组缩放相对旧 544 维的变化为 +0.0012/+0.0004/−0.0009；再改为 1203 维历史后，变化为 −0.0003/0/−0.0036，新增特征未带来整体提升。拼接 594 维多窗口预训练后，相对同一 1203 维历史提高 **+0.0038/+0.0009/+0.0130**，相对旧 1001 维提高 **+0.0041/+0.0014/+0.0072**。1797 维目前三项均最高，仍分别距目标 0.0160/0.0083/0.0093；不混用不同表征的单项最好成绩。
+第三轮分组缩放相对旧 544 维的变化为 +0.0012/+0.0004/−0.0009；再改为 1203 维历史后，变化为 −0.0003/0/−0.0036，新增特征未带来整体提升。拼接 594 维多窗口预训练后，相对同一 1203 维历史提高 **+0.0038/+0.0009/+0.0130**，相对旧 1001 维提高 **+0.0041/+0.0014/+0.0072**。后续 2002 维相对 1797 维的变化为 **+0.0009/+0.0002/0**，商品在四位官方分数下持平；仍分别距目标 0.0151/0.0081/0.0093，不混用不同表征的单项最好成绩。
 
 各组均使用 RTX 4060 Laptop GPU、Windows、PyTorch `2.5.0+cu118`、入口种子 42、相同官方模型和每任务三轮训练，以及下文的等价目标缓存；分数定义见下文。原基线完整格式验证与三任务训练耗时 2783.939 秒，独立标准化实验约 2809 秒（按日志与结果文件时间估算），673 维实验单调计时为 2747.804 秒，544 维为 3405.726 秒。单次计时存在未控制的并发负载，不能据此认定维数增加或布局改动导致训练提速。成绩来自单个种子和公开验证划分，尚未检验统计显著性，也不代表隐藏任务或线上排行榜成绩。
 
@@ -78,6 +80,28 @@ python -m extension.standardize --embeddings-directory outputs/extension/behavio
 本次独立历史构建外层计时 831.067 秒，多窗口准备 2415.347 秒，训练 3301.282 秒、提取 89.522 秒；训练完成 4 轮并采用第 2 轮 checkpoint。1203/1797 维标准化分别为 89.383/239.105 秒，官方三项评测分别为 3453.002/3844.236 秒。单次计时不构成提速结论，嵌套阶段的计时不可重复累加。实际特征环境为 NumPy 2.4.6、pandas 2.3.3、PyArrow 23.0.1；训练和官方评测环境为 NumPy 2.1.0、pandas 2.2.3、PyArrow 19.0.1、PyTorch 2.5.0+cu118。精确源码提交与执行文件哈希见结果 JSON。
 
 两套新表示的用户顺序、前 1011 个历史统计/计数列、列均值与 scale 均完全一致；名称/查询/图块分别有 998/612/8987 个值不同，全部相差一个 `float16` 表示步，无符号变化，最大绝对差为 0.0009765625。这与不同内存布局下归一化求和的舍入差异相符，但不将历史块称为逐元素完全相同。辅助类别覆盖也有取舍：SKU 与官方清单的交集由 24/100 增至 45/100，category 由 96/100 降至 79/100；此比较仅用于诊断，官方清单未参与选类。
+
+## 购买节律与商品共现对照
+
+1874 维与 2002 维均已完成全量构建和固定官方三任务评测。两步正式变化分别为 **+0.0008/+0.0001/−0.0003** 和 **+0.0001/+0.0001/+0.0003**；未达到三项目标，也没有单独评测不含活跃块的 1925 维商品组合。成绩与运行证据见 [purchase_results.json](purchase_results.json)。
+
+从上节生成的 `delayed_combined`（1797 维）开始。第一次对照增加 75 项日级活动统计和两个复购分数。每项分数由 6 个历史截点上的梯度提升树拟合，两个预测区间分别为未来 1–14 天、15–28 天。模型训练使用截点前 112 天内有购买的用户。最早截点的可观察历史短于 112 天。
+
+```powershell
+python -m extension.activity_windows --data-directory data/extension --output-directory outputs/extension/activity
+python -m extension.combine_profiles --input-directories outputs/extension/delayed_combined outputs/extension/activity --output-directory outputs/extension/activity_combined
+```
+
+第二次对照在上述 1874 维上追加购买和加购各 64 维，共 2002 维。两种行为共享历史商品因子，分别按 30 天半衰期池化。保留出现至少三次的商品，每个非零行为块的范数为 1（量化前）。两次拼接都直接复制原有 `float16` 列。
+
+```powershell
+python -m extension.product_cooccurrence --data-directory data/extension --output-directory outputs/extension/product_cooccurrence --cutoff-utc 2022-11-09T23:59:59Z
+python -m extension.combine_profiles --input-directories outputs/extension/activity_combined outputs/extension/product_cooccurrence --output-directory outputs/extension/product_combined
+```
+
+将 `activity_combined` 和 `product_combined` 分别交给下文的 `extension.evaluate`，各使用独立的 `--score-directory`。商品词表与复购训练样本均取自 `input/`。[方法依据与实验范围](../reports/representation_methods.md)
+
+两套官方三任务分别用时 3966.499/4067.043 秒，最佳 epoch 索引分别为 2/2/2 和 1/2/2。拼接与两套评测的连续串行链为 8041.562 秒；会话中断未中止该后台链，未重复训练已完成任务。小幅单种子差值不能据此视为稳定收益，也不能把内部分时段复购 AUC 当作官方流失分数。
 
 ## 历史预训练与 1001 维实验流程
 
