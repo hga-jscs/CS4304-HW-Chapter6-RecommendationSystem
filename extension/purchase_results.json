@@ -1,1 +1,380 @@
-{"created_utc":"2026-11-18T03:25:59.533213+00:00","scope":"Three completed local official-protocol evaluations; not a live leaderboard submission","artifact_path_base":"project","requested_goals":{"churn":0.75,"propensity_category":0.815,"propensity_sku":0.815},"acceptance":{"rule":"All three official published four-decimal scores must meet their goals in one complete representation","qualifying_dimensions":[]},"protocol":{"repository":"https://github.com/Synerise/recsys2025","commit":"e91c1a62f84611151a399ce157e6031a4a73618f","verified_unmodified_source_all_nine_tasks":true,"epochs_per_task":3,"num_workers":0,"target_cache_enabled":true,"selection":"Native best unrounded weighted-score epoch; first tie wins","metrics":{"churn":"AUROC","propensity":"0.8 AUROC + 0.1 Diversity + 0.1 Novelty"},"input_cutoff":"2022-11-09 23:59:59","train_targets":"2022-11-10 through 2022-11-23","validation_targets":"2022-11-24 through 2022-12-07","fixed_profile":"Same users and embeddings within each task; no refresh before validation","timestamp_note":"Source timestamps lack timezone metadata; project treats their clock values as UTC"},"experiments":[{"dimensions":1797,"clients":1000000,"dtype":"float16","scores":{"churn":0.734,"propensity_category":0.8067,"propensity_sku":0.8057},"best_epochs_zero_based":{"churn":1,"propensity_category":2,"propensity_sku":2},"exact_components_at_selected_epoch":{"churn":{"auroc":0.7339948415756226,"weighted_score":0.7339948415756226},"propensity_category":{"auroc":0.7862628102302551,"diversity":0.8948237299919128,"novelty":0.8824833035469055,"weighted_score":0.806740951538086},"propensity_sku":{"auroc":0.773914635181427,"diversity":0.8762013912200928,"novelty":0.9898765087127686,"weighted_score":0.8057394981384278}},"runtime":{"evaluation_seconds":3844.236,"task_seconds":{"churn":765.785,"propensity_category":1513.402,"propensity_sku":1564.942},"seed":42,"model_seed":1278,"threads":4,"versions":{"numpy":"2.1.0","pandas":"2.2.3","pyarrow":"19.0.1","torch":"2.5.0+cu118","pytorch-lightning":"2.2.4","torchmetrics":"1.3.2"},"source_commit":"e00451e80b00ee4189acf98a28831f88c9448115"},"artifacts":{"representation":"结果/拓展任务/多窗口组合表征","scores":"结果/拓展任务/多窗口组合评分","decomposition":"准备资料/1797指标分解.json"},"delta_vs_1797":{"churn":0.0,"propensity_category":0.0,"propensity_sku":0.0},"delta_vs_previous":{"churn":0.0,"propensity_category":0.0,"propensity_sku":0.0},"score_minus_goal":{"churn":-0.016,"propensity_category":-0.0083,"propensity_sku":-0.0093},"goals_met":{"churn":false,"propensity_category":false,"propensity_sku":false},"all_goals_met":false},{"dimensions":1874,"clients":1000000,"dtype":"float16","scores":{"churn":0.7348,"propensity_category":0.8068,"propensity_sku":0.8054},"best_epochs_zero_based":{"churn":2,"propensity_category":2,"propensity_sku":2},"exact_components_at_selected_epoch":{"churn":{"auroc":0.7348482012748718,"weighted_score":0.7348482012748718},"propensity_category":{"auroc":0.7862061858177185,"diversity":0.8945707082748413,"novelty":0.8836479187011719,"weighted_score":0.8067868113517762},"propensity_sku":{"auroc":0.7728851437568665,"diversity":0.8794270753860474,"novelty":0.9912582039833069,"weighted_score":0.8053766429424287}},"runtime":{"evaluation_seconds":3966.499,"task_seconds":{"churn":616.583,"propensity_category":1364.325,"propensity_sku":1985.49},"seed":42,"model_seed":1278,"threads":4,"versions":{"numpy":"2.1.0","pandas":"2.2.3","pyarrow":"19.0.1","torch":"2.5.0+cu118","pytorch-lightning":"2.2.4","torchmetrics":"1.3.2"},"source_commit":"988f705589d852ffcef6dc3786eac62bd4b69035"},"artifacts":{"representation":"结果/拓展任务/活动组合表征","scores":"结果/拓展任务/活动组合评分","decomposition":"准备资料/1874指标分解.json"},"delta_vs_1797":{"churn":0.0008,"propensity_category":0.0001,"propensity_sku":-0.0003},"delta_vs_previous":{"churn":0.0008,"propensity_category":0.0001,"propensity_sku":-0.0003},"score_minus_goal":{"churn":-0.0152,"propensity_category":-0.0082,"propensity_sku":-0.0096},"goals_met":{"churn":false,"propensity_category":false,"propensity_sku":false},"all_goals_met":false},{"dimensions":2002,"clients":1000000,"dtype":"float16","scores":{"churn":0.7349,"propensity_category":0.8069,"propensity_sku":0.8057},"best_epochs_zero_based":{"churn":1,"propensity_category":2,"propensity_sku":2},"exact_components_at_selected_epoch":{"churn":{"auroc":0.734875500202179,"weighted_score":0.734875500202179},"propensity_category":{"auroc":0.7863141298294067,"diversity":0.8943378925323486,"novelty":0.8843970894813538,"weighted_score":0.8069248020648957},"propensity_sku":{"auroc":0.7735517621040344,"diversity":0.8783008456230164,"novelty":0.9905907511711121,"weighted_score":0.8057305693626404}},"runtime":{"evaluation_seconds":4067.043,"task_seconds":{"churn":1002.375,"propensity_category":1540.271,"propensity_sku":1524.308},"seed":42,"model_seed":1278,"threads":4,"versions":{"numpy":"2.1.0","pandas":"2.2.3","pyarrow":"19.0.1","torch":"2.5.0+cu118","pytorch-lightning":"2.2.4","torchmetrics":"1.3.2"},"source_commit":"988f705589d852ffcef6dc3786eac62bd4b69035"},"artifacts":{"representation":"结果/拓展任务/协同组合表征","scores":"结果/拓展任务/协同组合评分","decomposition":"准备资料/2002指标分解.json"},"delta_vs_1797":{"churn":0.0009,"propensity_category":0.0002,"propensity_sku":0.0},"delta_vs_previous":{"churn":0.0001,"propensity_category":0.0001,"propensity_sku":0.0003},"score_minus_goal":{"churn":-0.0151,"propensity_category":-0.0081,"propensity_sku":-0.0093},"goals_met":{"churn":false,"propensity_category":false,"propensity_sku":false},"all_goals_met":false}],"feature_blocks":{"baseline_1797":{"layout":"594 learned + 1203 historical","encoder":{"seed":42,"batch_size":1024,"learning_rate":0.001,"churn_weight_mode":"unit","churn_multiplier":3.0,"sequence_length":64,"training_users":900000,"validation_users":100000,"class_selection":"training_targets","training_pairs":3,"shared_input_windows":2,"feature_basis_cutoff":"2022-10-12T23:59:59.999999999+00:00","head_groups":["immediate_1_14_days","delayed_15_28_days"],"epoch_limit":10,"patience":2,"completed_epochs":4,"selected_epoch_zero_based":1,"selected_validation_bce":0.6683714384262195,"selected_active_churn_auc":{"immediate":0.7633963595515373,"delayed":0.7378694532524265},"runtime_seconds":{"train":3301.282,"extract":89.522},"verification":"Finite checkpoint/output; IDs and 594-column layout verified"}},"activity_77":{"seed":42,"training_users_sampled":280000,"training_buyer_windows":498650,"anchors_days_before_end":[98,84,70,56,42,28],"latest_historical_window_auc":[0.7654841612132746,0.7417390848615225],"normalization":"all historical profiles, column z-score clipped at 8","seconds":95.645,"layout":"75 activity statistics + 2 historical repeat-purchase decision scores","day_windows":[7,14,28,56,112],"classifier":{"method":"HistGradientBoosting","iterations":120,"max_leaf_nodes":23,"learning_rate":0.075,"min_samples_leaf":100,"early_stopping":false},"validation":"Latest historical anchor, 28-day embargo; final models refit on all six anchors"},"product_128":{"seed":42,"retained_products":300086,"effective_rank":64,"minimum_events":3,"maximum_products":0,"half_life_days":30.0,"oversamples":16,"power_iterations":3,"layout":"64 purchase + 64 cart, shared product factors","method":"Implicit sparse Gram eigenspace; log1p counts, distinct-user IDF; separate decayed pooling","normalization":"Each relation row-L2, no centering; concatenated unchanged at weight 1","build_seconds":17.198,"verification":{"finite":true,"ids_match_input":true},"support":{"product_buy":{"supported_users":453167,"strict_zero_users":546833},"add_to_cart":{"supported_users":497712,"strict_zero_users":502288}}}},"limitations":["One evaluation seed and repeatedly inspected local validation; no confidence intervals or independent hidden-task result.","AUROC, diversity and novelty come from the same native selected epoch, never separate maxima.","1874 adds 77 activity features; 2002 adds 128 product features to 1874. Differences are sequential bundle ablations, not isolated per-feature causal effects.","Product factors use only relevant-user purchase/cart history and exclude frequency-below-three products; this is not TwHIN.","Activity validation is temporal, not a user-disjoint split. Reported historical AUC precedes the final all-anchor refit.","Encoder stopped after validation degradation; pseudo-task validation scores are not official downstream scores."]}
+{
+  "created_utc": "2026-11-18T03:25:59.533213+00:00",
+  "scope": "Three completed local official-protocol evaluations; not a live leaderboard submission",
+  "artifact_path_base": "project",
+  "requested_goals": {
+    "churn": 0.75,
+    "propensity_category": 0.815,
+    "propensity_sku": 0.815
+  },
+  "acceptance": {
+    "rule": "All three official published four-decimal scores must meet their goals in one complete representation",
+    "qualifying_dimensions": []
+  },
+  "protocol": {
+    "repository": "https://github.com/Synerise/recsys2025",
+    "commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+    "verified_unmodified_source_all_nine_tasks": true,
+    "epochs_per_task": 3,
+    "num_workers": 0,
+    "target_cache_enabled": true,
+    "selection": "Native best unrounded weighted-score epoch; first tie wins",
+    "metrics": {
+      "churn": "AUROC",
+      "propensity": "0.8 AUROC + 0.1 Diversity + 0.1 Novelty"
+    },
+    "input_cutoff": "2022-11-09 23:59:59",
+    "train_targets": "2022-11-10 through 2022-11-23",
+    "validation_targets": "2022-11-24 through 2022-12-07",
+    "fixed_profile": "Same users and embeddings within each task; no refresh before validation",
+    "timestamp_note": "Source timestamps lack timezone metadata; project treats their clock values as UTC"
+  },
+  "experiments": [
+    {
+      "dimensions": 1797,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.734,
+        "propensity_category": 0.8067,
+        "propensity_sku": 0.8057
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "exact_components_at_selected_epoch": {
+        "churn": {
+          "auroc": 0.7339948415756226,
+          "weighted_score": 0.7339948415756226
+        },
+        "propensity_category": {
+          "auroc": 0.7862628102302551,
+          "diversity": 0.8948237299919128,
+          "novelty": 0.8824833035469055,
+          "weighted_score": 0.806740951538086
+        },
+        "propensity_sku": {
+          "auroc": 0.773914635181427,
+          "diversity": 0.8762013912200928,
+          "novelty": 0.9898765087127686,
+          "weighted_score": 0.8057394981384278
+        }
+      },
+      "runtime": {
+        "evaluation_seconds": 3844.236,
+        "task_seconds": {
+          "churn": 765.785,
+          "propensity_category": 1513.402,
+          "propensity_sku": 1564.942
+        },
+        "seed": 42,
+        "model_seed": 1278,
+        "threads": 4,
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2"
+        },
+        "source_commit": "e00451e80b00ee4189acf98a28831f88c9448115"
+      },
+      "artifacts": {
+        "representation": "结果/拓展任务/多窗口组合表征",
+        "scores": "结果/拓展任务/多窗口组合评分",
+        "decomposition": "准备资料/1797指标分解.json"
+      },
+      "delta_vs_1797": {
+        "churn": 0.0,
+        "propensity_category": 0.0,
+        "propensity_sku": 0.0
+      },
+      "delta_vs_previous": {
+        "churn": 0.0,
+        "propensity_category": 0.0,
+        "propensity_sku": 0.0
+      },
+      "score_minus_goal": {
+        "churn": -0.016,
+        "propensity_category": -0.0083,
+        "propensity_sku": -0.0093
+      },
+      "goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_goals_met": false
+    },
+    {
+      "dimensions": 1874,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.7348,
+        "propensity_category": 0.8068,
+        "propensity_sku": 0.8054
+      },
+      "best_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "exact_components_at_selected_epoch": {
+        "churn": {
+          "auroc": 0.7348482012748718,
+          "weighted_score": 0.7348482012748718
+        },
+        "propensity_category": {
+          "auroc": 0.7862061858177185,
+          "diversity": 0.8945707082748413,
+          "novelty": 0.8836479187011719,
+          "weighted_score": 0.8067868113517762
+        },
+        "propensity_sku": {
+          "auroc": 0.7728851437568665,
+          "diversity": 0.8794270753860474,
+          "novelty": 0.9912582039833069,
+          "weighted_score": 0.8053766429424287
+        }
+      },
+      "runtime": {
+        "evaluation_seconds": 3966.499,
+        "task_seconds": {
+          "churn": 616.583,
+          "propensity_category": 1364.325,
+          "propensity_sku": 1985.49
+        },
+        "seed": 42,
+        "model_seed": 1278,
+        "threads": 4,
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2"
+        },
+        "source_commit": "988f705589d852ffcef6dc3786eac62bd4b69035"
+      },
+      "artifacts": {
+        "representation": "结果/拓展任务/活动组合表征",
+        "scores": "结果/拓展任务/活动组合评分",
+        "decomposition": "准备资料/1874指标分解.json"
+      },
+      "delta_vs_1797": {
+        "churn": 0.0008,
+        "propensity_category": 0.0001,
+        "propensity_sku": -0.0003
+      },
+      "delta_vs_previous": {
+        "churn": 0.0008,
+        "propensity_category": 0.0001,
+        "propensity_sku": -0.0003
+      },
+      "score_minus_goal": {
+        "churn": -0.0152,
+        "propensity_category": -0.0082,
+        "propensity_sku": -0.0096
+      },
+      "goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_goals_met": false
+    },
+    {
+      "dimensions": 2002,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.7349,
+        "propensity_category": 0.8069,
+        "propensity_sku": 0.8057
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "exact_components_at_selected_epoch": {
+        "churn": {
+          "auroc": 0.734875500202179,
+          "weighted_score": 0.734875500202179
+        },
+        "propensity_category": {
+          "auroc": 0.7863141298294067,
+          "diversity": 0.8943378925323486,
+          "novelty": 0.8843970894813538,
+          "weighted_score": 0.8069248020648957
+        },
+        "propensity_sku": {
+          "auroc": 0.7735517621040344,
+          "diversity": 0.8783008456230164,
+          "novelty": 0.9905907511711121,
+          "weighted_score": 0.8057305693626404
+        }
+      },
+      "runtime": {
+        "evaluation_seconds": 4067.043,
+        "task_seconds": {
+          "churn": 1002.375,
+          "propensity_category": 1540.271,
+          "propensity_sku": 1524.308
+        },
+        "seed": 42,
+        "model_seed": 1278,
+        "threads": 4,
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2"
+        },
+        "source_commit": "988f705589d852ffcef6dc3786eac62bd4b69035"
+      },
+      "artifacts": {
+        "representation": "结果/拓展任务/协同组合表征",
+        "scores": "结果/拓展任务/协同组合评分",
+        "decomposition": "准备资料/2002指标分解.json"
+      },
+      "delta_vs_1797": {
+        "churn": 0.0009,
+        "propensity_category": 0.0002,
+        "propensity_sku": 0.0
+      },
+      "delta_vs_previous": {
+        "churn": 0.0001,
+        "propensity_category": 0.0001,
+        "propensity_sku": 0.0003
+      },
+      "score_minus_goal": {
+        "churn": -0.0151,
+        "propensity_category": -0.0081,
+        "propensity_sku": -0.0093
+      },
+      "goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_goals_met": false
+    }
+  ],
+  "feature_blocks": {
+    "baseline_1797": {
+      "layout": "594 learned + 1203 historical",
+      "encoder": {
+        "seed": 42,
+        "batch_size": 1024,
+        "learning_rate": 0.001,
+        "churn_weight_mode": "unit",
+        "churn_multiplier": 3.0,
+        "sequence_length": 64,
+        "training_users": 900000,
+        "validation_users": 100000,
+        "class_selection": "training_targets",
+        "training_pairs": 3,
+        "shared_input_windows": 2,
+        "feature_basis_cutoff": "2022-10-12T23:59:59.999999999+00:00",
+        "head_groups": [
+          "immediate_1_14_days",
+          "delayed_15_28_days"
+        ],
+        "epoch_limit": 10,
+        "patience": 2,
+        "completed_epochs": 4,
+        "selected_epoch_zero_based": 1,
+        "selected_validation_bce": 0.6683714384262195,
+        "selected_active_churn_auc": {
+          "immediate": 0.7633963595515373,
+          "delayed": 0.7378694532524265
+        },
+        "runtime_seconds": {
+          "train": 3301.282,
+          "extract": 89.522
+        },
+        "verification": "Finite checkpoint/output; IDs and 594-column layout verified"
+      }
+    },
+    "activity_77": {
+      "seed": 42,
+      "training_users_sampled": 280000,
+      "training_buyer_windows": 498650,
+      "anchors_days_before_end": [
+        98,
+        84,
+        70,
+        56,
+        42,
+        28
+      ],
+      "latest_historical_window_auc": [
+        0.7654841612132746,
+        0.7417390848615225
+      ],
+      "normalization": "all historical profiles, column z-score clipped at 8",
+      "seconds": 95.645,
+      "layout": "75 activity statistics + 2 historical repeat-purchase decision scores",
+      "day_windows": [
+        7,
+        14,
+        28,
+        56,
+        112
+      ],
+      "classifier": {
+        "method": "HistGradientBoosting",
+        "iterations": 120,
+        "max_leaf_nodes": 23,
+        "learning_rate": 0.075,
+        "min_samples_leaf": 100,
+        "early_stopping": false
+      },
+      "validation": "Latest historical anchor, 28-day embargo; final models refit on all six anchors"
+    },
+    "product_128": {
+      "seed": 42,
+      "retained_products": 300086,
+      "effective_rank": 64,
+      "minimum_events": 3,
+      "maximum_products": 0,
+      "half_life_days": 30.0,
+      "oversamples": 16,
+      "power_iterations": 3,
+      "layout": "64 purchase + 64 cart, shared product factors",
+      "method": "Implicit sparse Gram eigenspace; log1p counts, distinct-user IDF; separate decayed pooling",
+      "normalization": "Each relation row-L2, no centering; concatenated unchanged at weight 1",
+      "build_seconds": 17.198,
+      "verification": {
+        "finite": true,
+        "ids_match_input": true
+      },
+      "support": {
+        "product_buy": {
+          "supported_users": 453167,
+          "strict_zero_users": 546833
+        },
+        "add_to_cart": {
+          "supported_users": 497712,
+          "strict_zero_users": 502288
+        }
+      }
+    }
+  },
+  "limitations": [
+    "One evaluation seed and repeatedly inspected local validation; no confidence intervals or independent hidden-task result.",
+    "AUROC, diversity and novelty come from the same native selected epoch, never separate maxima.",
+    "1874 adds 77 activity features; 2002 adds 128 product features to 1874. Differences are sequential bundle ablations, not isolated per-feature causal effects.",
+    "Product factors use only relevant-user purchase/cart history and exclude frequency-below-three products; this is not TwHIN.",
+    "Activity validation is temporal, not a user-disjoint split. Reported historical AUC precedes the final all-anchor refit.",
+    "Encoder stopped after validation degradation; pseudo-task validation scores are not official downstream scores."
+  ]
+}
