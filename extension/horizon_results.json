@@ -77,9 +77,51 @@
             "auroc": 0.0006960630416870117,
             "weighted_score": 0.0006960630416870117
           }
+        },
+        "propensity_category": {
+          "score": 0.8084,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7884712219238281,
+            "diversity": 0.892128586769104,
+            "novelty": 0.884370744228363,
+            "weighted_score": 0.8084269106388093
+          },
+          "elapsed_seconds": 1018.1800313999993,
+          "score_change_from_reference": -0.0004,
+          "component_changes_from_reference": {
+            "auroc": -0.00024259090423583984,
+            "diversity": -0.000977158546447754,
+            "novelty": -0.0010666847229003906,
+            "weighted_score": -0.00039845705032348633
+          }
+        },
+        "propensity_sku": {
+          "score": 0.807,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7744157314300537,
+            "diversity": 0.8832255601882935,
+            "novelty": 0.9914414882659912,
+            "weighted_score": 0.8069992899894715
+          },
+          "elapsed_seconds": 958.8255007000007,
+          "score_change_from_reference": -0.0001,
+          "component_changes_from_reference": {
+            "auroc": -0.000712275505065918,
+            "diversity": 0.004274606704711914,
+            "novelty": 0.0004432201385498047,
+            "weighted_score": -9.803771972649589e-05
+          }
         }
       },
-      "completed_task_seconds": 792.9580301999995
+      "completed_task_seconds": 2769.9635622999995,
+      "profile_file_sha256": {
+        "embeddings.npy": "4dbd880014e2019bacadd607c7e1a720acac788baf115692a0f8ee46ea5de912",
+        "client_ids.npy": "75c381d8b5ac86aa793a2b39a7572544faf3a9a4b7c408e9de4386796c56bb69",
+        "features.json": "f2ff2782782aab114c89570b5eb87ac2096dff82476245d443ffd08a7682922e",
+        "manifest.json": "d3c4186145cfa20fb4f6a4dfe50197a376e5c3733ef4284fc10586488f1d1039"
+      }
     },
     "joint_horizons_and_graph": {
       "dimensions": 1314,
@@ -218,6 +260,79 @@
       "residual_rank": 16,
       "residual_gain": 0.5,
       "residual_pca_explained_fraction": 0.6971389651298523
+    },
+    "graph_probe": {
+      "cutoff": "2022-10-12T23:59:59+00:00",
+      "training_users": 800000,
+      "validation_users": 200000,
+      "scores": {
+        "原图": {
+          "category": {
+            "users": 200000,
+            "positive_user_class_pairs": 6808,
+            "supported_classes": 100,
+            "macro_auc_supported": 0.5538174725810567
+          },
+          "sku": {
+            "users": 200000,
+            "positive_user_class_pairs": 701,
+            "supported_classes": 78,
+            "macro_auc_supported": 0.5388974365337529
+          }
+        },
+        "全体图": {
+          "category": {
+            "users": 200000,
+            "positive_user_class_pairs": 6808,
+            "supported_classes": 100,
+            "macro_auc_supported": 0.5553559562447294
+          },
+          "sku": {
+            "users": 200000,
+            "positive_user_class_pairs": 701,
+            "supported_classes": 78,
+            "macro_auc_supported": 0.5678278397664906
+          }
+        }
+      }
+    },
+    "category_ridge_probe": {
+      "training_users": 150000,
+      "val_users": 100000,
+      "historical_anchor_utc": "2022-10-12T23:59:59.999999999+00:00",
+      "historical_results": {
+        "near_64": {
+          "days_1_14": {
+            "classes_with_both_outcomes": 100,
+            "macro_auc": 0.714488415886468
+          },
+          "days_15_28": {
+            "classes_with_both_outcomes": 100,
+            "macro_auc": 0.7013942443192649
+          }
+        },
+        "raw_1203": {
+          "days_1_14": {
+            "classes_with_both_outcomes": 100,
+            "macro_auc": 0.6972947905517981
+          },
+          "days_15_28": {
+            "classes_with_both_outcomes": 100,
+            "macro_auc": 0.6775084408709897
+          }
+        },
+        "near_64_plus_crossfit_ridge_100": {
+          "days_1_14": {
+            "classes_with_both_outcomes": 100,
+            "macro_auc": 0.7153247983933064
+          },
+          "days_15_28": {
+            "classes_with_both_outcomes": 100,
+            "macro_auc": 0.7024744938039085
+          }
+        }
+      },
+      "supervision": "Days 1–14 only; compare both fortnights on the same unseen users."
     }
   },
   "repeat_churn_subgroups": {
@@ -247,5 +362,5 @@
       }
     }
   },
-  "interpretation": "One public validation set and one seed. The combined experiment changes both the heads and the graph. The isolated repeat-signal experiment evaluates churn only. Its public validation score was used to decide inclusion."
+  "interpretation": "Single-seed local public validation. Each three-task row uses one frozen profile. Churn was evaluated before the two propensity tasks for the 1298-dimensional profile and was used to select the joint configuration. Changing the graph and the wide purchase block together limits attribution."
 }
