@@ -17,7 +17,23 @@
         "churn": 0.7349,
         "propensity_category": 0.8069,
         "propensity_sku": 0.8057
-      }
+      },
+      "selected_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "delta_from_reference": {
+        "churn": 0.0,
+        "propensity_category": 0.0,
+        "propensity_sku": 0.0
+      },
+      "seconds_per_task": {
+        "churn": 1002.3751794999989,
+        "propensity_category": 1540.270785700006,
+        "propensity_sku": 1524.3081283999782
+      },
+      "total_completed_task_seconds": 4066.954093599983
     },
     "compact_control": {
       "dimensions": 1047,
@@ -34,21 +50,49 @@
       "dimensions": 1270,
       "scores": {
         "churn": 0.7354,
-        "propensity_category": null,
-        "propensity_sku": null
+        "propensity_category": 0.8088,
+        "propensity_sku": 0.8071
       },
       "selected_epochs_zero_based": {
-        "churn": 2
-      }
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "delta_from_reference": {
+        "churn": 0.0005,
+        "propensity_category": 0.0019,
+        "propensity_sku": 0.0014
+      },
+      "seconds_per_task": {
+        "churn": 645.0544870000158,
+        "propensity_category": 1563.9648938,
+        "propensity_sku": 1398.1182094
+      },
+      "total_completed_task_seconds": 3607.137590200016
     },
     "activity_profile": {
       "dimensions": 1270,
       "scores": {
-        "churn": null,
-        "propensity_category": null,
-        "propensity_sku": null
+        "churn": 0.7353,
+        "propensity_category": 0.8084,
+        "propensity_sku": 0.8068
       },
-      "selected_epochs_zero_based": {}
+      "selected_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "delta_from_reference": {
+        "churn": 0.0004,
+        "propensity_category": 0.0015,
+        "propensity_sku": 0.0011
+      },
+      "seconds_per_task": {
+        "churn": 717.4605118999998,
+        "propensity_category": 1438.112994,
+        "propensity_sku": 1408.9220053999998
+      },
+      "total_completed_task_seconds": 3564.4955112999996
     }
   },
   "embedding": {
@@ -197,6 +241,7 @@
   "limitations": [
     "Compare all three tasks on one profile; do not combine a different profile’s best result on each task.",
     "Broader vocabularies use newly fitted logistic heads over frozen historical inputs, not end-to-end retraining of the GRU. Greater coverage does not measure ranking quality.",
-    "Group-level repurchase rates are observational. Total three-task evaluation time is not reported for incomplete candidates."
-  ]
+    "Group-level repurchase rates are observational."
+  ],
+  "timing_note": "Total is the sum of three timed completed task runs; excludes interrupted attempts, idle time and feature construction."
 }
