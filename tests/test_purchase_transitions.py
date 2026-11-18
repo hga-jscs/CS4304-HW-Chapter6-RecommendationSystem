@@ -45,3 +45,44 @@ def test_streamed_graph_counts_distinct_baskets_and_aligns_recent_rows(tmp_path)
     np.testing.assert_allclose(np.linalg.norm(values.astype("float32"), axis=1), [1, 1, 0], atol=.001)
     assert np.isfinite(values).all() and values.dtype == np.float16
     assert len(json.loads((output / "features.json").read_text())) == values.shape[1]
+
+
+def test_purchase_window_includes_exact_days_and_skips_same_basket():
+    times = np.array([0, 1, DAY_NS, 28 * DAY_NS, 58 * DAY_NS])
+    baskets = purchase_baskets(np.zeros(5, int), times, np.arange(5), 1)
+    rows, matched = next_baskets(np.zeros(4, int), np.array([0, 1, DAY_NS, 28 * DAY_NS]),
+                                 baskets, minimum_days=1, maximum_days=28)
+    np.testing.assert_array_equal(rows, [0, 1, 2])
+    np.testing.assert_array_equal(matched, [2, 3, 3])
+    rows, matched = next_baskets(np.zeros(2, int), np.array([30 * DAY_NS, 30 * DAY_NS - 1]),
+                                 baskets, minimum_days=1, maximum_days=28)
+    np.testing.assert_array_equal(rows, [0])
+    np.testing.assert_array_equal(matched, [4])
+
+
+def test_outside_buyer_edges_project_to_users_with_no_purchase(tmp_path):
+    directory = tmp_path / "input"
+    directory.mkdir()
+    np.save(directory / "relevant_clients.npy", np.array([32, 10], np.int64))
+    def write(name, field, users, days, nodes):
+        pd.DataFrame({"client_id": users, "timestamp": pd.Timestamp("2022-01-01")
+                      + pd.to_timedelta(days, unit="D"), field: nodes}).to_parquet(
+                          directory / (name + ".parquet"), index=False)
+    # Two outside buyers supply both supporting baskets. User 32 only visits late.
+    # Day 34 has an observed following basket, but less than 28 days of follow-up,
+    # so the graph cannot train on it at this cutoff.
+    write("product_buy", "sku", [90, 90, 91, 91, 90, 90], [0, 1, 0, 4, 34, 35],
+          [5, 8, 5, 9, 11, 12])
+    write("page_visit", "url", [90, 91, 32], [0, 0, 39], [7, 7, 7])
+    write("add_to_cart", "sku", [90, 91, 10], [0, 0, 39], [5, 5, 5])
+    output = tmp_path / "expanded"
+    report = build(tmp_path, output, dimensions=2, batch_size=2, threads=1,
+                   cutoff_utc="2022-02-10", all_user_graph=True)
+    assert report["additional_buyers_outside_output_cohort"] == 2
+    for relation in report["relations"].values():
+        assert relation["retained_distinct_source_baskets"] == 2
+        assert relation["matches_from_outside_output_cohort"] == 2
+    assert report["relations"]["product_buy"]["users_with_retained_recent_sources"] == 0
+    np.testing.assert_array_equal(np.load(output / "client_ids.npy"), [32, 10])
+    np.testing.assert_allclose(np.linalg.norm(np.load(output / "embeddings.npy"), axis=1),
+                               [1, 1], atol=.001)

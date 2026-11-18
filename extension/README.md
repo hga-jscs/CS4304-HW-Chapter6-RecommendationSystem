@@ -141,6 +141,29 @@ python -m pip install "duckdb==2.0.0"
 python -m extension.purchase_activity_audit --data-directory data/extension --output outputs/extension/purchase_activity.json
 ```
 
+## 双窗购买预测、全体用户转移和复购增量
+
+官方下游模型使用截点后第 1–14 天的购买标签训练，在第 15–28 天验证。`persistent_purchases` 复用购买版的历史商品词表和投影，在同一历史截点估计延迟购买，把近窗与延迟窗的对数几率按训练样本量加权。样本较少的商品更依赖原近窗预测，最终仍输出 128 维。
+
+`--all-user-graph` 使用所有历史买家估计浏览到购买、加购到购买及购买到后续购买三类关系。前两类取 7 天内的首个购买篮，购买到购买取 1–28 天内的首个购买篮。每个来源事件均须有完整观察窗。图只为指定用户输出 64 维。
+
+```powershell
+python -m extension.persistent_purchases --data-directory data/extension --cache-directory outputs/extension/delayed_cache --baseline-directory outputs/extension/purchase_targets --output-directory outputs/extension/persistent_purchases --threads 2
+python -m extension.category_horizon_residual --cache-directory outputs/extension/delayed_cache --near-directory outputs/extension/purchase_targets --joint-directory outputs/extension/persistent_purchases --output-directory outputs/extension/preserved_categories
+python -m extension.purchase_transitions --data-directory data/extension --output-directory outputs/extension/all_user_transitions --all-user-graph --threads 2
+python -m extension.combine_profiles --input-directories outputs/extension/compact outputs/extension/repeat_purchases outputs/extension/preserved_categories outputs/extension/all_user_transitions --weights 1 1 1.3 2 --output-directory outputs/extension/persistent_profiles
+```
+
+实际评测用的预测块有 144 列。前 64 列来自双窗 SKU 模型，中间 64 列保留原近窗品类坐标，后 16 列用历史用户拟合的主成分表示双窗与近窗品类预测之差。
+
+复购对照保留购买版全部 1,270 列，再追加 28 列活动分数、线性残差、单日买家交互项和延迟复购的平滑阈值。缩放系数 2 已包含在新增块中。
+
+```powershell
+python -m extension.repeat_signals --data-directory data/extension --purchase-directory outputs/extension/repeat_purchases --activity-directory outputs/extension/activity_scores --output-directory outputs/extension/repeat_signals
+python -m extension.combine_profiles --input-directories outputs/extension/compact_purchases outputs/extension/repeat_signals --output-directory outputs/extension/expanded_repeat
+python -m extension.evaluate --official-directory external/recsys2025 --data-directory data/extension --embeddings-directory outputs/extension/expanded_repeat --score-directory outputs/extension/expanded_repeat_scores --cache-targets --tasks churn --num-workers 0 --seed 42
+```
+
 ## 历史预训练与 1001 维实验流程
 
 新增流程由三部分组成：`pretrain_encoder` 使用历史内伪未来学习 457 维表征，`history_representation build` 生成 544 维统计/内容/协同特征，`combine` 拼接并按列标准化为 1001 维。544 与 1001 维的正式对照结果见上表。

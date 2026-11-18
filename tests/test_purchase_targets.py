@@ -6,6 +6,8 @@ import pandas as pd
 from threadpoolctl import threadpool_limits
 
 from extension.purchase_targets import build, purchase_labels
+from extension.persistent_purchases import blend_heads, build as build_persistent
+from extension.category_horizon_residual import build as build_residual
 
 
 def test_historical_heads_use_training_users_and_binary_future_labels(tmp_path):
@@ -60,3 +62,32 @@ def test_historical_heads_use_training_users_and_binary_future_labels(tmp_path):
     assert np.array_equal(np.load(tmp_path / "vectors/client_ids.npy"), ids)
     for field in ("sku", "category"):
         assert result["diagnostics"][field]["classes_with_heldout_positives"] == 3
+
+    delayed = dict(windows[1], feature_window="earlier", input_cutoff_utc=windows[0]["input_cutoff_utc"],
+                   forecast_gap_days=14)
+    (cache / "manifest.json").write_text(json.dumps({"windows": [*windows, delayed]}), encoding="utf-8")
+    with threadpool_limits(limits=1):
+        joint = build_persistent(data, cache, tmp_path / "vectors", tmp_path / "joint", batch_size=13)
+    assert joint["vocabulary_counted_purchase_lines_once"] == lines
+    assert joint["dimensions"] == matrix.shape[1]
+    assert np.array_equal(ids, np.load(tmp_path / "joint/client_ids.npy"))
+    assert joint["diagnostics"]["sku"]["days_15_28"]["classes_with_both_outcomes"] == 3
+    assert np.isfinite(np.load(tmp_path / "joint/embeddings.npy")).all()
+    with np.load(tmp_path / "vectors/heads.npz") as old, np.load(tmp_path / "joint/heads.npz") as new:
+        for k in ("sku", "category", "sku_axes", "category_basis", "sku_projected_scale"):
+            np.testing.assert_array_equal(new[k], old[k])
+    with threadpool_limits(limits=1):
+        res = build_residual(cache, tmp_path / "vectors", tmp_path / "joint", tmp_path / "residual", rank=1)
+    coded = np.load(tmp_path / "residual/embeddings.npy")
+    assert res["fit_rows"] == (~validation).sum() * 2
+    np.testing.assert_array_equal(coded[:, :2], np.load(tmp_path / "joint/embeddings.npy")[:, :2])
+    np.testing.assert_array_equal(coded[:, 2:4], matrix[:, 2:4])
+    assert coded.shape == (len(ids), 5) and np.max(np.abs(coded[:, -1])) <= 2.0
+
+
+def test_missing_delayed_class_keeps_near_head():
+    near = np.array([[4., 4.]], dtype=np.float32)
+    late = np.zeros_like(near)
+    weight, bias = blend_heads(near, near[0], late, late[0], np.array([0, 15]))
+    np.testing.assert_array_equal(weight, [[4., 3.]])
+    np.testing.assert_array_equal(bias, [4., 3.])
