@@ -126,6 +126,14 @@ python -m extension.evaluate --official-directory external/recsys2025 --data-dir
 
 手工计数在压缩时乘 0.8，原监督块沿用输入中已有的 1.3。新商品头乘 1.3，行归一化的转移块乘 2。对不同分量使用独立的历史预测目标，避免重复同一分数来增加列数。PyArrow 只解码需要的 Parquet 列，PCA、概率输出和百万用户拼接分批执行。可用 `--embeddings-directory outputs/extension/compact` 单独评测压缩对照。
 
+还可保持画像宽度和输入顺序，单独检验四个复购分数。两种树的历史输入从 27 项扩充为 102 项，多出的 75 项是按同一截点计算的五种事件活动摘要。在 2022 年 10 月 12 日留出的 13,297 位单购买日买家中，未来第 15–28 天复购 AUC 从 0.65348 升至 0.67262。该消融只衡量历史辅助模型。
+
+```powershell
+python -m extension.activity_repeat_scores build --data-directory data/extension --baseline-directory outputs/extension/repeat_purchases --output-directory outputs/extension/activity_scores
+python -m extension.activity_repeat_scores replace --baseline-directory outputs/extension/repeat_purchases --scores-directory outputs/extension/activity_scores --output-directory outputs/extension/activity_purchases
+python -m extension.combine_profiles --input-directories outputs/extension/compact outputs/extension/activity_purchases outputs/extension/purchase_targets outputs/extension/purchase_transitions --weights 1 1 1.3 2 --output-directory outputs/extension/compact_activity
+```
+
 冻结画像后，可以在独立分析环境用 DuckDB 对比购后仍活跃与停止活动两组的验证期复购率。查询直接读取 Parquet，按购买天数与距上次购买的天数分层，并用 Arrow 独立核对人数。这个入口读取验证标签，仅用于事后解释。
 
 ```powershell
