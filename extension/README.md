@@ -103,6 +103,29 @@ python -m extension.combine_profiles --input-directories outputs/extension/activ
 
 两套官方三任务分别用时 3966.499/4067.043 秒，最佳 epoch 索引分别为 2/2/2 和 1/2/2。拼接与两套评测的连续串行链为 8041.562 秒；会话中断未中止该后台链，未重复训练已完成任务。小幅单种子差值不能据此视为稳定收益，也不能把内部分时段复购 AUC 当作官方流失分数。
 
+## 紧凑表征、历史复购与商品转移
+
+这一组实验复用上文的 `delayed_combined`、`delayed_cache`、`activity` 和 `product_cooccurrence`。所有特征构建命令只读历史输入及其派生缓存。最后一行将得到的同一份画像交给官方三项任务。
+
+```powershell
+python -m extension.compact_profiles --profile-directory outputs/extension/delayed_combined --activity-directory outputs/extension/activity --product-directory outputs/extension/product_cooccurrence --output-directory outputs/extension/compact
+python -m pip install "lightgbm==4.7.0" "catboost==1.2.10"
+python -m extension.repeat_purchases --data-directory data/extension --output-directory outputs/extension/repeat_purchases --compare-models
+python -m extension.purchase_targets --data-directory data/extension --cache-directory outputs/extension/delayed_cache --output-directory outputs/extension/purchase_targets --threads 2
+python -m extension.purchase_transitions --data-directory data/extension --output-directory outputs/extension/purchase_transitions --threads 2
+python -m extension.combine_profiles --input-directories outputs/extension/compact outputs/extension/repeat_purchases outputs/extension/purchase_targets outputs/extension/purchase_transitions --weights 1 1 1.3 2 --output-directory outputs/extension/compact_purchases
+python -m extension.evaluate --official-directory external/recsys2025 --data-directory data/extension --embeddings-directory outputs/extension/compact_purchases --score-directory outputs/extension/compact_purchases_scores --cache-targets --num-workers 0 --seed 42
+```
+
+| 块 | 维数 | 实际构建方法 |
+| --- | ---: | --- |
+| 压缩对照 | 1047 | 只从 65,536 个无标签历史画像拟合各块的小型协方差矩阵。购买、加购、最近购物车差额单独投影，保留 512 维历史。原预训练块保留两个瓶颈、两个流失分数，按相同类别将近远期倾向分数取平均，共 394 维。另保留 77 维活动和 64 维商品协同。 |
+| 复购 | 31 | 3 项购买基础、8 项购后活动、16 项商品/品类经验率和 4 个历史预测分数。先验只在结果已经观测完整的历史购买机会中估计，并排除收件用户所在折。两棵不同类型的树预测未来 1–7、1–14、1–28、15–28 日复购，取原始分数平均。省略 `--compare-models` 可仅用 scikit-learn 的梯度提升树生成同结构对照。 |
+| 宽商品与品类预测 | 128 | 两个历史购买窗口、同一组 90 万训练用户。按购买次数至少 15 次筛得 1,804 个 SKU 和上限 500 个品类，分别训练正负平衡逻辑回归头，并对输出各保留 64 个概率主成分。复用冻结的快照特征，旧 GRU 权重保持固定。 |
+| 有向转移 | 64 | 从浏览 URL 与加购 SKU 分别连到同一用户之后 7 天内的首个购买篮子，篮内商品均分一票。拟合时只使用可观察满 7 天的来源事件；提取时用近 14 天行为对行归一化的转移概率作一次传播。稀疏矩阵隐式完成传播和投影。 |
+
+手工计数在压缩时乘 0.8，原监督块沿用输入中已有的 1.3。新商品头乘 1.3，行归一化的转移块乘 2。对不同分量使用独立的历史预测目标，避免重复同一分数来增加列数。PyArrow 只解码需要的 Parquet 列，PCA、概率输出和百万用户拼接分批执行。可用 `--embeddings-directory outputs/extension/compact` 单独评测压缩对照。
+
 ## 历史预训练与 1001 维实验流程
 
 新增流程由三部分组成：`pretrain_encoder` 使用历史内伪未来学习 457 维表征，`history_representation build` 生成 544 维统计/内容/协同特征，`combine` 拼接并按列标准化为 1001 维。544 与 1001 维的正式对照结果见上表。
