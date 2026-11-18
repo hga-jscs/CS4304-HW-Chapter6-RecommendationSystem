@@ -126,6 +126,13 @@ python -m extension.evaluate --official-directory external/recsys2025 --data-dir
 
 手工计数在压缩时乘 0.8，原监督块沿用输入中已有的 1.3。新商品头乘 1.3，行归一化的转移块乘 2。对不同分量使用独立的历史预测目标，避免重复同一分数来增加列数。PyArrow 只解码需要的 Parquet 列，PCA、概率输出和百万用户拼接分批执行。可用 `--embeddings-directory outputs/extension/compact` 单独评测压缩对照。
 
+冻结画像后，可以在独立分析环境用 DuckDB 对比购后仍活跃与停止活动两组的验证期复购率。查询直接读取 Parquet，按购买天数与距上次购买的天数分层，并用 Arrow 独立核对人数。这个入口读取验证标签，仅用于事后解释。
+
+```powershell
+python -m pip install "duckdb==2.0.0"
+python -m extension.purchase_activity_audit --data-directory data/extension --output outputs/extension/purchase_activity.json
+```
+
 ## 历史预训练与 1001 维实验流程
 
 新增流程由三部分组成：`pretrain_encoder` 使用历史内伪未来学习 457 维表征，`history_representation build` 生成 544 维统计/内容/协同特征，`combine` 拼接并按列标准化为 1001 维。544 与 1001 维的正式对照结果见上表。
