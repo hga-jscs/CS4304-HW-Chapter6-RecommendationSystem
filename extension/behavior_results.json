@@ -1,0 +1,2919 @@
+{
+  "created_utc": "2026-11-18T00:59:06.930899+00:00",
+  "scope": "Completed local official-protocol comparisons",
+  "path_base": "Paths are local artifacts relative to project; raw data and matrices are not committed.",
+  "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+  "requested_goals": {
+    "churn": 0.75,
+    "propensity_category": 0.815,
+    "propensity_sku": 0.815
+  },
+  "metrics": {
+    "churn": "AUROC",
+    "propensity_category": "0.8 AUROC + 0.1 Diversity + 0.1 Novelty",
+    "propensity_sku": "0.8 AUROC + 0.1 Diversity + 0.1 Novelty"
+  },
+  "acceptance": {
+    "all_goals_met_by_one_representation": false,
+    "qualifying_representations": [],
+    "rule": "All three requested scores must be attained by the same representation; do not mix rows."
+  },
+  "previous_representations": [
+    {
+      "name": "history_column_544",
+      "dimensions": 544,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.7293,
+        "propensity_category": 0.8054,
+        "propensity_sku": 0.7972
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 1,
+        "propensity_sku": 2
+      },
+      "protocol": {
+        "official_repository": "https://github.com/Synerise/recsys2025.git",
+        "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_reference_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_protocol_verified": true,
+        "validation_passed": true,
+        "training_completed": true,
+        "tasks": [
+          "churn",
+          "propensity_category",
+          "propensity_sku"
+        ],
+        "seed": 42,
+        "target_cache_enabled": true
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "score_minus_goal": {
+        "churn": -0.0207,
+        "propensity_category": -0.0096,
+        "propensity_sku": -0.0178
+      },
+      "runtime": {
+        "status": "complete",
+        "stage": "历史特征_official_three_tasks",
+        "started_utc": "2026-11-17T08:37:54.912352+00:00",
+        "finished_utc": "2026-11-17T09:34:40.981380+00:00",
+        "seconds": 3405.726,
+        "returncode": 0,
+        "command": [
+          "拓展环境/Scripts/python.exe",
+          "-m",
+          "extension.evaluate",
+          "--official-directory",
+          "准备资料/官方评测",
+          "--data-directory",
+          "数据/拓展任务",
+          "--accelerator",
+          "gpu",
+          "--device",
+          "0",
+          "--num-workers",
+          "0",
+          "--cache-targets",
+          "--seed",
+          "42",
+          "--embeddings-directory",
+          "结果/拓展任务/历史特征标准化",
+          "--score-directory",
+          "结果/拓展任务/历史特征评分"
+        ],
+        "source_commit": "2aeb0796159a97fe35a49dd625830b802ce27a94",
+        "source_working_tree_changes": [
+          " M reports/revision_review.md"
+        ],
+        "source_sha256": {
+          "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+          "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf",
+          "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+        },
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "python": "3.11.3",
+        "wrapper_seed": 42,
+        "official_model_torch_seed": 1278,
+        "omp_num_threads": 4,
+        "mkl_num_threads": 4,
+        "num_workers": 0,
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 566.36",
+        "target_cache_enabled": true
+      }
+    },
+    {
+      "name": "history_pretrained_1001",
+      "dimensions": 1001,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.7299,
+        "propensity_category": 0.8053,
+        "propensity_sku": 0.7985
+      },
+      "best_epochs_zero_based": {
+        "churn": 2,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "protocol": {
+        "official_repository": "https://github.com/Synerise/recsys2025.git",
+        "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_reference_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_protocol_verified": true,
+        "validation_passed": true,
+        "training_completed": true,
+        "tasks": [
+          "churn",
+          "propensity_category",
+          "propensity_sku"
+        ],
+        "seed": 42,
+        "target_cache_enabled": true,
+        "resumed_after_interruption": true
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "score_minus_goal": {
+        "churn": -0.0201,
+        "propensity_category": -0.0097,
+        "propensity_sku": -0.0165
+      },
+      "runtime": {
+        "status": "complete",
+        "stage": "历史组合_official_three_tasks",
+        "started_utc": "2026-11-17T09:34:40.987871+00:00",
+        "finished_utc": "2026-11-17T10:50:35.734728+00:00",
+        "seconds": null,
+        "returncode": 0,
+        "command": [
+          "拓展环境/Scripts/python.exe",
+          "-m",
+          "extension.evaluate",
+          "--official-directory",
+          "准备资料/官方评测",
+          "--data-directory",
+          "数据/拓展任务",
+          "--accelerator",
+          "gpu",
+          "--device",
+          "0",
+          "--num-workers",
+          "0",
+          "--cache-targets",
+          "--seed",
+          "42",
+          "--embeddings-directory",
+          "结果/拓展任务/历史预训练组合",
+          "--score-directory",
+          "结果/拓展任务/历史组合评分"
+        ],
+        "source_commit": "20aa5dc0af3ea0803edb26de4f0982478864bedb",
+        "source_working_tree_changes": [
+          " M basic/README.md",
+          " M reports/README.md",
+          " M reports/methods_and_experiments.md",
+          "?? reports/basic_transductive_results.json"
+        ],
+        "source_sha256": {
+          "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+          "extension/standardize.py": "469d722a8536ca74515d48a553d0d07bb58a58fd19e8b2879ef677b765f043cf",
+          "extension/evaluate.py": "0c7265fdd2df4fb9a2e4579b1c528fe4a58cf4d7645ca4cb833db719d4e30357",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+        },
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "python": "3.11.3",
+        "wrapper_seed": 42,
+        "official_model_torch_seed": 1278,
+        "omp_num_threads": 4,
+        "mkl_num_threads": 4,
+        "num_workers": 0,
+        "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU, 566.36",
+        "target_cache_enabled": true,
+        "resumed_after_interruption": true,
+        "timing_note": "Interrupted initial segment has no completed monotonic timing. Only the separately resumed task durations are exact; no full 1001 evaluation duration is claimed.",
+        "resumed_task_segments": [
+          {
+            "task": "propensity_category",
+            "started_utc": "2026-11-17T10:08:56.961365+00:00",
+            "status": "complete",
+            "returncode": 0,
+            "seconds": 1251.872,
+            "finished_utc": "2026-11-17T10:29:48.833044+00:00"
+          },
+          {
+            "task": "propensity_sku",
+            "started_utc": "2026-11-17T10:29:48.865132+00:00",
+            "status": "complete",
+            "returncode": 0,
+            "seconds": 1246.732,
+            "finished_utc": "2026-11-17T10:50:35.603866+00:00"
+          }
+        ],
+        "resumed_tasks_seconds": 2498.604,
+        "resume_source_commit": "9712f90cbc79a183810c069b89ff7e096e353433",
+        "resume_source_working_tree_changes": [
+          " M README.md",
+          " M reports/README.md",
+          " M reports/methods_and_experiments.md"
+        ],
+        "resume_versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        }
+      }
+    }
+  ],
+  "experiments": [
+    {
+      "name": "history_block_544",
+      "dimensions": 544,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.7305,
+        "propensity_category": 0.8058,
+        "propensity_sku": 0.7963
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "protocol": {
+        "official_repository": "https://github.com/Synerise/recsys2025.git",
+        "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_reference_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_protocol_verified": true,
+        "validation_passed": true,
+        "training_completed": true,
+        "tasks": [
+          "churn",
+          "propensity_category",
+          "propensity_sku"
+        ],
+        "seed": 42,
+        "target_cache_enabled": true,
+        "each_task_record_verified": true
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "score_minus_goal": {
+        "churn": -0.0195,
+        "propensity_category": -0.0092,
+        "propensity_sku": -0.0187
+      },
+      "runtime": {
+        "status": "complete",
+        "started_utc": "2026-11-17T14:54:54.850888+00:00",
+        "finished_utc": "2026-11-17T15:52:56.297238+00:00",
+        "total_seconds": 3481.3162627999845,
+        "task_runs": [
+          {
+            "task": "churn",
+            "status": "complete",
+            "started_utc": "2026-11-17T14:54:54.982224+00:00",
+            "returncode": 0,
+            "seconds": 662.7464114999748,
+            "finished_utc": "2026-11-17T15:05:57.729764+00:00"
+          },
+          {
+            "task": "propensity_category",
+            "status": "complete",
+            "started_utc": "2026-11-17T15:05:57.734768+00:00",
+            "returncode": 0,
+            "seconds": 1403.072979700024,
+            "finished_utc": "2026-11-17T15:29:20.811784+00:00"
+          },
+          {
+            "task": "propensity_sku",
+            "status": "complete",
+            "started_utc": "2026-11-17T15:29:20.817787+00:00",
+            "returncode": 0,
+            "seconds": 1415.442093199992,
+            "finished_utc": "2026-11-17T15:52:56.263720+00:00"
+          }
+        ],
+        "source_commit": "9f9acfc153786ec13fa3419794d355ffe83de0ad",
+        "working_tree_changes": [
+          " M extension/pretrain_encoder.py",
+          "?? extension/behavior_features.py",
+          "?? reports/third_review.md",
+          "?? tests/test_behavior_features.py"
+        ],
+        "source_sha256": {
+          "extension/evaluate.py": "645a957a0010731bc41dd7024540b3fecb894c15bfa5a04d45ac2361dd13ae3d",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3",
+          "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02"
+        },
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "python": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+        "seed": 42,
+        "model_seed": 1278,
+        "threads": 4
+      },
+      "representation": {
+        "created_utc": "2026-11-17T14:53:53.956106+00:00",
+        "method": "block_scaling_of_existing_embeddings",
+        "source_directory": "结果/拓展任务/历史内容表征",
+        "clients": 1000000,
+        "dimensions": 544,
+        "source_files": {
+          "embeddings.npy": {
+            "bytes": 2176000128,
+            "mtime_ns": 1794904253462022700
+          },
+          "client_ids.npy": {
+            "bytes": 8000128,
+            "mtime_ns": 1794904588881308300
+          }
+        },
+        "dtype": "float16",
+        "target_data_used_for_embeddings": false,
+        "seconds": 46.725,
+        "numpy_version": "2.4.6"
+      },
+      "normalization": {
+        "method": "block",
+        "blocks": [
+          {
+            "name": "statistics_counts",
+            "start": 0,
+            "stop": 352,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "name",
+            "start": 352,
+            "stop": 384,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          },
+          {
+            "name": "query",
+            "start": 384,
+            "stop": 416,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          },
+          {
+            "name": "graph",
+            "start": 416,
+            "stop": 544,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          }
+        ],
+        "statistics_population": 1000000,
+        "clip": 10.0,
+        "probability_note": "Sigmoid scores are not claimed to be calibrated probabilities"
+      },
+      "delta_vs_previous": {
+        "history_column_544": {
+          "churn": 0.0012,
+          "propensity_category": 0.0004,
+          "propensity_sku": -0.0009
+        },
+        "history_pretrained_1001": {
+          "churn": 0.0006,
+          "propensity_category": 0.0005,
+          "propensity_sku": -0.0022
+        }
+      }
+    },
+    {
+      "name": "behavior_block_1203",
+      "dimensions": 1203,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.7302,
+        "propensity_category": 0.8058,
+        "propensity_sku": 0.7927
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "protocol": {
+        "official_repository": "https://github.com/Synerise/recsys2025.git",
+        "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_reference_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_protocol_verified": true,
+        "validation_passed": true,
+        "training_completed": true,
+        "tasks": [
+          "churn",
+          "propensity_category",
+          "propensity_sku"
+        ],
+        "seed": 42,
+        "target_cache_enabled": true,
+        "each_task_record_verified": true
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "score_minus_goal": {
+        "churn": -0.0198,
+        "propensity_category": -0.0092,
+        "propensity_sku": -0.0223
+      },
+      "runtime": {
+        "status": "complete",
+        "started_utc": "2026-11-17T17:59:16.942942+00:00",
+        "finished_utc": "2026-11-17T18:56:50.105600+00:00",
+        "total_seconds": 3453.0018844000006,
+        "task_runs": [
+          {
+            "task": "churn",
+            "status": "complete",
+            "started_utc": "2026-11-17T17:59:17.103974+00:00",
+            "returncode": 0,
+            "seconds": 643.5412333999993,
+            "finished_utc": "2026-11-17T18:10:00.646381+00:00"
+          },
+          {
+            "task": "propensity_category",
+            "status": "complete",
+            "started_utc": "2026-11-17T18:10:00.650384+00:00",
+            "returncode": 0,
+            "seconds": 1401.1667304000002,
+            "finished_utc": "2026-11-17T18:33:21.817383+00:00"
+          },
+          {
+            "task": "propensity_sku",
+            "status": "complete",
+            "started_utc": "2026-11-17T18:33:21.822383+00:00",
+            "returncode": 0,
+            "seconds": 1408.2712950000132,
+            "finished_utc": "2026-11-17T18:56:50.094600+00:00"
+          }
+        ],
+        "source_commit": "e00451e80b00ee4189acf98a28831f88c9448115",
+        "working_tree_changes": [],
+        "source_sha256": {
+          "extension/evaluate.py": "645a957a0010731bc41dd7024540b3fecb894c15bfa5a04d45ac2361dd13ae3d",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3",
+          "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02"
+        },
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "python": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+        "seed": 42,
+        "model_seed": 1278,
+        "threads": 4
+      },
+      "representation": {
+        "created_utc": "2026-11-17T17:55:01.616667+00:00",
+        "method": "block_scaling_of_existing_embeddings",
+        "source_directory": "结果/拓展任务/行为特征",
+        "clients": 1000000,
+        "dimensions": 1203,
+        "source_files": {
+          "embeddings.npy": {
+            "bytes": 4812000128,
+            "mtime_ns": 1794931422577463300
+          },
+          "client_ids.npy": {
+            "bytes": 8000128,
+            "mtime_ns": 1794931745919298400
+          }
+        },
+        "dtype": "float16",
+        "target_data_used_for_embeddings": false,
+        "seconds": 87.931,
+        "numpy_version": "2.4.6"
+      },
+      "normalization": {
+        "method": "block",
+        "blocks": [
+          {
+            "name": "statistics",
+            "start": 0,
+            "stop": 96,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "velocity",
+            "start": 96,
+            "stop": 111,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "purchase_days",
+            "start": 111,
+            "stop": 115,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "buy_history",
+            "start": 115,
+            "stop": 371,
+            "kind": "counts",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "cart_history",
+            "start": 371,
+            "stop": 627,
+            "kind": "counts",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "cart_balance_7_days",
+            "start": 627,
+            "stop": 883,
+            "kind": "signed_count",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "url_history",
+            "start": 883,
+            "stop": 1011,
+            "kind": "counts",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "name",
+            "start": 1011,
+            "stop": 1043,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          },
+          {
+            "name": "query",
+            "start": 1043,
+            "stop": 1075,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          },
+          {
+            "name": "graph",
+            "start": 1075,
+            "stop": 1203,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          }
+        ],
+        "statistics_population": 1000000,
+        "clip": 10.0,
+        "probability_note": "Sigmoid scores are not claimed to be calibrated probabilities"
+      },
+      "delta_vs_previous": {
+        "history_column_544": {
+          "churn": 0.0009,
+          "propensity_category": 0.0004,
+          "propensity_sku": -0.0045
+        },
+        "history_pretrained_1001": {
+          "churn": 0.0003,
+          "propensity_category": 0.0005,
+          "propensity_sku": -0.0058
+        }
+      }
+    },
+    {
+      "name": "behavior_delayed_1797",
+      "dimensions": 1797,
+      "clients": 1000000,
+      "dtype": "float16",
+      "scores": {
+        "churn": 0.734,
+        "propensity_category": 0.8067,
+        "propensity_sku": 0.8057
+      },
+      "best_epochs_zero_based": {
+        "churn": 1,
+        "propensity_category": 2,
+        "propensity_sku": 2
+      },
+      "protocol": {
+        "official_repository": "https://github.com/Synerise/recsys2025.git",
+        "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_reference_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+        "official_protocol_verified": true,
+        "validation_passed": true,
+        "training_completed": true,
+        "tasks": [
+          "churn",
+          "propensity_category",
+          "propensity_sku"
+        ],
+        "seed": 42,
+        "target_cache_enabled": true,
+        "each_task_record_verified": true
+      },
+      "requested_goals_met": {
+        "churn": false,
+        "propensity_category": false,
+        "propensity_sku": false
+      },
+      "all_requested_goals_met": false,
+      "score_minus_goal": {
+        "churn": -0.016,
+        "propensity_category": -0.0083,
+        "propensity_sku": -0.0093
+      },
+      "runtime": {
+        "status": "complete",
+        "started_utc": "2026-11-17T18:56:50.418963+00:00",
+        "finished_utc": "2026-11-17T20:00:54.788954+00:00",
+        "total_seconds": 3844.2361143000016,
+        "task_runs": [
+          {
+            "task": "churn",
+            "status": "complete",
+            "started_utc": "2026-11-17T18:56:50.553489+00:00",
+            "returncode": 0,
+            "seconds": 765.7845596999978,
+            "finished_utc": "2026-11-17T19:09:36.339363+00:00"
+          },
+          {
+            "task": "propensity_category",
+            "status": "complete",
+            "started_utc": "2026-11-17T19:09:36.353635+00:00",
+            "returncode": 0,
+            "seconds": 1513.4019061999861,
+            "finished_utc": "2026-11-17T19:34:49.757184+00:00"
+          },
+          {
+            "task": "propensity_sku",
+            "status": "complete",
+            "started_utc": "2026-11-17T19:34:49.799322+00:00",
+            "returncode": 0,
+            "seconds": 1564.9422123999975,
+            "finished_utc": "2026-11-17T20:00:54.745450+00:00"
+          }
+        ],
+        "source_commit": "e00451e80b00ee4189acf98a28831f88c9448115",
+        "working_tree_changes": [],
+        "source_sha256": {
+          "extension/evaluate.py": "645a957a0010731bc41dd7024540b3fecb894c15bfa5a04d45ac2361dd13ae3d",
+          "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3",
+          "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02"
+        },
+        "versions": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "pytorch-lightning": "2.2.4",
+          "torchmetrics": "1.3.2",
+          "neptune": "1.13.0",
+          "rich": "13.9.4"
+        },
+        "python": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+        "seed": 42,
+        "model_seed": 1278,
+        "threads": 4
+      },
+      "representation": {
+        "created_utc": "2026-11-17T17:59:00.111973+00:00",
+        "method": "block_scaling_of_existing_embeddings",
+        "source_directory": "结果/拓展任务/行为特征",
+        "clients": 1000000,
+        "dimensions": 1797,
+        "source_files": {
+          "embeddings.npy": {
+            "bytes": 4812000128,
+            "mtime_ns": 1794931422577463300
+          },
+          "client_ids.npy": {
+            "bytes": 8000128,
+            "mtime_ns": 1794931745919298400
+          }
+        },
+        "dtype": "float16",
+        "target_data_used_for_embeddings": false,
+        "seconds": 237.082,
+        "numpy_version": "2.4.6",
+        "pretrained_directory": "结果/拓展任务/多窗口预训练/表征"
+      },
+      "normalization": {
+        "method": "block",
+        "blocks": [
+          {
+            "name": "pretrained_shared",
+            "start": 0,
+            "stop": 128,
+            "kind": "bottleneck",
+            "method": "layer",
+            "weight": 1.3
+          },
+          {
+            "name": "pretrained_churn",
+            "start": 128,
+            "stop": 192,
+            "kind": "bottleneck",
+            "method": "layer",
+            "weight": 1.3
+          },
+          {
+            "name": "pretrained_immediate_scores",
+            "start": 192,
+            "stop": 393,
+            "kind": "probability",
+            "method": "probability",
+            "weight": 1.3
+          },
+          {
+            "name": "pretrained_delayed_scores",
+            "start": 393,
+            "stop": 594,
+            "kind": "probability",
+            "method": "probability",
+            "weight": 1.3
+          },
+          {
+            "name": "statistics",
+            "start": 594,
+            "stop": 690,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "velocity",
+            "start": 690,
+            "stop": 705,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "purchase_days",
+            "start": 705,
+            "stop": 709,
+            "kind": "statistics",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "buy_history",
+            "start": 709,
+            "stop": 965,
+            "kind": "counts",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "cart_history",
+            "start": 965,
+            "stop": 1221,
+            "kind": "counts",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "cart_balance_7_days",
+            "start": 1221,
+            "stop": 1477,
+            "kind": "signed_count",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "url_history",
+            "start": 1477,
+            "stop": 1605,
+            "kind": "counts",
+            "method": "column",
+            "weight": 1.0
+          },
+          {
+            "name": "name",
+            "start": 1605,
+            "stop": 1637,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          },
+          {
+            "name": "query",
+            "start": 1637,
+            "stop": 1669,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          },
+          {
+            "name": "graph",
+            "start": 1669,
+            "stop": 1797,
+            "kind": "embedding",
+            "method": "row_l2",
+            "weight": 2.0
+          }
+        ],
+        "statistics_population": 1000000,
+        "clip": 10.0,
+        "probability_note": "Sigmoid scores are not claimed to be calibrated probabilities"
+      },
+      "delta_vs_previous": {
+        "history_column_544": {
+          "churn": 0.0047,
+          "propensity_category": 0.0013,
+          "propensity_sku": 0.0085
+        },
+        "history_pretrained_1001": {
+          "churn": 0.0041,
+          "propensity_category": 0.0014,
+          "propensity_sku": 0.0072
+        }
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "candidate": "history_block_544",
+      "reference": "history_column_544",
+      "score_delta": {
+        "churn": 0.0012,
+        "propensity_category": 0.0004,
+        "propensity_sku": -0.0009
+      },
+      "improved_tasks": [
+        "churn",
+        "propensity_category"
+      ],
+      "regressed_tasks": [
+        "propensity_sku"
+      ]
+    },
+    {
+      "candidate": "behavior_block_1203",
+      "reference": "history_block_544",
+      "score_delta": {
+        "churn": -0.0003,
+        "propensity_category": 0.0,
+        "propensity_sku": -0.0036
+      },
+      "improved_tasks": [],
+      "regressed_tasks": [
+        "churn",
+        "propensity_sku"
+      ]
+    },
+    {
+      "candidate": "behavior_delayed_1797",
+      "reference": "behavior_block_1203",
+      "score_delta": {
+        "churn": 0.0038,
+        "propensity_category": 0.0009,
+        "propensity_sku": 0.013
+      },
+      "improved_tasks": [
+        "churn",
+        "propensity_category",
+        "propensity_sku"
+      ],
+      "regressed_tasks": []
+    }
+  ],
+  "stages": {
+    "behavior_build": {
+      "status": "complete",
+      "started_utc": "2026-11-17T15:55:15.301220+00:00",
+      "finished_utc": "2026-11-17T16:09:06.457697+00:00",
+      "seconds": 831.0667811000021,
+      "returncode": 0,
+      "command": [
+        "运行环境/Scripts/python.exe",
+        "-m",
+        "extension.behavior_features",
+        "--data-directory",
+        "数据/拓展任务",
+        "--output-directory",
+        "结果/拓展任务/行为特征",
+        "--batch-size",
+        "100000",
+        "--graph-skus",
+        "4096",
+        "--graph-urls",
+        "2048",
+        "--seed",
+        "42"
+      ],
+      "source_commit": "b97780b55a5a7a05271212ad84afbe0c179a7cf0",
+      "working_tree_changes": [],
+      "source_sha256": {
+        "extension/behavior_features.py": "9942ed5d312181dc61657ea321c47e3d7134408bc80ebcf3fa29c2029bbc0ea4",
+        "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02"
+      },
+      "versions": {
+        "numpy": "2.4.6",
+        "pandas": "2.3.3",
+        "pyarrow": "23.0.1",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.1"
+      },
+      "python": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+      "threads": 4,
+      "peak_memory_bytes": null,
+      "memory_measurement_note": "This helper records no peak-memory measurement; a launcher PID is not a worker peak."
+    },
+    "behavior_manifest": {
+      "method": "separate_purchase_cart_balance_velocity_and_frozen_content_graph",
+      "clients": 1000000,
+      "dimensions": 1203,
+      "dtype": "float32",
+      "blocks": [
+        {
+          "name": "statistics",
+          "start": 0,
+          "stop": 96,
+          "kind": "statistics"
+        },
+        {
+          "name": "velocity",
+          "start": 96,
+          "stop": 111,
+          "kind": "statistics"
+        },
+        {
+          "name": "purchase_days",
+          "start": 111,
+          "stop": 115,
+          "kind": "statistics"
+        },
+        {
+          "name": "buy_history",
+          "start": 115,
+          "stop": 371,
+          "kind": "counts"
+        },
+        {
+          "name": "cart_history",
+          "start": 371,
+          "stop": 627,
+          "kind": "counts"
+        },
+        {
+          "name": "cart_balance_7_days",
+          "start": 627,
+          "stop": 883,
+          "kind": "signed_count"
+        },
+        {
+          "name": "url_history",
+          "start": 883,
+          "stop": 1011,
+          "kind": "counts"
+        },
+        {
+          "name": "name",
+          "start": 1011,
+          "stop": 1043,
+          "kind": "embedding"
+        },
+        {
+          "name": "query",
+          "start": 1043,
+          "stop": 1075,
+          "kind": "embedding"
+        },
+        {
+          "name": "graph",
+          "start": 1075,
+          "stop": 1203,
+          "kind": "embedding"
+        }
+      ],
+      "input_cutoff_utc": "2022-11-09T23:59:59+00:00",
+      "fit_cutoff_utc": "2022-11-09T23:59:59+00:00",
+      "graph_idf": true,
+      "graph_event_weights": true,
+      "graph_skus_limit": 4096,
+      "graph_urls_limit": 2048,
+      "seed": 42,
+      "graph_rank": 128,
+      "reference_used": false,
+      "state_sha256": "108f0319cea6074ab7a6002c5e7bc94a7ac9ef3a533745f5de014fe7098167bb",
+      "target_data_used_for_embeddings": false,
+      "value_transforms": {
+        "statistics": "log1p",
+        "velocity": "none",
+        "purchase_days": "log1p",
+        "counts": "log1p",
+        "signed_count": "signed_log1p",
+        "name_query": "time_weighted_mean",
+        "graph": "row_l2"
+      },
+      "top_identifiers_selected_from": {
+        "sku_category": "purchase events at or before fit cutoff",
+        "url": "page_visit events at or before fit cutoff"
+      },
+      "official_target_lists_used_for_vocabulary": false,
+      "cart_balance_definition": "7-day cart events minus remove and purchase events; signed log1p; not cart state",
+      "purchase_interval_definition": "Separate UTC purchase days; unobserved repeat intervals are zero with an explicit availability flag",
+      "projection_definition": "All windows use log1p graph, frozen IDF, row L2, X @ fixed Vt.T, then row L2",
+      "pq_interpretation": "Independent name/query position-code co-occurrence bases fitted before fit cutoff",
+      "seconds": 828.156
+    },
+    "behavior_verification": {
+      "shape": [
+        1000000,
+        1203
+      ],
+      "dtype": "float32",
+      "client_ids_match_input": true,
+      "all_values_finite": true,
+      "min_value": -4.043051242828369,
+      "max_value": 10.490385055541992,
+      "graph_zero_rows": 163701,
+      "graph_minimum_nonzero_norm": 0.016133533790707588,
+      "graph_subunit_nonzero_rows": 35,
+      "graph_maximum_norm": 1.0000004768371582,
+      "state_sha256_verified": "108f0319cea6074ab7a6002c5e7bc94a7ac9ef3a533745f5de014fe7098167bb",
+      "output_bytes": 4812000128,
+      "seconds": 2.5995855999935884
+    },
+    "multiwindow_prepare": {
+      "status": "complete",
+      "stage": "prepare_only",
+      "started_utc": "2026-11-17T16:12:17.956888+00:00",
+      "finished_utc": "2026-11-17T16:52:33.434450+00:00",
+      "seconds": 2415.346544,
+      "returncode": 0,
+      "command": [
+        "运行环境/Scripts/python.exe",
+        "-u",
+        "-m",
+        "extension.pretrain_encoder",
+        "--mode",
+        "multiwindow",
+        "--stage",
+        "prepare",
+        "--data-directory",
+        "数据/拓展任务",
+        "--cache-directory",
+        "结果/拓展任务/多窗口预训练/缓存",
+        "--output-directory",
+        "结果/拓展任务/多窗口预训练/表征",
+        "--sequence-length",
+        "64",
+        "--pseudo-days",
+        "14",
+        "--prepare-batch-size",
+        "50000",
+        "--validation-fraction",
+        "0.1",
+        "--seed",
+        "42",
+        "--class-selection",
+        "training_targets",
+        "--include-delayed-window"
+      ],
+      "source_commit": "b97780b55a5a7a05271212ad84afbe0c179a7cf0",
+      "source_working_tree_changes": [],
+      "source_sha256": {
+        "extension/pretrain_encoder.py": "88a4aa6898679dab23783fe6a10ec25b38fbf62338a559ac34fb6eb6e374c8a1",
+        "extension/behavior_features.py": "9942ed5d312181dc61657ea321c47e3d7134408bc80ebcf3fa29c2029bbc0ea4",
+        "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02",
+        "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+      },
+      "source_archive": "结果/拓展任务/多窗口预训练/prepare_source.zip",
+      "source_archive_sha256": "4854bf34ae207d8e79b5de1db0b3655dbfbe07b73d8f8ef5ecbdb5486e8a7f31",
+      "versions": {
+        "numpy": "2.4.6",
+        "pandas": "2.3.3",
+        "pyarrow": "23.0.1",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.1",
+        "joblib": "1.6.0",
+        "threadpoolctl": "3.8.0"
+      },
+      "python": "3.11.3",
+      "python_executable": "运行环境/Scripts/python.exe",
+      "omp_num_threads": 4,
+      "mkl_num_threads": 4
+    },
+    "multiwindow_cache": {
+      "created_utc": "2026-11-17T16:52:32.088618+00:00",
+      "mode": "multiwindow",
+      "clients": 1000000,
+      "aggregate_dimensions": 1203,
+      "sequence_length": 64,
+      "pseudo_days": 14,
+      "include_delayed_window": true,
+      "training_pairs": 3,
+      "prediction_head_groups": [
+        "immediate",
+        "delayed"
+      ],
+      "unique_input_windows": [
+        "earlier",
+        "later"
+      ],
+      "full_input_inclusive_cutoff_utc": "2022-11-09T23:59:59+00:00",
+      "feature_state_sha256": "6f697b03ee1a4a2edcd4703c0a0afa636799128db256981fcdc3e187d2feb89c",
+      "feature_fit_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+      "class_selection": "training_targets",
+      "class_selection_scope": "Purchases of training users in both pseudo-target windows only; validation users excluded",
+      "class_selection_purchase_events": 289098,
+      "classes_fixed_across_windows": true,
+      "aggregate_cache_layout": "C-order for contiguous minibatch row reads",
+      "class_counts": {
+        "sku": 100,
+        "category": 100
+      },
+      "validation_users": 100000,
+      "training_users": 900000,
+      "user_split": "One seed-random user split, reused by all training pairs; no row-level split",
+      "query_sequence_encoding": "Stable CRC32 of PQ bytes modulo 8192; categorical content hash, not semantic alignment",
+      "sequence_order": "Latest events, deterministic chronological/tie ordering",
+      "official_target_directory_read": false,
+      "seed": 42,
+      "seconds": 2411.048,
+      "windows": [
+        {
+          "name": "earlier",
+          "feature_window": "earlier",
+          "target_window": "earlier",
+          "eligibility_window": "earlier",
+          "forecast_gap_days": 0,
+          "head_group": 0,
+          "input_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "target_start_inclusive_utc": "2022-10-13T00:00:00+00:00",
+          "target_end_inclusive_utc": "2022-10-26T23:59:59.999999999+00:00",
+          "churn_eligible_users": 419058
+        },
+        {
+          "name": "later",
+          "feature_window": "later",
+          "target_window": "later",
+          "eligibility_window": "later",
+          "forecast_gap_days": 0,
+          "head_group": 0,
+          "input_cutoff_utc": "2022-10-26T23:59:59.999999999+00:00",
+          "target_start_inclusive_utc": "2022-10-27T00:00:00+00:00",
+          "target_end_inclusive_utc": "2022-11-09T23:59:59+00:00",
+          "churn_eligible_users": 465783
+        },
+        {
+          "name": "earlier_delayed",
+          "feature_window": "earlier",
+          "target_window": "later",
+          "eligibility_window": "earlier",
+          "forecast_gap_days": 14,
+          "head_group": 1,
+          "input_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "target_start_inclusive_utc": "2022-10-27T00:00:00+00:00",
+          "target_end_inclusive_utc": "2022-11-09T23:59:59+00:00",
+          "churn_eligible_users": 419058
+        }
+      ]
+    },
+    "cache_verification": {
+      "clients": 1000000,
+      "training_users": 900000,
+      "validation_users": 100000,
+      "inputs": {
+        "earlier": {
+          "shape": [
+            1000000,
+            1203
+          ],
+          "dtype": "float32",
+          "finite": true,
+          "layout": "C",
+          "state_sha256": "6f697b03ee1a4a2edcd4703c0a0afa636799128db256981fcdc3e187d2feb89c",
+          "fit_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "input_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "file_bytes": 4812000128
+        },
+        "later": {
+          "shape": [
+            1000000,
+            1203
+          ],
+          "dtype": "float32",
+          "finite": true,
+          "layout": "C",
+          "state_sha256": "6f697b03ee1a4a2edcd4703c0a0afa636799128db256981fcdc3e187d2feb89c",
+          "fit_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "input_cutoff_utc": "2022-10-26T23:59:59.999999999+00:00",
+          "file_bytes": 4812000128
+        },
+        "full": {
+          "shape": [
+            1000000,
+            1203
+          ],
+          "dtype": "float32",
+          "finite": true,
+          "layout": "C",
+          "state_sha256": "6f697b03ee1a4a2edcd4703c0a0afa636799128db256981fcdc3e187d2feb89c",
+          "fit_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "input_cutoff_utc": "2022-11-09T23:59:59+00:00",
+          "file_bytes": 4812000128
+        }
+      },
+      "sequences": {
+        "earlier": {
+          "shape": [
+            1000000,
+            64
+          ],
+          "file_bytes": 896000192
+        },
+        "later": {
+          "shape": [
+            1000000,
+            64
+          ],
+          "file_bytes": 896000192
+        },
+        "full": {
+          "shape": [
+            1000000,
+            64
+          ],
+          "file_bytes": 896000192
+        }
+      },
+      "training_started": false,
+      "official_target_directory_read": false,
+      "total_cache_bytes": 17584335877,
+      "seconds": 14.846581199992215
+    },
+    "encoder_training_and_extraction": {
+      "status": "complete",
+      "started_utc": "2026-11-17T16:55:40.140599+00:00",
+      "finished_utc": "2026-11-17T17:52:11.187229+00:00",
+      "seconds": 3390.808497399994,
+      "returncode": 0,
+      "commands": {
+        "train": [
+          "拓展环境/Scripts/python.exe",
+          "-u",
+          "-m",
+          "extension.pretrain_encoder",
+          "--mode",
+          "multiwindow",
+          "--data-directory",
+          "数据/拓展任务",
+          "--cache-directory",
+          "结果/拓展任务/多窗口预训练/缓存",
+          "--output-directory",
+          "结果/拓展任务/多窗口预训练/表征",
+          "--batch-size",
+          "1024",
+          "--device",
+          "cuda",
+          "--stage",
+          "train",
+          "--epochs",
+          "10",
+          "--patience",
+          "2",
+          "--churn-weight-mode",
+          "unit",
+          "--churn-multiplier",
+          "3",
+          "--seed",
+          "42"
+        ],
+        "extract": [
+          "拓展环境/Scripts/python.exe",
+          "-u",
+          "-m",
+          "extension.pretrain_encoder",
+          "--mode",
+          "multiwindow",
+          "--data-directory",
+          "数据/拓展任务",
+          "--cache-directory",
+          "结果/拓展任务/多窗口预训练/缓存",
+          "--output-directory",
+          "结果/拓展任务/多窗口预训练/表征",
+          "--batch-size",
+          "1024",
+          "--device",
+          "cuda",
+          "--stage",
+          "extract"
+        ]
+      },
+      "stages": [
+        {
+          "name": "train",
+          "started_utc": "2026-11-17T16:55:40.379320+00:00",
+          "pid": 92836,
+          "finished_utc": "2026-11-17T17:50:41.662232+00:00",
+          "seconds": 3301.2824368000147,
+          "returncode": 0
+        },
+        {
+          "name": "extract",
+          "started_utc": "2026-11-17T17:50:41.664236+00:00",
+          "pid": 91192,
+          "finished_utc": "2026-11-17T17:52:11.186229+00:00",
+          "seconds": 89.52155619999394,
+          "returncode": 0
+        }
+      ],
+      "source_commit": "b97780b55a5a7a05271212ad84afbe0c179a7cf0",
+      "source_working_tree_changes": [],
+      "source_sha256": {
+        "extension/pretrain_encoder.py": "88a4aa6898679dab23783fe6a10ec25b38fbf62338a559ac34fb6eb6e374c8a1",
+        "extension/behavior_features.py": "9942ed5d312181dc61657ea321c47e3d7134408bc80ebcf3fa29c2029bbc0ea4",
+        "extension/history_representation.py": "cb4031e7ea2e501d1ad773e2d0d55c9390a7eef5ab15257b6474f712293e8e3f",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02",
+        "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+      },
+      "source_archive": "结果/拓展任务/多窗口预训练/training_source.zip",
+      "source_archive_sha256": "8e11b32f8d3a012149a5a332ae667db6190cb254f27fe9221f531548b8365905",
+      "runner_executable": "运行环境/Scripts/python.exe",
+      "runner_python": "3.11.3",
+      "runtime": {
+        "python": "3.11.3",
+        "executable": "拓展环境/Scripts/python.exe",
+        "packages": {
+          "numpy": "2.1.0",
+          "pandas": "2.2.3",
+          "pyarrow": "19.0.1",
+          "torch": "2.5.0+cu118",
+          "scipy": "1.17.1",
+          "scikit-learn": "1.9.1"
+        }
+      },
+      "omp_num_threads": 4,
+      "mkl_num_threads": 4
+    },
+    "encoder_training": {
+      "created_utc": "2026-11-17T17:50:36.245554+00:00",
+      "mode": "multiwindow",
+      "seed": 42,
+      "selection": "Minimum held-out-user weighted task BCE pooled over the historical training pairs",
+      "training_users": 900000,
+      "validation_users": 100000,
+      "training_window_rows": 2700000,
+      "validation_window_rows": 300000,
+      "training_pairs": 3,
+      "normalization_input_windows": 2,
+      "prediction_head_groups": [
+        "immediate",
+        "delayed"
+      ],
+      "normalization_scope": "Training users from each unique pseudo-input window once; no full-history or validation rows",
+      "user_split": "One seed-random user split, reused by all training pairs; no row-level split",
+      "official_target_directory_read": false,
+      "class_selection": "training_targets",
+      "class_selection_scope": "Purchases of training users in both pseudo-target windows only; validation users excluded",
+      "feature_state_sha256": "6f697b03ee1a4a2edcd4703c0a0afa636799128db256981fcdc3e187d2feb89c",
+      "class_counts": {
+        "sku": 100,
+        "category": 100
+      },
+      "best_validation_weighted_bce": 0.6683714384262195,
+      "churn_weight_mode": "unit",
+      "churn_multiplier": 3.0,
+      "churn_positive_weight": 1.0,
+      "churn_positive_weights_by_head": {
+        "immediate": 1.0,
+        "delayed": 1.0
+      },
+      "batch_size": 1024,
+      "learning_rate": 0.001,
+      "device": "cuda",
+      "torch_version": "2.5.0+cu118",
+      "seconds": 3291.076,
+      "selected_epoch": {
+        "epoch_zero_based": 1,
+        "training_task_bce": {
+          "churn": 0.19175486362649266,
+          "category": 0.07322847703730619,
+          "sku": 0.014021322876380549
+        },
+        "training_head_groups": {
+          "immediate": {
+            "churn": 0.19369807462215555,
+            "category": 0.0730882863483164,
+            "sku": 0.014174199218675495
+          },
+          "delayed": {
+            "churn": 0.18765182306493933,
+            "category": 0.07350885841528575,
+            "sku": 0.01371557019179066
+          }
+        },
+        "validation": {
+          "weighted_bce": 0.6683714384262195,
+          "task_bce": {
+            "churn": 0.1938885416532765,
+            "category": 0.07318836520182291,
+            "sku": 0.013517448264567057
+          },
+          "windows": {
+            "earlier": {
+              "head_group": 0,
+              "task_bce": {
+                "churn": 0.196804954374932,
+                "category": 0.07704173056640624,
+                "sku": 0.014332009423828125
+              },
+              "active_churn_auc": 0.7654191374167442,
+              "active_users": 41797
+            },
+            "later": {
+              "head_group": 0,
+              "task_bce": {
+                "churn": 0.19263079598076868,
+                "category": 0.069300426953125,
+                "sku": 0.01285712574157715
+              },
+              "active_churn_auc": 0.7615003521448992,
+              "active_users": 46467
+            },
+            "earlier_delayed": {
+              "head_group": 1,
+              "task_bce": {
+                "churn": 0.19237040316576273,
+                "category": 0.0732229380859375,
+                "sku": 0.013363209628295899
+              },
+              "active_churn_auc": 0.7378694532524265,
+              "active_users": 41797
+            }
+          },
+          "head_groups": {
+            "immediate": {
+              "task_bce": {
+                "churn": 0.1946074489582096,
+                "category": 0.07317107875976563,
+                "sku": 0.013594567582702636
+              },
+              "active_churn_auc": 0.7633963595515373,
+              "active_user_window_rows": 88264
+            },
+            "delayed": {
+              "task_bce": {
+                "churn": 0.19237040316576273,
+                "category": 0.0732229380859375,
+                "sku": 0.013363209628295899
+              },
+              "active_churn_auc": 0.7378694532524265,
+              "active_user_window_rows": 41797
+            }
+          }
+        },
+        "seconds": 826.006
+      },
+      "epoch_history": [
+        {
+          "epoch_zero_based": 0,
+          "validation_weighted_bce": 0.6701606924965201,
+          "seconds": 852.661
+        },
+        {
+          "epoch_zero_based": 1,
+          "validation_weighted_bce": 0.6683714384262195,
+          "seconds": 826.006
+        },
+        {
+          "epoch_zero_based": 2,
+          "validation_weighted_bce": 0.6756847551409748,
+          "seconds": 785.289
+        },
+        {
+          "epoch_zero_based": 3,
+          "validation_weighted_bce": 0.6969405208897576,
+          "seconds": 762.564
+        }
+      ]
+    },
+    "encoder_manifest": {
+      "created_utc": "2026-11-17T17:52:08.684957+00:00",
+      "mode": "multiwindow",
+      "method": "Historical residual encoder, attentive GRU, separate churn branch and horizon-specific prediction heads",
+      "clients": 1000000,
+      "dimensions": 594,
+      "dtype": "float16",
+      "standardized": false,
+      "blocks": [
+        {
+          "name": "shared",
+          "start": 0,
+          "stop": 128,
+          "kind": "bottleneck"
+        },
+        {
+          "name": "churn",
+          "start": 128,
+          "stop": 192,
+          "kind": "bottleneck"
+        },
+        {
+          "name": "immediate_scores",
+          "start": 192,
+          "stop": 393,
+          "kind": "probability"
+        },
+        {
+          "name": "delayed_scores",
+          "start": 393,
+          "stop": 594,
+          "kind": "probability"
+        }
+      ],
+      "prediction_head_groups": [
+        "immediate",
+        "delayed"
+      ],
+      "score_interpretation": "Sigmoid outputs, not calibrated probabilities; propensity heads use weighted BCE",
+      "official_target_directory_read": false,
+      "checkpoint_epoch_zero_based": 1,
+      "seed": 42,
+      "churn_weight_mode": "unit",
+      "churn_multiplier": 3.0,
+      "checkpoint_validation_weighted_bce": 0.6683714384262195,
+      "seconds": 80.573,
+      "torch_version": "2.5.0+cu118"
+    },
+    "encoder_verification": {
+      "clients": 1000000,
+      "dimensions": 594,
+      "dtype": "float16",
+      "finite": true,
+      "ids_match_cache": true,
+      "blocks": [
+        {
+          "name": "shared",
+          "start": 0,
+          "stop": 128,
+          "kind": "bottleneck"
+        },
+        {
+          "name": "churn",
+          "start": 128,
+          "stop": 192,
+          "kind": "bottleneck"
+        },
+        {
+          "name": "immediate_scores",
+          "start": 192,
+          "stop": 393,
+          "kind": "probability"
+        },
+        {
+          "name": "delayed_scores",
+          "start": 393,
+          "stop": 594,
+          "kind": "probability"
+        }
+      ],
+      "score_minimum": 1.5556812286376953e-05,
+      "score_maximum": 0.98974609375,
+      "checkpoint_epoch_zero_based": 1,
+      "checkpoint_validation_weighted_bce": 0.6683714384262195,
+      "completed_epochs": 4,
+      "checkpoint_bytes": 6055247,
+      "embedding_bytes": 1188000128,
+      "seconds": 12.976401799998712,
+      "official_target_directory_read": false
+    },
+    "candidate_workflow": {
+      "status": "complete",
+      "started_utc": "2026-11-17T17:53:33.285281+00:00",
+      "finished_utc": "2026-11-17T20:00:54.909446+00:00",
+      "seconds": 7641.521756100003,
+      "stages": [
+        {
+          "name": "behavior_normalization",
+          "started_utc": "2026-11-17T17:53:33.387904+00:00",
+          "status": "complete",
+          "pid": 91156,
+          "returncode": 0,
+          "seconds": 89.38333800001419,
+          "finished_utc": "2026-11-17T17:55:02.771664+00:00"
+        },
+        {
+          "name": "combined_normalization",
+          "started_utc": "2026-11-17T17:55:02.772665+00:00",
+          "status": "complete",
+          "pid": 85828,
+          "returncode": 0,
+          "seconds": 239.10459100001026,
+          "finished_utc": "2026-11-17T17:59:01.877969+00:00"
+        },
+        {
+          "name": "behavior_official",
+          "started_utc": "2026-11-17T17:59:16.650489+00:00",
+          "status": "complete",
+          "pid": 92888,
+          "returncode": 0,
+          "seconds": 3453.5248059000005,
+          "finished_utc": "2026-11-17T18:56:50.177960+00:00"
+        },
+        {
+          "name": "combined_official",
+          "started_utc": "2026-11-17T18:56:50.189502+00:00",
+          "status": "complete",
+          "pid": 91008,
+          "returncode": 0,
+          "seconds": 3844.6897350999934,
+          "finished_utc": "2026-11-17T20:00:54.881441+00:00"
+        }
+      ],
+      "source_commit": "e00451e80b00ee4189acf98a28831f88c9448115",
+      "working_tree_changes": [],
+      "source_sha256": {
+        "extension/standardize.py": "07ade63a84af1d3d7f9e0bb2a88193987ee75b54316389586737543f647b2e02",
+        "extension/build_embeddings.py": "67e752239bfe7c54d01cb1ea7dce0467c7b681e629aa5fd6633c09d83e251e41",
+        "extension/evaluate.py": "645a957a0010731bc41dd7024540b3fecb894c15bfa5a04d45ac2361dd13ae3d",
+        "extension/target_cache.py": "4daa564035dc72c9e74340d100dbda2628d116fe860ef7d511859204847453d3"
+      },
+      "helper_sha256": {
+        "评测行为候选.py": "9b4307ad85c59c23f7225319f87bdb92b6fefb0ab945debb9f752d2357f2b794",
+        "运行分项评测.py": "eeffbbf17d54ba4d200cedfb14eaaa619c071bcb628624a2b9d744bc98c9ccfe"
+      },
+      "runner_executable": "运行环境/Scripts/python.exe",
+      "runner_python": "3.11.3 | packaged by Anaconda, Inc. | (main, Apr 19 2023, 23:46:34) [MSC v.1916 64 bit (AMD64)]",
+      "normalization_executable": "运行环境/Scripts/python.exe",
+      "normalization_versions": {
+        "numpy": "2.4.6",
+        "pandas": "2.3.3",
+        "pyarrow": "23.0.1"
+      },
+      "normalization_batch_size": 5000,
+      "method": "block",
+      "shared_history_check": {
+        "control_shape": [
+          1000000,
+          1203
+        ],
+        "combined_shape": [
+          1000000,
+          1797
+        ],
+        "core_dimensions": 594,
+        "ids_equal": true,
+        "unequal_values": 10597
+      }
+    }
+  },
+  "diagnostics": {
+    "auxiliary_class_coverage": {
+      "sku": {
+        "previous_auxiliary_overlap": 24,
+        "new_auxiliary_overlap": 45,
+        "official_classes": 100
+      },
+      "category": {
+        "previous_auxiliary_overlap": 96,
+        "new_auxiliary_overlap": 79,
+        "official_classes": 100
+      }
+    },
+    "multiwindow": {
+      "created_utc": "2026-11-17T16:54:34.835306+00:00",
+      "scope": "Read-only diagnostics after completed preparation; official class lists are only compared, never used to alter selection.",
+      "class_selection": "training_targets",
+      "class_selection_scope": "Purchases of training users in both pseudo-target windows only; validation users excluded",
+      "class_selection_purchase_events": 289098,
+      "prediction_head_groups": [
+        "immediate",
+        "delayed"
+      ],
+      "feature_fit_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+      "full_input_inclusive_cutoff_utc": "2022-11-09T23:59:59+00:00",
+      "feature_state_sha256": "6f697b03ee1a4a2edcd4703c0a0afa636799128db256981fcdc3e187d2feb89c",
+      "official_class_overlap_diagnostic_only": {
+        "category": {
+          "auxiliary_classes": 100,
+          "official_classes": 100,
+          "overlapping_classes": 79
+        },
+        "sku": {
+          "auxiliary_classes": 100,
+          "official_classes": 100,
+          "overlapping_classes": 45
+        }
+      },
+      "row_alignment": {
+        "new_cache_behavior_old_cache_identical": true,
+        "client_ids_logical_bytes_sha256": "06f26c86b2eb6f16128766e898e2b6ed06ecdf509b9ca877d07bc3e3b042e5cf"
+      },
+      "buyer_mask": {
+        "feature_name": "product_buy.count",
+        "column_index": 0,
+        "rule": "input-only raw log1p count > 0",
+        "fortran_contiguous": true,
+        "dtype": "float32",
+        "count_column_bytes": 4000000,
+        "source": "结果\\拓展任务\\行为特征\\embeddings.npy"
+      },
+      "full_sequence_64": {
+        "sequence_length": 64,
+        "users": 1000000,
+        "users_with_full_length_sequence": 191238,
+        "stored_event_counts": {
+          "padding": 39194379,
+          "buy": 934688,
+          "cart": 1415256,
+          "remove": 605048,
+          "page": 20117331,
+          "search": 1733298
+        },
+        "page_fraction_among_nonpadding_events": 0.8109988860992434,
+        "historical_buyers": 510971,
+        "historical_buyers_without_purchase_in_recent_sequence": 37806,
+        "fraction_historical_buyers_without_purchase_in_recent_sequence": 0.07398854338113121,
+        "historical_buyers_without_buy_or_cart_in_recent_sequence": 17069,
+        "fraction_historical_buyers_without_buy_or_cart_in_recent_sequence": 0.03340502689976535,
+        "historical_buyers_with_only_page_or_padding": 5575
+      },
+      "previous_full_sequence_32": {
+        "sequence_length": 32,
+        "users_with_full_length_sequence": 336100,
+        "stored_event_counts": {
+          "padding": 15200693,
+          "buy": 783097,
+          "cart": 940118,
+          "remove": 412816,
+          "page": 13617010,
+          "search": 1046266
+        },
+        "page_fraction_among_nonpadding_events": 0.8105697455258125,
+        "historical_buyers": 510971,
+        "historical_buyers_without_purchase_in_recent_sequence": 80839,
+        "fraction_historical_buyers_without_purchase_in_recent_sequence": 0.158206630121866,
+        "historical_buyers_without_buy_or_cart_in_recent_sequence": 48133,
+        "fraction_historical_buyers_without_buy_or_cart_in_recent_sequence": 0.09419908370533749,
+        "historical_buyers_with_only_page_or_padding": 22591,
+        "limitation": "Missing a purchase in the latest 32 events establishes truncation of purchase history, not that each case needs longer sequences or has predictive lost information."
+      },
+      "new_minus_old": {
+        "users_with_full_length_sequence": -144862,
+        "page_fraction_among_nonpadding_events": 0.0004291405734309084,
+        "historical_buyers_without_purchase_in_recent_sequence": -43033,
+        "fraction_historical_buyers_without_purchase_in_recent_sequence": -0.08421808674073479,
+        "historical_buyers_without_buy_or_cart_in_recent_sequence": -31064,
+        "fraction_historical_buyers_without_buy_or_cart_in_recent_sequence": -0.060794056805572136,
+        "historical_buyers_with_only_page_or_padding": -17016
+      },
+      "batch_size": 10000,
+      "limitations": [
+        "Coverage is only overlap of auxiliary head classes, not total historical item information.",
+        "Longer sequence coverage does not establish prediction gains or that every recovered event is useful.",
+        "The 64-step and 32-step runs can also differ in query token encoding; this is a coverage comparison, not an isolated model-score ablation."
+      ],
+      "windows": [
+        {
+          "name": "earlier",
+          "feature_window": "earlier",
+          "target_window": "earlier",
+          "eligibility_window": "earlier",
+          "forecast_gap_days": 0,
+          "head_group": 0,
+          "input_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "target_start_inclusive_utc": "2022-10-13T00:00:00+00:00",
+          "target_end_inclusive_utc": "2022-10-26T23:59:59.999999999+00:00",
+          "churn_eligible_users": 419058,
+          "support_summary": {
+            "training": {
+              "users": 900000,
+              "eligible_churn_users": 377261,
+              "churn_positive_users": 354025,
+              "churn_negative_users": 23236,
+              "category": {
+                "classes": 100,
+                "classes_with_positive_users": 100,
+                "minimum_positive_users": 62,
+                "median_positive_users": 241.5,
+                "maximum_positive_users": 2022
+              },
+              "sku": {
+                "classes": 100,
+                "classes_with_positive_users": 98,
+                "minimum_positive_users": 0,
+                "median_positive_users": 37.0,
+                "maximum_positive_users": 134
+              }
+            },
+            "validation": {
+              "users": 100000,
+              "eligible_churn_users": 41797,
+              "churn_positive_users": 39277,
+              "churn_negative_users": 2520,
+              "category": {
+                "classes": 100,
+                "classes_with_positive_users": 100,
+                "minimum_positive_users": 9,
+                "median_positive_users": 28.5,
+                "maximum_positive_users": 209
+              },
+              "sku": {
+                "classes": 100,
+                "classes_with_positive_users": 92,
+                "minimum_positive_users": 0,
+                "median_positive_users": 4.0,
+                "maximum_positive_users": 18
+              }
+            }
+          }
+        },
+        {
+          "name": "later",
+          "feature_window": "later",
+          "target_window": "later",
+          "eligibility_window": "later",
+          "forecast_gap_days": 0,
+          "head_group": 0,
+          "input_cutoff_utc": "2022-10-26T23:59:59.999999999+00:00",
+          "target_start_inclusive_utc": "2022-10-27T00:00:00+00:00",
+          "target_end_inclusive_utc": "2022-11-09T23:59:59+00:00",
+          "churn_eligible_users": 465783,
+          "support_summary": {
+            "training": {
+              "users": 900000,
+              "eligible_churn_users": 419316,
+              "churn_positive_users": 394773,
+              "churn_negative_users": 24543,
+              "category": {
+                "classes": 100,
+                "classes_with_positive_users": 100,
+                "minimum_positive_users": 110,
+                "median_positive_users": 244.0,
+                "maximum_positive_users": 1777
+              },
+              "sku": {
+                "classes": 100,
+                "classes_with_positive_users": 96,
+                "minimum_positive_users": 0,
+                "median_positive_users": 34.0,
+                "maximum_positive_users": 162
+              }
+            },
+            "validation": {
+              "users": 100000,
+              "eligible_churn_users": 46467,
+              "churn_positive_users": 43791,
+              "churn_negative_users": 2676,
+              "category": {
+                "classes": 100,
+                "classes_with_positive_users": 100,
+                "minimum_positive_users": 7,
+                "median_positive_users": 27.5,
+                "maximum_positive_users": 192
+              },
+              "sku": {
+                "classes": 100,
+                "classes_with_positive_users": 88,
+                "minimum_positive_users": 0,
+                "median_positive_users": 4.0,
+                "maximum_positive_users": 24
+              }
+            }
+          }
+        },
+        {
+          "name": "earlier_delayed",
+          "feature_window": "earlier",
+          "target_window": "later",
+          "eligibility_window": "earlier",
+          "forecast_gap_days": 14,
+          "head_group": 1,
+          "input_cutoff_utc": "2022-10-12T23:59:59.999999999+00:00",
+          "target_start_inclusive_utc": "2022-10-27T00:00:00+00:00",
+          "target_end_inclusive_utc": "2022-11-09T23:59:59+00:00",
+          "churn_eligible_users": 419058,
+          "support_summary": {
+            "training": {
+              "users": 900000,
+              "eligible_churn_users": 377261,
+              "churn_positive_users": 356057,
+              "churn_negative_users": 21204,
+              "category": {
+                "classes": 100,
+                "classes_with_positive_users": 100,
+                "minimum_positive_users": 110,
+                "median_positive_users": 244.0,
+                "maximum_positive_users": 1777
+              },
+              "sku": {
+                "classes": 100,
+                "classes_with_positive_users": 96,
+                "minimum_positive_users": 0,
+                "median_positive_users": 34.0,
+                "maximum_positive_users": 162
+              }
+            },
+            "validation": {
+              "users": 100000,
+              "eligible_churn_users": 41797,
+              "churn_positive_users": 39479,
+              "churn_negative_users": 2318,
+              "category": {
+                "classes": 100,
+                "classes_with_positive_users": 100,
+                "minimum_positive_users": 7,
+                "median_positive_users": 27.5,
+                "maximum_positive_users": 192
+              },
+              "sku": {
+                "classes": 100,
+                "classes_with_positive_users": 88,
+                "minimum_positive_users": 0,
+                "median_positive_users": 4.0,
+                "maximum_positive_users": 24
+              }
+            }
+          }
+        }
+      ]
+    },
+    "shared_history_numerical_check": {
+      "scope": "Full million-row shared history; read-only mmap with 2048-row batches",
+      "control_shape": [
+        1000000,
+        1203
+      ],
+      "combined_shape": [
+        1000000,
+        1797
+      ],
+      "core_dimensions": 594,
+      "different_values": 10597,
+      "compared_values": 1203000000,
+      "blocks": [
+        {
+          "name": "statistics",
+          "start": 0,
+          "stop": 96,
+          "kind": "statistics",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "velocity",
+          "start": 96,
+          "stop": 111,
+          "kind": "statistics",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "purchase_days",
+          "start": 111,
+          "stop": 115,
+          "kind": "statistics",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "buy_history",
+          "start": 115,
+          "stop": 371,
+          "kind": "counts",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "cart_history",
+          "start": 371,
+          "stop": 627,
+          "kind": "counts",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "cart_balance_7_days",
+          "start": 627,
+          "stop": 883,
+          "kind": "signed_count",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "url_history",
+          "start": 883,
+          "stop": 1011,
+          "kind": "counts",
+          "different_values": 0,
+          "maximum_absolute_difference": 0.0,
+          "sum_absolute_difference": 0.0,
+          "maximum_float16_steps": 0,
+          "one_step_differences": 0,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "name",
+          "start": 1011,
+          "stop": 1043,
+          "kind": "embedding",
+          "different_values": 998,
+          "maximum_absolute_difference": 0.0009765625,
+          "sum_absolute_difference": 0.17078566551208496,
+          "maximum_float16_steps": 1,
+          "one_step_differences": 998,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "query",
+          "start": 1043,
+          "stop": 1075,
+          "kind": "embedding",
+          "different_values": 612,
+          "maximum_absolute_difference": 0.0009765625,
+          "sum_absolute_difference": 0.09050631523132324,
+          "maximum_float16_steps": 1,
+          "one_step_differences": 612,
+          "changed_sign_values": 0
+        },
+        {
+          "name": "graph",
+          "start": 1075,
+          "stop": 1203,
+          "kind": "embedding",
+          "different_values": 8987,
+          "maximum_absolute_difference": 0.0009765625,
+          "sum_absolute_difference": 0.5171888470649719,
+          "maximum_float16_steps": 1,
+          "one_step_differences": 8987,
+          "changed_sign_values": 0
+        }
+      ],
+      "column_statistics": {
+        "mean": {
+          "exactly_equal": true,
+          "maximum_absolute_difference": 0.0
+        },
+        "scale": {
+          "exactly_equal": true,
+          "maximum_absolute_difference": 0.0
+        }
+      },
+      "sources": [
+        {
+          "path": "结果/拓展任务/行为分组表征/embeddings.npy",
+          "bytes": 2406000128,
+          "mtime_ns": 1794938047916145000
+        },
+        {
+          "path": "结果/拓展任务/多窗口组合表征/embeddings.npy",
+          "bytes": 3594000128,
+          "mtime_ns": 1794938197993938400
+        },
+        {
+          "path": "结果/拓展任务/行为特征/manifest.json",
+          "sha256": "cee7181f459402d997cdfad2c74e739fecc68006e083b4f35263685837c457ee"
+        },
+        {
+          "path": "结果/拓展任务/行为分组表征/manifest.json",
+          "sha256": "c437ed861469c9dfd338c103f60e516645e760704c5ee2413a0cca964869feaf"
+        },
+        {
+          "path": "结果/拓展任务/多窗口组合表征/manifest.json",
+          "sha256": "15a636307e01c6787857ae112e5ea299edaa3e64dc006e412fab26fd95c3eac1"
+        }
+      ],
+      "seconds": 8.829412199993385,
+      "interpretation": "Float16 steps measure adjacency of represented values; no underlying real-number equality is asserted. Both paths scale the same raw history with the same rules, but differing memory layouts can change reduction rounding."
+    },
+    "legacy_small_sample_weight_comparison": {
+      "scope": "Identical 4096 training/1024 held-out users sampled from the previous pseudo-window cache",
+      "device": "cpu",
+      "torch_threads": 1,
+      "versions": {
+        "numpy": "2.1.0",
+        "pandas": "2.2.3",
+        "torch": "2.5.0+cu118",
+        "scipy": "1.17.1",
+        "scikit-learn": "1.9.1",
+        "joblib": "1.6.0",
+        "threadpoolctl": "3.8.0",
+        "cloudpickle": "3.1.2",
+        "narwhals": "2.28.0"
+      },
+      "seconds": 42.15716080000857,
+      "official_target_directory_read": false,
+      "not_an_official_score": true,
+      "metric_caution": "Weighted BCE values across policies have different scales; these two-epoch sample results do not predict downstream gains",
+      "active_churn_support": {
+        "training": {
+          "eligible_users": 1914,
+          "churn_positive_users": 1802
+        },
+        "validation": {
+          "eligible_users": 488,
+          "churn_positive_users": 462
+        }
+      },
+      "experiments": [
+        {
+          "name": "balanced",
+          "seed": 42,
+          "selection": "Minimum held-out-user weighted three-head BCE; weights estimated from training users only",
+          "training_users": 4096,
+          "validation_users": 1024,
+          "batch_size": 256,
+          "churn_weight_mode": "balanced",
+          "churn_positive_weight": 0.0621531642973423,
+          "churn_multiplier": 1.0,
+          "learning_rate": 0.001,
+          "seconds": 23.005,
+          "completed_epochs": 2,
+          "selected_epoch": {
+            "epoch_zero_based": 1,
+            "training_weighted_bce": 0.24765830766409636,
+            "validation_weighted_bce": 0.20667697194169776,
+            "validation_task_bce": {
+              "churn": 0.07507805648397227,
+              "category": 0.09751185536384582,
+              "sku": 0.0340870600938797
+            },
+            "validation_active_churn_auc": 0.6666666666666666,
+            "seconds": 6.758
+          }
+        },
+        {
+          "name": "churn_priority",
+          "seed": 42,
+          "selection": "Minimum held-out-user weighted three-head BCE; weights estimated from training users only",
+          "training_users": 4096,
+          "validation_users": 1024,
+          "batch_size": 256,
+          "churn_weight_mode": "unit",
+          "churn_positive_weight": 1.0,
+          "churn_multiplier": 3.0,
+          "learning_rate": 0.001,
+          "seconds": 12.739,
+          "completed_epochs": 2,
+          "selected_epoch": {
+            "epoch_zero_based": 1,
+            "training_weighted_bce": 0.7896856106817722,
+            "validation_weighted_bce": 0.7488115051437597,
+            "validation_task_bce": {
+              "churn": 0.2018898784137163,
+              "category": 0.10096518516540527,
+              "sku": 0.042176684737205504
+            },
+            "validation_active_churn_auc": 0.672993672993673,
+            "seconds": 8.305
+          }
+        }
+      ],
+      "interpretation": "Legacy-cache CPU comparison on identical 4096 training/1024 held-out users for two epochs, not an official score or an ablation of the new multiwindow architecture. At each policy's minimum-weighted-BCE checkpoint, churn AUROC rises from 0.6666667 to 0.6729937, while category BCE worsens from 0.097512 to 0.100965 and SKU BCE from 0.034087 to 0.042177. These are checkpoint-selected AUROCs, not the maximum AUROC across epochs. Different weighted total BCE scales are not comparable, and this fixed small sample does not establish full-data gains."
+    },
+    "block_scaling_metrics": {
+      "selection_rule": "Use the epoch selected by the official weighted score in each run, never the separate maximum of each component; verify it against all three exact epoch scores.",
+      "limitations": [
+        "Single-seed offline comparison; no significance test or causal noise diagnosis.",
+        "Statistics use the same means/scales, but 958 of 352000000 float16 statistic values differ through double rounding (maximum absolute difference 0.0078125); see 分组缩放核验.json."
+      ],
+      "tasks": {
+        "propensity_category": {
+          "old_selected": {
+            "epoch_zero_based": 1,
+            "step": 15625,
+            "auroc": 0.7821017503738403,
+            "diversity": 0.9008676409721375,
+            "novelty": 0.8965977430343628,
+            "weighted_score": 0.8054279386997223
+          },
+          "new_selected": {
+            "epoch_zero_based": 2,
+            "step": 23438,
+            "auroc": 0.7843227386474609,
+            "diversity": 0.8953483700752258,
+            "novelty": 0.8880515694618225,
+            "weighted_score": 0.8057981848716738
+          },
+          "new_minus_old": {
+            "auroc": 0.0022209882736206055,
+            "diversity": -0.005519270896911621,
+            "novelty": -0.008546173572540283,
+            "weighted_score": 0.0003702461719514716
+          },
+          "weighted_score_change_components": {
+            "auroc": 0.0017767906188964845,
+            "diversity": -0.0005519270896911622,
+            "novelty": -0.0008546173572540283
+          },
+          "original_log_sources": [
+            {
+              "path": "准备资料\\官方评测\\.neptune\\offline\\run__361d2910-998f-492b-ab78-16889aa00667__69880__f1cbfno6\\data-1.log",
+              "bytes": 205601,
+              "sha256": "f3325b906bc0615b441d4c982666ee62105a30a7025f34938071e16dcf5b09fd"
+            },
+            {
+              "path": "准备资料\\官方评测\\.neptune\\offline\\run__61e4d707-d8af-42b2-a739-3831f846fbd0__93900__hbrpoig8\\data-1.log",
+              "bytes": 196679,
+              "sha256": "37862c845ec9b1bb0957175466b63053e96b2ddc6a26016ff770b7d4dc839943"
+            }
+          ]
+        },
+        "propensity_sku": {
+          "old_selected": {
+            "epoch_zero_based": 2,
+            "step": 23438,
+            "auroc": 0.7617242336273193,
+            "diversity": 0.8875660300254822,
+            "novelty": 0.9911223649978638,
+            "weighted_score": 0.7972482264041901
+          },
+          "new_selected": {
+            "epoch_zero_based": 2,
+            "step": 23438,
+            "auroc": 0.7622343897819519,
+            "diversity": 0.8728580474853516,
+            "novelty": 0.9918316006660461,
+            "weighted_score": 0.7962564766407014
+          },
+          "new_minus_old": {
+            "auroc": 0.0005101561546325684,
+            "diversity": -0.014707982540130615,
+            "novelty": 0.000709235668182373,
+            "weighted_score": -0.000991749763488703
+          },
+          "weighted_score_change_components": {
+            "auroc": 0.00040812492370605473,
+            "diversity": -0.0014707982540130616,
+            "novelty": 7.092356681823731e-05
+          },
+          "original_log_sources": [
+            {
+              "path": "准备资料\\官方评测\\.neptune\\offline\\run__82e53aea-bc98-4848-81c2-61a8aee09be0__69880__b9m80o2r\\data-1.log",
+              "bytes": 181549,
+              "sha256": "bfdc12923e2eeee100a7a38143c73132ee90366b9701cc660d1c4bad96280dc5"
+            },
+            {
+              "path": "准备资料\\官方评测\\.neptune\\offline\\run__eaa15b38-44e4-4218-97a5-1756ce4d32d4__94544__hbrpoig8\\data-1.log",
+              "bytes": 197594,
+              "sha256": "b497b3aa38fde95b86c4791916e85ed58dcfb83b1bf3d5fac341af4c1053d140"
+            }
+          ]
+        }
+      }
+    },
+    "block_scaling_quantization": {
+      "scope": "Full million-row 544 representation, bounded 2048-row reads; arrays opened read-only",
+      "shape": [
+        1000000,
+        544
+      ],
+      "column_statistics_exactly_equal": false,
+      "different_statistic_values": 958,
+      "total_statistic_values": 352000000,
+      "different_columns": 82,
+      "maximum_absolute_statistic_difference": 0.0078125,
+      "means_exactly_equal": true,
+      "scales_exactly_equal": true,
+      "zero_rows_by_embedding_block": {
+        "name": 489029,
+        "query": 656560,
+        "graph": 163701
+      },
+      "nonzero_entries_in_original_zero_rows": {
+        "name": 0,
+        "query": 0,
+        "graph": 0
+      },
+      "maximum_row_norm_difference_from_two": {
+        "name": 0.0006401538848876953,
+        "query": 0.0006830692291259766,
+        "graph": 0.0007994174957275391
+      },
+      "maximum_absolute_difference_from_raw_direction_times_two": {
+        "name": 0.00048828125,
+        "query": 0.00048828125,
+        "graph": 0.00048828125
+      },
+      "source_file_stat_matches_manifest": {
+        "embeddings.npy": true,
+        "client_ids.npy": true
+      }
+    },
+    "purchase_days": {
+      "scope": "Relevant one million users, input/product_buy.parquet only; distinct timestamps/days are proxies, not actual order IDs",
+      "purchase_rows": 1304215,
+      "buyers": 510971,
+      "unique_user_timestamp_pairs": 797274,
+      "extra_rows_sharing_user_timestamp": 506941,
+      "fraction_extra_rows_sharing_user_timestamp": 0.38869434870784336,
+      "unique_user_day_pairs": 728552,
+      "extra_rows_sharing_user_day": 575663,
+      "fraction_extra_rows_sharing_user_day": 0.4413865812001856,
+      "single_event_buyers": 253443,
+      "single_timestamp_buyers": 372143,
+      "single_day_buyers": 393692,
+      "single_day_buyer_fraction": 0.7704781680369336,
+      "multiple_events_but_single_day_buyers": 140249,
+      "event_counts_per_buyer": {
+        "min": 1.0,
+        "q25": 1.0,
+        "median": 2.0,
+        "q75": 3.0,
+        "q90": 5.0,
+        "q99": 18.0,
+        "max": 644.0
+      },
+      "distinct_days_per_buyer": {
+        "min": 1.0,
+        "q25": 1.0,
+        "median": 1.0,
+        "q75": 1.0,
+        "q90": 2.0,
+        "q99": 6.0,
+        "max": 73.0
+      },
+      "interval_days_among_buyers_with_multiple_days": {
+        "event_interval": {
+          "min": 0.002025462962962963,
+          "q25": 4.215247395833334,
+          "median": 11.019270833333334,
+          "q75": 24.31238425925926,
+          "q90": 44.83491898148147,
+          "q99": 101.35726851851854,
+          "max": 139.46574074074073
+        },
+        "timestamp_interval": {
+          "min": 0.0028935185185185184,
+          "q25": 8.350817418981482,
+          "median": 19.639953703703704,
+          "q75": 38.68138310185185,
+          "q90": 65.4365625,
+          "q99": 115.36969791666668,
+          "max": 139.46574074074073
+        },
+        "distinct_day_interval_proxy": {
+          "min": 0.0028935185185185184,
+          "q25": 9.863420138888888,
+          "median": 22.029328703703705,
+          "q75": 42.05161072530864,
+          "q90": 69.52893518518518,
+          "q99": 116.87498032407407,
+          "max": 139.46574074074073
+        },
+        "median_day_interval_over_event_interval": 2.0
+      }
+    },
+    "previous_gradient_snapshot": {
+      "source_commit": "25f3162",
+      "checkpoint_epoch_zero_based": 1,
+      "population": "8192 fixed-seed randomly sampled held-out pseudo-window users; inference mode, no optimizer, CPU only",
+      "loss_terms": {
+        "churn": 0.07042441962260262,
+        "category": 0.06821853714063764,
+        "sku": 0.012456276162993163
+      },
+      "gradient_norm_wrt_shared_bottleneck": {
+        "churn": 0.008027200022617562,
+        "category": 0.006378269508547635,
+        "sku": 0.0024673171233730853
+      },
+      "churn_norm_fraction_of_sum_task_norms": 0.47574832699366126,
+      "limits": "Snapshot diagnostic at the selected checkpoint; gradient vectors can interfere, so norm proportions are not a decomposition of total training gradient or proof of optimal weighting."
+    },
+    "historical_sku_support": {
+      "official_sku_count": 100,
+      "input_cutoff_utc": "2022-11-09T23:59:59+00:00",
+      "all_input_users": {
+        "seen_in_purchase": 100,
+        "seen_in_cart": 100,
+        "seen_in_purchase_or_cart": 100,
+        "seen_in_both": 100,
+        "purchase_only": 0,
+        "cart_only": 0,
+        "not_seen_in_either_but_has_metadata": 0,
+        "not_seen_in_either_nor_metadata": 0,
+        "purchase_row_support": {
+          "no_rows": 0,
+          "one_to_nine_rows": 6,
+          "ten_to_99_rows": 26,
+          "at_least100_rows": 68,
+          "min": 3,
+          "median": 209.5,
+          "max": 1391
+        },
+        "cart_row_support": {
+          "no_rows": 0,
+          "one_to_nine_rows": 1,
+          "ten_to_99_rows": 9,
+          "at_least100_rows": 90,
+          "min": 6,
+          "median": 682.0,
+          "max": 6780
+        }
+      },
+      "relevant_one_million_users": {
+        "seen_in_purchase": 100,
+        "seen_in_cart": 100,
+        "seen_in_purchase_or_cart": 100,
+        "purchase_row_support": {
+          "no_rows": 0,
+          "one_to_nine_rows": 7,
+          "ten_to_99_rows": 33,
+          "at_least100_rows": 60,
+          "min": 1,
+          "median": 154.0,
+          "max": 1088
+        },
+        "cart_row_support": {
+          "no_rows": 0,
+          "one_to_nine_rows": 2,
+          "ten_to_99_rows": 19,
+          "at_least100_rows": 79,
+          "min": 3,
+          "median": 374.0,
+          "max": 4005
+        }
+      },
+      "old_graph_vocabulary": {
+        "manifest_stored_sku_ids": false,
+        "configured_limit": 4096,
+        "official_skus_in_reconstructed_top4096": 88,
+        "reconstruction": "Only SKU frequency vocabulary reconstructed from buy+cart before cutoff with (-count, SKU) tie order, matching old history_representation.rank_counts; no graph matrix/factorization or representation produced",
+        "distinct_historical_skus": 1191139
+      },
+      "boundary": "Official SKU IDs used only for read-only diagnostic counts. No model features or vocabulary decisions are generated; do not confuse auxiliary-class coverage with total historical information.",
+      "source_files": {
+        "product_buy": {
+          "bytes": 22574514,
+          "mtime_ns": 1755514370000000000
+        },
+        "add_to_cart": {
+          "bytes": 68855469,
+          "mtime_ns": 1755514370000000000
+        }
+      }
+    },
+    "official_windows": {
+      "scope": "Read-only diagnosis of current local offline evaluation with unchanged official code, not verification of hidden live competition target dates.",
+      "timestamp_timezone": "Parquet timestamp[ns] carries no timezone metadata. Dates below preserve recorded clock values; interpreting them as UTC is a project implementation convention, not established by the file schema.",
+      "calendar_windows": {
+        "train_target": {
+          "first_calendar_date": "2022-11-10",
+          "last_calendar_date": "2022-11-23",
+          "days_after_input_cutoff_date": [
+            1,
+            14
+          ]
+        },
+        "validation_target": {
+          "first_calendar_date": "2022-11-24",
+          "last_calendar_date": "2022-12-07",
+          "days_after_input_cutoff_date": [
+            15,
+            28
+          ]
+        }
+      },
+      "feature_reuse": {
+        "same_client_ids_for_train_and_validation_within_each_task": true,
+        "same_embedding_matrix_for_train_and_validation_within_each_task": true,
+        "embedding_refresh_at_validation_start": false,
+        "downstream_train_validation_split_is_held_out_users": false,
+        "task_filter": "Churn uses one fixed active-client subset for both windows; propensity uses the submitted client set for both windows.",
+        "target_semantics": "Each task derives its labels independently from its own target window. A purchase in train_target does not refresh the validation embedding or by itself make validation churn zero."
+      },
+      "interpretation": {
+        "confirmed": "The downstream model is trained with the first 14 future days and evaluated on days 15-28, using the same fixed input representation.",
+        "candidate_explanation_only": "A representation supervised solely on the immediate next 14 days, or heavily emphasizing a very recent cart-balance proxy, may not transfer identically to delayed days 15-28. Different recency horizons and purchase timing are possible explanations, not established causes of the score gap.",
+        "clarification": "Current net-cart features are derived from historical input only. No future cart feature is generated or proposed.",
+        "not_established": "This check does not establish temporal distribution drift magnitude, which feature causes any loss, or that longer horizons necessarily improve metrics."
+      }
+    }
+  },
+  "validation_runs": [
+    {
+      "stage": "Before delayed-head addition",
+      "environment": "运行环境",
+      "scope": "Full repository test suite",
+      "passed": 75,
+      "skipped": 6,
+      "seconds": 82.17,
+      "evidence": "Coordinator's recorded test run"
+    },
+    {
+      "stage": "After delayed-head addition",
+      "environment": "拓展环境",
+      "command": "python -m pytest tests/test_pretrain_encoder.py -q -k 'multiwindow or delayed_head or attentive_encoder'",
+      "passed": 5,
+      "deselected": 8,
+      "seconds": 62.06,
+      "evidence": "Coordinator's recorded test run"
+    },
+    {
+      "stage": "After delayed-head addition, complementary selection",
+      "environment": "拓展环境",
+      "command": "python -m pytest tests/test_pretrain_encoder.py -q -k 'not multiwindow and not delayed_head and not attentive_encoder'",
+      "passed": 8,
+      "deselected": 5,
+      "seconds": 31.04,
+      "evidence": "Coordinator's recorded test run"
+    }
+  ],
+  "failures_and_limits": [
+    "Score regressions and unmet goals remain explicit per complete representation and comparison above.",
+    "The previous 1001 evaluation was interrupted: completed churn was recovered from exact original logs, and only unfinished tasks restarted. Its total monotonic duration is unavailable; preserved segment durations are not a full-run estimate.",
+    "Historical auxiliary coverage is diagnostic only: SKU overlap rises from 24/100 to 45/100 while category falls from 96/100 to 79/100. Official target identifiers never select the vocabulary.",
+    "Longer sequences improve recorded purchase coverage, but length, content encoding, features and supervision changed together; this is not an isolated sequence-length effect.",
+    "The 1203 history and 1797 candidate share the full-history block; numerical differences are recorded, not silently forced to zero. The encoder's internal earlier-fitted basis is separate from the externally concatenated full-history basis.",
+    "Cart balance is signed event-count arithmetic, not true cart state. Purchase-day rhythm is a proxy, not reconstructed orders.",
+    "Raw graph normalization leaves 35 nonzero near-degenerate projections below unit norm; zero-edge rows remain zero. The observed range is retained in verification.",
+    "Official validation uses the same input representation for future days 15-28, while downstream training uses days 1-14. The contribution of horizon mismatch to remaining score gaps is not identified.",
+    "Internal held-out-user BCE selects the encoder checkpoint; it is neither a downstream score nor a guarantee of requested performance.",
+    "Single seed, one local public split, fixed three-epoch downstream training; no significance, hidden-task, leaderboard, or causal speed claim.",
+    "Nested helper and task durations overlap. They must not be summed as independent stages; no measured peak memory is claimed.",
+    "Test records refer to different code stages and environments; overlapping test counts are not an updated whole-repository total."
+  ],
+  "evidence_files": {
+    "结果/拓展任务/行为特征/runtime.json": {
+      "bytes": 4634,
+      "sha256": "cca097c2718ccf8a9da78a9c4468de52364d906ebd0f32cfea79346c50fc91d6"
+    },
+    "结果/拓展任务/多窗口预训练/prepare_runtime.json": {
+      "bytes": 2675,
+      "sha256": "ad994d8e911e6ab37ae5f443a13436dff24bdd8ac6fd85ba17f4067c92d6d5e8"
+    },
+    "结果/拓展任务/多窗口预训练/training_runtime.json": {
+      "bytes": 33586,
+      "sha256": "a8d0a6874081bdc0b47f6d723fd57ef766c3c861933c8fda67eee2650c07db12"
+    },
+    "结果/拓展任务/行为候选记录/runtime.json": {
+      "bytes": 5444,
+      "sha256": "daea127768f7b49b65eda397f17ca8468eb139dad83165c5948e3157985a64e5"
+    },
+    "结果/拓展任务/行为特征/manifest.json": {
+      "bytes": 2655,
+      "sha256": "cee7181f459402d997cdfad2c74e739fecc68006e083b4f35263685837c457ee"
+    },
+    "结果/拓展任务/行为特征/verification.json": {
+      "bytes": 537,
+      "sha256": "bb7c809ef62589d29bf0e827b95854229f2ee7f7a60f91e5b9f744962014df03"
+    },
+    "结果/拓展任务/多窗口预训练/缓存/manifest.json": {
+      "bytes": 24826,
+      "sha256": "728933ef78bdbde18d359b723522cc7ad68d0622a7301917d0ef337d51f219aa"
+    },
+    "结果/拓展任务/多窗口预训练/cache_verification.json": {
+      "bytes": 2831,
+      "sha256": "1120c574235c6fcd780b2d6d43444cddbd65a9d8931d5b0b99c9f03dcb9917f6"
+    },
+    "结果/拓展任务/多窗口预训练/表征/manifest.json": {
+      "bytes": 31616,
+      "sha256": "ba9a35c577a8c89310e787f479be847a57cabfbd89e23c4e3bed56be3d6bc7a5"
+    },
+    "结果/拓展任务/多窗口预训练/embedding_verification.json": {
+      "bytes": 940,
+      "sha256": "89cb27f5a8db01ac2b75c6593aae3051da758eac4d7d050531602dcbc83aa1ac"
+    },
+    "结果/拓展任务/多窗口预训练/表征/training.json": {
+      "bytes": 11565,
+      "sha256": "d396cd21705336b6558f6f780ff3d36171168120d61a5be33560a92b7ab752d3"
+    },
+    "准备资料/共同行为核验.json": {
+      "bytes": 4992,
+      "sha256": "207d92c08a18aaa0bdb06aa6ad796cff3cc1421e0410be1737ed622970f8cdae"
+    },
+    "结果/拓展任务/历史特征评分/runtime.json": {
+      "bytes": 2573,
+      "sha256": "a56c097ad523418dffa08e85cabcb9dd37a5678318ae8f74d27847570b723b8d"
+    },
+    "结果/拓展任务/历史特征评分/scores.json": {
+      "bytes": 93,
+      "sha256": "0e7642ccd9745cc7a30e43cc50ef930e2d75e3a050768c1d5f77e5bc21c665ff"
+    },
+    "结果/拓展任务/历史特征评分/epochs.json": {
+      "bytes": 59,
+      "sha256": "3ea9de308ad131187dfcb611e56af6b93a1d073d6031c19137a1c88939acf8ab"
+    },
+    "结果/拓展任务/历史特征评分/evaluation.json": {
+      "bytes": 2743,
+      "sha256": "4ec641eefa9d9e67337ed1398528bac696a954b9c316462d0cd80baca76a9bd4"
+    },
+    "结果/拓展任务/历史组合评分/runtime.json": {
+      "bytes": 6042,
+      "sha256": "a6320f46a0be20400578239dc0f27980028f55bc34558090f6bc36c2ec30def2"
+    },
+    "结果/拓展任务/历史组合评分/scores.json": {
+      "bytes": 110,
+      "sha256": "4bedf71e4e5793085d1c6b9c9643f1abe175163d32e269eaa75a8e020d37b425"
+    },
+    "结果/拓展任务/历史组合评分/epochs.json": {
+      "bytes": 73,
+      "sha256": "3adc285eaa58f2710d4196b1d80a75db923910d1f5de318e0632321685d7443f"
+    },
+    "结果/拓展任务/历史组合评分/evaluation.json": {
+      "bytes": 4727,
+      "sha256": "3a50de3d78c31d61ec8ff22afef4fe811807bbf6bb789ade7af4ea4a382bf8ff"
+    },
+    "结果/拓展任务/分组缩放评分/runtime.json": {
+      "bytes": 5324,
+      "sha256": "e999cad2156778397240e731fffbdc047500f69d8f4b1b3f56eebcfe98461fc7"
+    },
+    "结果/拓展任务/分组缩放评分/scores.json": {
+      "bytes": 88,
+      "sha256": "468dff390d9e5974ac13832d5a52b6ca1f2cd67fe24cfe1ecee9c74b07b0651d"
+    },
+    "结果/拓展任务/分组缩放评分/epochs.json": {
+      "bytes": 73,
+      "sha256": "1328fcb8877619ae2f1647815e5465cc7722b7f09e1f81855291e7316c462929"
+    },
+    "结果/拓展任务/分组缩放评分/churn/evaluation.json": {
+      "bytes": 2601,
+      "sha256": "132f329c7dc9fc01744aec720a2177a2c1575fb7b132418d658b570841ef44df"
+    },
+    "结果/拓展任务/分组缩放评分/churn/scores.json": {
+      "bytes": 36,
+      "sha256": "90d856b50ce55f9e48151aa8599c9d427bad9025825e52a6dab532809161a409"
+    },
+    "结果/拓展任务/分组缩放评分/churn/epochs.json": {
+      "bytes": 12,
+      "sha256": "ed7ff4b53156d88f2ff17d836310efb9204b9ee9787a0cd02e40a76ddebe798f"
+    },
+    "结果/拓展任务/分组缩放评分/propensity_category/evaluation.json": {
+      "bytes": 2657,
+      "sha256": "20245b4b8b4f56886f9d1875ff910b4989518c4c59bb6f2947d91bbbd17a6441"
+    },
+    "结果/拓展任务/分组缩放评分/propensity_category/scores.json": {
+      "bytes": 50,
+      "sha256": "18b848719c39265168e001f8fd38779a6ca5856232a3f865b73f01aa36df86b9"
+    },
+    "结果/拓展任务/分组缩放评分/propensity_category/epochs.json": {
+      "bytes": 26,
+      "sha256": "d5d91b46f89b05b578d345c9acb7da01a4d769fe7992defef23d8be12b21c118"
+    },
+    "结果/拓展任务/分组缩放评分/propensity_sku/evaluation.json": {
+      "bytes": 2637,
+      "sha256": "2b6ac4ffa6d562dd439c4663dc0e562266146203bcfec01862ac802eb31cfe51"
+    },
+    "结果/拓展任务/分组缩放评分/propensity_sku/scores.json": {
+      "bytes": 45,
+      "sha256": "ddb8bbff2c304fefe0bdd023496adb5419906e7e7ca9210003304c2921697cde"
+    },
+    "结果/拓展任务/分组缩放评分/propensity_sku/epochs.json": {
+      "bytes": 21,
+      "sha256": "0e379e79e9a001626808421593258b65aabe4751348f58559a95f57de1847a1e"
+    },
+    "结果/拓展任务/分组缩放表征/manifest.json": {
+      "bytes": 725,
+      "sha256": "f04916471ee25fd9fe8ced32b8e0be5ee8697819718501622a860b017958494a"
+    },
+    "结果/拓展任务/分组缩放表征/standardization.json": {
+      "bytes": 23124,
+      "sha256": "f9ca2ac8b0a705df4beffe6dd430b0d1ce4c08ee69d6436bacebb0dd266ffbeb"
+    },
+    "结果/拓展任务/行为分组评分/runtime.json": {
+      "bytes": 5162,
+      "sha256": "cc5bff57e9eae274a4d9899ee5a74922f68734beb116011c6d8852ef4f8e34b8"
+    },
+    "结果/拓展任务/行为分组评分/scores.json": {
+      "bytes": 88,
+      "sha256": "271926bd8c0f87b797f5c9c89007c19c919747d4e24ba5c89268db049038f3ed"
+    },
+    "结果/拓展任务/行为分组评分/epochs.json": {
+      "bytes": 73,
+      "sha256": "1328fcb8877619ae2f1647815e5465cc7722b7f09e1f81855291e7316c462929"
+    },
+    "结果/拓展任务/行为分组评分/churn/evaluation.json": {
+      "bytes": 2601,
+      "sha256": "0b72ab72aa0ffd6d0644821a3bc5f0b2297ac58f27236f1e5a96a298d588ab6c"
+    },
+    "结果/拓展任务/行为分组评分/churn/scores.json": {
+      "bytes": 36,
+      "sha256": "ac2e72d1d7f6dcc322982abbcf0ab54f8d3c01b98d8011b0a338d7bd7ef5b58e"
+    },
+    "结果/拓展任务/行为分组评分/churn/epochs.json": {
+      "bytes": 12,
+      "sha256": "ed7ff4b53156d88f2ff17d836310efb9204b9ee9787a0cd02e40a76ddebe798f"
+    },
+    "结果/拓展任务/行为分组评分/propensity_category/evaluation.json": {
+      "bytes": 2657,
+      "sha256": "2cad07efd4c81c999bbac1b4035c4883ebc131cad1105af2019fa968e4fb159b"
+    },
+    "结果/拓展任务/行为分组评分/propensity_category/scores.json": {
+      "bytes": 50,
+      "sha256": "18b848719c39265168e001f8fd38779a6ca5856232a3f865b73f01aa36df86b9"
+    },
+    "结果/拓展任务/行为分组评分/propensity_category/epochs.json": {
+      "bytes": 26,
+      "sha256": "d5d91b46f89b05b578d345c9acb7da01a4d769fe7992defef23d8be12b21c118"
+    },
+    "结果/拓展任务/行为分组评分/propensity_sku/evaluation.json": {
+      "bytes": 2637,
+      "sha256": "8ee00034609004149ec50aef3289c9d25de0c69b58da2602b19316a545393a52"
+    },
+    "结果/拓展任务/行为分组评分/propensity_sku/scores.json": {
+      "bytes": 45,
+      "sha256": "3f467b0476f54773871a0713ac9561e027b4419f2c994d98d997bdfa0b5b3947"
+    },
+    "结果/拓展任务/行为分组评分/propensity_sku/epochs.json": {
+      "bytes": 21,
+      "sha256": "0e379e79e9a001626808421593258b65aabe4751348f58559a95f57de1847a1e"
+    },
+    "结果/拓展任务/行为分组表征/manifest.json": {
+      "bytes": 714,
+      "sha256": "c437ed861469c9dfd338c103f60e516645e760704c5ee2413a0cca964869feaf"
+    },
+    "结果/拓展任务/行为分组表征/standardization.json": {
+      "bytes": 66729,
+      "sha256": "ca0f1227a009ab60c667a0a1d799569cd52b035e1c414bafa65babee5a677a81"
+    },
+    "结果/拓展任务/多窗口组合评分/runtime.json": {
+      "bytes": 5182,
+      "sha256": "3b120ecc1396f64ffb6971bda1f6558841803502f4cfb28d740397c18a76a6fe"
+    },
+    "结果/拓展任务/多窗口组合评分/scores.json": {
+      "bytes": 87,
+      "sha256": "0dcd5f93470a922229adf2480fae0fc6d9357126d5cae39b3119626fe8145a59"
+    },
+    "结果/拓展任务/多窗口组合评分/epochs.json": {
+      "bytes": 73,
+      "sha256": "1328fcb8877619ae2f1647815e5465cc7722b7f09e1f81855291e7316c462929"
+    },
+    "结果/拓展任务/多窗口组合评分/churn/evaluation.json": {
+      "bytes": 2619,
+      "sha256": "c9443c81a67f85d564b824bc7a1d0032cb3b54d89297319ca42657a2eb5e01c3"
+    },
+    "结果/拓展任务/多窗口组合评分/churn/scores.json": {
+      "bytes": 35,
+      "sha256": "2cba734f1eec8fa90ad0dac59a64c273975d34d6379f1c8b9fe81ad3158800b6"
+    },
+    "结果/拓展任务/多窗口组合评分/churn/epochs.json": {
+      "bytes": 12,
+      "sha256": "ed7ff4b53156d88f2ff17d836310efb9204b9ee9787a0cd02e40a76ddebe798f"
+    },
+    "结果/拓展任务/多窗口组合评分/propensity_category/evaluation.json": {
+      "bytes": 2675,
+      "sha256": "1bf86b0a5f3fda14d476816b2d0598c3c0c310affc563d6d571ec652c807604f"
+    },
+    "结果/拓展任务/多窗口组合评分/propensity_category/scores.json": {
+      "bytes": 50,
+      "sha256": "18d1582038b7116566bcca5ed955856552e1ca6bf76f2d575156d70ba08c0e50"
+    },
+    "结果/拓展任务/多窗口组合评分/propensity_category/epochs.json": {
+      "bytes": 26,
+      "sha256": "d5d91b46f89b05b578d345c9acb7da01a4d769fe7992defef23d8be12b21c118"
+    },
+    "结果/拓展任务/多窗口组合评分/propensity_sku/evaluation.json": {
+      "bytes": 2655,
+      "sha256": "5db4edb81ac16bda1cc14892762c7b62ca93edc580954ac9bd7ea08d5b70fa99"
+    },
+    "结果/拓展任务/多窗口组合评分/propensity_sku/scores.json": {
+      "bytes": 45,
+      "sha256": "230fa9058efa2e0ad43d5973888b0ba5a0e0050b6f2775f6e3d1cd0394143935"
+    },
+    "结果/拓展任务/多窗口组合评分/propensity_sku/epochs.json": {
+      "bytes": 21,
+      "sha256": "0e379e79e9a001626808421593258b65aabe4751348f58559a95f57de1847a1e"
+    },
+    "结果/拓展任务/多窗口组合表征/manifest.json": {
+      "bytes": 959,
+      "sha256": "15a636307e01c6787857ae112e5ea299edaa3e64dc006e412fab26fd95c3eac1"
+    },
+    "结果/拓展任务/多窗口组合表征/standardization.json": {
+      "bytes": 68142,
+      "sha256": "376c1e2bb560f92af5a06b7d1b032c5089af761de04e82b9a0292b175bdc6dd3"
+    },
+    "准备资料/类别覆盖诊断.json": {
+      "bytes": 546,
+      "sha256": "c4209372a6e97ad32fab99bc2f62c24e026dbd0df8174700ba903a1309531238"
+    },
+    "准备资料/多窗口诊断.json": {
+      "bytes": 34205,
+      "sha256": "fbf97f2f6f8032e5335d7c0d48e44d38b1301075af5b5912a10bdcbb9fc031aa"
+    },
+    "准备资料/分组缩放诊断.json": {
+      "bytes": 8413,
+      "sha256": "5312a00a77264e08d966234866896817ab4643185e136cf9087435797e1a983a"
+    },
+    "准备资料/行为诊断.json": {
+      "bytes": 4130,
+      "sha256": "ac0d39ca497dbf3ac4b3a861a8a252b314afa65324a9112c4aff49b5a7d534a3"
+    },
+    "准备资料/评测窗口诊断.json": {
+      "bytes": 7878,
+      "sha256": "83c2372b7a601e0c9aacb796d6d77af5e6aba0bbdd91c93f02d0afdd1c36407b"
+    },
+    "结果/拓展任务/预训练权重检查/comparison.json": {
+      "bytes": 4979,
+      "sha256": "45848ded364827a48d52bef0f6ca825eb52c1121adf005c465b4383713ff5cd1"
+    },
+    "准备资料/分组缩放核验.json": {
+      "bytes": 1048,
+      "sha256": "29407d161a6047878ebae1c28de99027f85c0ae28b75db18a004a374115b03e4"
+    },
+    "准备资料/预训练诊断.json": {
+      "bytes": 748,
+      "sha256": "30227b845d2a95a0264e32a7d06eff257ba9c81e59e3f2ac411a05c41baf26b9"
+    },
+    "准备资料/商品历史覆盖诊断.json": {
+      "bytes": 2194,
+      "sha256": "3f0fc309c81efa6be5776aabb7d482d6173cb369457b18874ae9939d84161358"
+    }
+  }
+}

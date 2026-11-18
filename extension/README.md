@@ -1,8 +1,8 @@
 # 拓展任务：Synerise 用户行为表征
 
-本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。以下五组表征均已完成课程指定的三项官方公开任务的本地评估，包含标准化和历史预训练对照。
+本目录独立于 KKBox 基本任务，实现历史行为聚合表征及官方评测接入。以下八组表征均已完成课程指定的三项官方公开任务的本地评估，包含标准化、分组缩放和历史预训练对照。
 
-2026-11-17 在完整官方预处理数据的 100 万用户上完成以下对照。原始基线记录保留在 [baseline_validation.json](baseline_validation.json) 和 [baseline_scores.json](baseline_scores.json)；标准化与 673 维实验见 [review_results.json](review_results.json)，544/1001 维实验的成绩、版本、恢复记录及目标验收见 [advanced_results.json](advanced_results.json)。各组用户行序一致，均通过固定版本的官方格式验证器。
+截至 2026-11-18，在完整官方预处理数据的 100 万用户上完成以下对照。原始基线记录保留在 [baseline_validation.json](baseline_validation.json) 和 [baseline_scores.json](baseline_scores.json)；标准化与 673 维实验见 [review_results.json](review_results.json)，旧 544/1001 维实验见 [advanced_results.json](advanced_results.json)，第三轮分组缩放与 1203/1797 维实验见 [behavior_results.json](behavior_results.json)。各组用户行序一致，均通过固定版本的官方格式验证器。
 
 | 表征 | 维数 | `churn` AUROC | `propensity_category` 官方分数 | `propensity_sku` 官方分数 |
 | --- | ---: | ---: | ---: | ---: |
@@ -11,10 +11,15 @@
 | 历史信息增强并标准化 | 673 | 0.7286 | 0.7961 | 0.7881 |
 | 统计、PQ 与图特征并标准化 | 544 | 0.7293 | 0.8054 | 0.7972 |
 | 上述特征加历史预训练并标准化 | 1001 | 0.7299 | 0.8053 | 0.7985 |
+| 同一历史内容改为分组缩放 | 544 | 0.7305 | 0.8058 | 0.7963 |
+| 分离行为历史与分组缩放 | 1203 | 0.7302 | 0.8058 | 0.7927 |
+| 分离行为历史加多窗口延迟预训练 | 1797 | **0.7340** | **0.8067** | **0.8057** |
 
 独立标准化使 churn 下降 0.0016，SKU 分数提高 0.0022，说明标准化并非普遍有利。增强表征相对原基线的三项变化为 +0.0001、+0.0072、+0.0082：主要改善出现在两个 propensity 任务，churn 基本持平。每行使用同一份表征完成三项任务，没有拼接不同表征的单项最好成绩。增强实验同时改动多个特征块并做标准化，不能将涨分单独归因于某一块。
 
 544 维相对旧 673 维的三项变化为 +0.0007、+0.0093、+0.0091；统计、PQ 和图特征在这一组同时改动，不能单独归因。1001 维与 544 维的共同 544 列逐元素完全一致，新增预训练块后变化为 **+0.0006、-0.0001、+0.0013**：churn/SKU 略升，category 略降，两套保留为不同取舍。两组均未达到 `churn ≥ 0.7500`、`category ≥ 0.8150`、`SKU ≥ 0.8150` 中的任何一项目标。
+
+第三轮分组缩放相对旧 544 维的变化为 +0.0012/+0.0004/−0.0009；再改为 1203 维历史后，变化为 −0.0003/0/−0.0036，新增特征未带来整体提升。拼接 594 维多窗口预训练后，相对同一 1203 维历史提高 **+0.0038/+0.0009/+0.0130**，相对旧 1001 维提高 **+0.0041/+0.0014/+0.0072**。1797 维目前三项均最高，仍分别距目标 0.0160/0.0083/0.0093；不混用不同表征的单项最好成绩。
 
 各组均使用 RTX 4060 Laptop GPU、Windows、PyTorch `2.5.0+cu118`、入口种子 42、相同官方模型和每任务三轮训练，以及下文的等价目标缓存；分数定义见下文。原基线完整格式验证与三任务训练耗时 2783.939 秒，独立标准化实验约 2809 秒（按日志与结果文件时间估算），673 维实验单调计时为 2747.804 秒，544 维为 3405.726 秒。单次计时存在未控制的并发负载，不能据此认定维数增加或布局改动导致训练提速。成绩来自单个种子和公开验证划分，尚未检验统计显著性，也不代表隐藏任务或线上排行榜成绩。
 
@@ -24,9 +29,15 @@
 
 完整 SKU 验证集的 100 类中有 3 类没有正例；保留了固定版本 TorchMetrics 的官方宏平均 AUROC 处理，未剔除类别或改变指标。小批量 sanity validation 也可能出现无正例提示，类别支持数已记录在成绩文件中。
 
-## 多窗口与延迟预测候选
+## 多窗口与延迟预测流程
 
-**以下候选尚待正式评测，不属于上表已完成的五组实验。** 本轮将历史行为拆分为购买、加购与近 7 日 `cart−remove−buy` 余额代理，加入活跃度速度比、独立购买日节律、精确 URL 和带 IDF 的图特征；历史块为 1203 维。余额是事件计数代理，不是真实订单余额。意见核验与设计依据见[第三轮诊断](../reports/third_review.md)。
+**1203 维历史与 1797 维延迟组合已完成全量构建、核验和三项正式评测；默认 393 维 immediate 路径仅完成实现测试，尚无该路径的全量正式分数。** 本轮将历史行为拆分为购买、加购与近 7 日 `cart−remove−buy` 余额代理，加入活跃度速度比、独立购买日节律、精确 URL 和带 IDF 的图特征；历史块为 1203 维。余额是事件计数代理，不是真实订单余额。意见核验与设计依据见[第三轮诊断](../reports/third_review.md)。
+
+已完成的 544 维缩放对照直接复用下文构建的原始历史矩阵：
+
+```powershell
+python -m extension.standardize --embeddings-directory outputs/extension/history --output-directory outputs/extension/history_block --method block
+```
 
 先在完整 `input/` 内拟合独立历史块，保留同一份原始矩阵供历史单独对照和预训练拼接使用：
 
@@ -52,7 +63,7 @@ python -m extension.pretrain_encoder --stage extract --data-directory data/exten
 | 默认 immediate | 128 + 64 + 201 = 393 | 1596 |
 | `--include-delayed-window` | 128 + 64 + 201 + 201 = 594 | 1797 |
 
-要复现默认 393 维对照，移除准备命令的 `--include-delayed-window`，并将三条命令中的缓存/模型目录分别换为 `outputs/extension/immediate_cache`、`outputs/extension/immediate_encoder`；其余参数保持一致。训练与提取会从缓存和 checkpoint 识别模式。准备阶段必须保留 `--mode multiwindow`，否则仍进入下文旧 457 维 legacy 路径。
+要运行尚未全量评测的默认 393 维对照，移除准备命令的 `--include-delayed-window`，并将三条命令中的缓存/模型目录分别换为 `outputs/extension/immediate_cache`、`outputs/extension/immediate_encoder`；其余参数保持一致。训练与提取会从缓存和 checkpoint 识别模式。准备阶段必须保留 `--mode multiwindow`，否则仍进入下文旧 457 维 legacy 路径。
 
 将延迟预训练块与前面独立构建的历史块拼接，输出官方要求的 `float16` 1797 维矩阵：
 
@@ -63,6 +74,10 @@ python -m extension.standardize --embeddings-directory outputs/extension/behavio
 393 维对照使用 `--pretrained-directory outputs/extension/immediate_encoder` 和单独的 `outputs/extension/immediate_combined` 输出目录。`--method block` 根据元数据将统计列按列标准化、PQ/图向量按行 L2 缩放、瓶颈按行归一化；已输出的 sigmoid 分数只乘块权重，不再次 sigmoid。参数保存在 `standardization.json`，原始矩阵保持不变。旧 `--method column` 仍是默认值；两条数值路径可能有极少量 `float16` 双重舍入差异，不声称共同统计列逐元素恒等，量化核验见第三轮诊断。
 
 最后将 `delayed_combined`、`immediate_combined` 或 `behavior_scaled` 作为下文评测的 `--embeddings-directory`，各用独立评分目录完成格式验证和三项任务。内部验证 BCE/AUROC 只用于选择候选，不能代替正式分数或保证达标。
+
+本次独立历史构建外层计时 831.067 秒，多窗口准备 2415.347 秒，训练 3301.282 秒、提取 89.522 秒；训练完成 4 轮并采用第 2 轮 checkpoint。1203/1797 维标准化分别为 89.383/239.105 秒，官方三项评测分别为 3453.002/3844.236 秒。单次计时不构成提速结论，嵌套阶段的计时不可重复累加。实际特征环境为 NumPy 2.4.6、pandas 2.3.3、PyArrow 23.0.1；训练和官方评测环境为 NumPy 2.1.0、pandas 2.2.3、PyArrow 19.0.1、PyTorch 2.5.0+cu118。精确源码提交与执行文件哈希见结果 JSON。
+
+两套新表示的用户顺序、前 1011 个历史统计/计数列、列均值与 scale 均完全一致；名称/查询/图块分别有 998/612/8987 个值不同，全部相差一个 `float16` 表示步，无符号变化，最大绝对差为 0.0009765625。这与不同内存布局下归一化求和的舍入差异相符，但不将历史块称为逐元素完全相同。辅助类别覆盖也有取舍：SKU 与官方清单的交集由 24/100 增至 45/100，category 由 96/100 降至 79/100；此比较仅用于诊断，官方清单未参与选类。
 
 ## 历史预训练与 1001 维实验流程
 
