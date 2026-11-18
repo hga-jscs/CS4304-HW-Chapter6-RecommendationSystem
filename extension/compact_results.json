@@ -1,0 +1,202 @@
+{
+  "scope": "Local public validation with the unmodified Synerise three-epoch evaluator, one seed; not an external leaderboard submission. Null means no verified final score for that task and profile in this snapshot. The 1047-dimensional control was only evaluated for churn.",
+  "evaluator": {
+    "official_repository": "https://github.com/Synerise/recsys2025.git",
+    "official_commit": "e91c1a62f84611151a399ce157e6031a4a73618f",
+    "seed": 42
+  },
+  "target_scores": {
+    "churn": 0.75,
+    "propensity_category": 0.815,
+    "propensity_sku": 0.815
+  },
+  "official_protocol_results": {
+    "reference": {
+      "dimensions": 2002,
+      "scores": {
+        "churn": 0.7349,
+        "propensity_category": 0.8069,
+        "propensity_sku": 0.8057
+      }
+    },
+    "compact_control": {
+      "dimensions": 1047,
+      "scores": {
+        "churn": 0.735,
+        "propensity_category": null,
+        "propensity_sku": null
+      },
+      "selected_epochs_zero_based": {
+        "churn": 2
+      }
+    },
+    "purchase_profile": {
+      "dimensions": 1270,
+      "scores": {
+        "churn": 0.7354,
+        "propensity_category": null,
+        "propensity_sku": null
+      },
+      "selected_epochs_zero_based": {
+        "churn": 2
+      }
+    },
+    "activity_profile": {
+      "dimensions": 1270,
+      "scores": {
+        "churn": null,
+        "propensity_category": null,
+        "propensity_sku": null
+      },
+      "selected_epochs_zero_based": {}
+    }
+  },
+  "embedding": {
+    "rows": 1000000,
+    "dtype": "float16",
+    "bytes": {
+      "baseline": 4004000128,
+      "candidate": 2540000128
+    },
+    "reduction_fraction": 0.36563435394575494,
+    "purchase_profile_full_array_verified": true,
+    "activity_profile_changed_columns_zero_based_half_open": [
+      1074,
+      1078
+    ],
+    "remaining_columns_verified_equal": 1266
+  },
+  "auxiliary_vocab_after_freeze": {
+    "sku": {
+      "reference_classes": 100,
+      "historical_classes_meeting_threshold": 1804,
+      "selected_in_wide_head": 1804,
+      "old_top100_overlap": 45,
+      "public_meeting_threshold": 91,
+      "public_in_wide_head": 91,
+      "public_below_threshold": 9,
+      "public_zero_historical_purchase_lines": 0,
+      "public_meeting_threshold_but_outside_cap": 0
+    },
+    "category": {
+      "reference_classes": 100,
+      "historical_classes_meeting_threshold": 2148,
+      "selected_in_wide_head": 500,
+      "old_top100_overlap": 79,
+      "public_meeting_threshold": 100,
+      "public_in_wide_head": 99,
+      "public_below_threshold": 0,
+      "public_zero_historical_purchase_lines": 0,
+      "public_meeting_threshold_but_outside_cap": 1
+    }
+  },
+  "transition_graph": {
+    "input": "URL or cart SKU to first strictly later purchase basket within seven days; page visits do not contain viewed SKU IDs.",
+    "users_with_nonzero_recent_signal": 209493,
+    "directed_edges": {
+      "add_to_cart": 1164149,
+      "page_visit": 3590918
+    }
+  },
+  "historical_purchase_validation": {
+    "target": "Any purchase in days 15–28 after historical anchor; this is a proxy outcome, not the official churn metric.",
+    "train_rows": 95800,
+    "validation_buyers": 16658,
+    "single_day_buyers": 13297,
+    "single_day_histogram_boosting_auc": {
+      "histogram boosting: purchase baseline": 0.5640528759513341,
+      "histogram boosting: purchase history, continuation and priors": 0.6496719212884918,
+      "histogram boosting: purchase history and continuation": 0.6381189982731799,
+      "histogram boosting: purchase history and priors": 0.6075075601862706
+    },
+    "fixed_ensemble_scores": {
+      "purchase_priors": {
+        "all": 0.7488454997088568,
+        "one_day": 0.6534786269640653
+      },
+      "with_activity": {
+        "all": 0.756033544767057,
+        "one_day": 0.6726227984754694
+      }
+    },
+    "paired_bootstrap_difference": {
+      "all": {
+        "gain": 0.007188045058200143,
+        "paired_bootstrap_95pct": [
+          0.0023824135849424945,
+          0.012136034333175267
+        ]
+      },
+      "one_day": {
+        "gain": 0.019144171511404018,
+        "paired_bootstrap_95pct": [
+          0.010723202198829105,
+          0.028946010771661028
+        ]
+      }
+    },
+    "bootstrap_replicates": 400
+  },
+  "parquet_projected_compressed_payload": {
+    "actual_projected_parquet_columns_bytes": 786476521,
+    "hypothetical_all_parquet_columns_bytes": 1691648743,
+    "fraction_avoided": 0.5350828449142175,
+    "scope": "Sum of Parquet compressed column-chunk sizes across seven equivalent data scans: all five historical events, a second product_buy scan for anchor construction and catalogue sku/category. Parquet footers, filesystem caching, read-ahead and the 8,000,128-byte relevant client NPY are excluded. This measures projected compressed payload, not physical disk traffic or wall-clock speedup."
+  },
+  "postfit_repurchase_audit": {
+    "scope": "Post-hoc aggregate description only. Public validation outcomes are accessed after representation design is frozen and never enter the training pipeline.",
+    "validation": "2022-11-24 through 2022-12-07 inclusive",
+    "continuation": "At least one historical page visit, search or cart addition strictly after the last purchase timestamp. Later on the same day counts; simultaneous timestamps do not.",
+    "definition": "At least one validation purchase of any product. Denominator is all buyers in the same stratum.",
+    "groups": [
+      {
+        "cohort": "multiple_days",
+        "recency_days": "all",
+        "continued": false,
+        "buyers": 27608,
+        "repeat_buyers": 4091,
+        "repeat_rate": 0.14818168646769053
+      },
+      {
+        "cohort": "multiple_days",
+        "recency_days": "all",
+        "continued": true,
+        "buyers": 89671,
+        "repeat_buyers": 17466,
+        "repeat_rate": 0.19477869099262862
+      },
+      {
+        "cohort": "single_day",
+        "recency_days": "all",
+        "continued": false,
+        "buyers": 138601,
+        "repeat_buyers": 6033,
+        "repeat_rate": 0.04352782447457089
+      },
+      {
+        "cohort": "single_day",
+        "recency_days": "all",
+        "continued": true,
+        "buyers": 255091,
+        "repeat_buyers": 16432,
+        "repeat_rate": 0.064416227934345
+      }
+    ],
+    "duckdb_execution": {
+      "duckdb": "2.0.0",
+      "threads": 2,
+      "memory_limit_mib": 512,
+      "max_temp_disk_gib": 4,
+      "query_wall_seconds": 16.196,
+      "total_wall_seconds_with_reconciliation": 25.687,
+      "peak_duckdb_buffer_bytes": 163414588,
+      "peak_duckdb_temp_disk_bytes": 0,
+      "remark": "DuckDB's profiled buffer memory excludes Python and selected engine allocations."
+    }
+  },
+  "limitations": [
+    "Compare all three tasks on one profile; do not combine a different profile’s best result on each task.",
+    "Broader vocabularies use newly fitted logistic heads over frozen historical inputs, not end-to-end retraining of the GRU. Greater coverage does not measure ranking quality.",
+    "Group-level repurchase rates are observational. Total three-task evaluation time is not reported for incomplete candidates."
+  ]
+}
