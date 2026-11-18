@@ -1,0 +1,251 @@
+{
+  "official_protocol_revision": "e91c1a62f84611151a399ce157e6031a4a73618f",
+  "seed": 42,
+  "model_seed": 1278,
+  "metric": "Churn AUROC; propensity = 0.8*macro AUROC + 0.1*Diversity + 0.1*Novelty.",
+  "timing": "Elapsed time for completed GPU-backed task processes; includes startup, validation and training.",
+  "profiles": {
+    "purchase_reference": {
+      "dimensions": 1270,
+      "evaluated_tasks": {
+        "churn": {
+          "score": 0.7354,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7353676557540894,
+            "weighted_score": 0.7353676557540894
+          },
+          "elapsed_seconds": 645.0544870000158,
+          "score_change_from_reference": 0.0,
+          "component_changes_from_reference": {
+            "auroc": 0.0,
+            "weighted_score": 0.0
+          }
+        },
+        "propensity_category": {
+          "score": 0.8088,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.788713812828064,
+            "diversity": 0.8931057453155518,
+            "novelty": 0.8854374289512634,
+            "weighted_score": 0.8088253676891328
+          },
+          "elapsed_seconds": 1563.9648938,
+          "score_change_from_reference": 0.0,
+          "component_changes_from_reference": {
+            "auroc": 0.0,
+            "diversity": 0.0,
+            "novelty": 0.0,
+            "weighted_score": 0.0
+          }
+        },
+        "propensity_sku": {
+          "score": 0.8071,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7751280069351196,
+            "diversity": 0.8789509534835815,
+            "novelty": 0.9909982681274414,
+            "weighted_score": 0.807097327709198
+          },
+          "elapsed_seconds": 1398.1182094,
+          "score_change_from_reference": 0.0,
+          "component_changes_from_reference": {
+            "auroc": 0.0,
+            "diversity": 0.0,
+            "novelty": 0.0,
+            "weighted_score": 0.0
+          }
+        }
+      },
+      "completed_task_seconds": 3607.137590200016
+    },
+    "repeat_signals": {
+      "dimensions": 1298,
+      "evaluated_tasks": {
+        "churn": {
+          "score": 0.7361,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7360637187957764,
+            "weighted_score": 0.7360637187957764
+          },
+          "elapsed_seconds": 792.9580301999995,
+          "score_change_from_reference": 0.0007,
+          "component_changes_from_reference": {
+            "auroc": 0.0006960630416870117,
+            "weighted_score": 0.0006960630416870117
+          }
+        }
+      },
+      "completed_task_seconds": 792.9580301999995
+    },
+    "joint_horizons_and_graph": {
+      "dimensions": 1314,
+      "evaluated_tasks": {
+        "churn": {
+          "score": 0.7362,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7361836433410645,
+            "weighted_score": 0.7361836433410645
+          },
+          "elapsed_seconds": 571.5611757000006,
+          "score_change_from_reference": 0.0008,
+          "component_changes_from_reference": {
+            "auroc": 0.0008159875869750977,
+            "weighted_score": 0.0008159875869750977
+          }
+        },
+        "propensity_category": {
+          "score": 0.8084,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7890729308128357,
+            "diversity": 0.887774646282196,
+            "novelty": 0.8835055828094482,
+            "weighted_score": 0.808386367559433
+          },
+          "elapsed_seconds": 1715.854941399999,
+          "score_change_from_reference": -0.0004,
+          "component_changes_from_reference": {
+            "auroc": 0.0003591179847717285,
+            "diversity": -0.005331099033355713,
+            "novelty": -0.0019318461418151855,
+            "weighted_score": -0.00043900012969977364
+          }
+        },
+        "propensity_sku": {
+          "score": 0.8059,
+          "selected_epoch_zero_based": 2,
+          "selected_metrics": {
+            "auroc": 0.7748332619667053,
+            "diversity": 0.8697230815887451,
+            "novelty": 0.9910455346107483,
+            "weighted_score": 0.8059434711933136
+          },
+          "elapsed_seconds": 2666.6704291999977,
+          "score_change_from_reference": -0.0012,
+          "component_changes_from_reference": {
+            "auroc": -0.00029474496841430664,
+            "diversity": -0.009227871894836426,
+            "novelty": 4.7266483306884766e-05,
+            "weighted_score": -0.0011538565158843994
+          }
+        }
+      },
+      "completed_task_seconds": 4954.086546299997
+    }
+  },
+  "joint_repeat_signal_selection": {
+    "reference": 0.7354,
+    "expanded_churn": 0.7361,
+    "included": true,
+    "rule": "Append the 28 columns when the official single-change churn score exceeds the purchase baseline."
+  },
+  "historical_features": {
+    "graph": {
+      "additional_buyers": 234009,
+      "nonzero_output_users": 231197,
+      "relations": {
+        "add_to_cart": {
+          "minimum_days": 0,
+          "maximum_days": 7,
+          "matches_from_outside_output_cohort": 353852,
+          "events_matched_to_next_basket": 1722117,
+          "directed_source_product_edges": 1357050
+        },
+        "page_visit": {
+          "minimum_days": 0,
+          "maximum_days": 7,
+          "matches_from_outside_output_cohort": 3456406,
+          "events_matched_to_next_basket": 16323910,
+          "directed_source_product_edges": 4398793
+        },
+        "product_buy": {
+          "minimum_days": 1,
+          "maximum_days": 28,
+          "matches_from_outside_output_cohort": 54072,
+          "events_matched_to_next_basket": 300967,
+          "directed_source_product_edges": 297630
+        }
+      }
+    },
+    "dual_head": {
+      "classes": {
+        "sku": 1804,
+        "category": 500
+      },
+      "diagnostics": {
+        "sku": {
+          "days_1_14": {
+            "classes_with_both_outcomes": 1061,
+            "near_only": 0.6832200677755295,
+            "joint": 0.6830795097039073,
+            "difference": -0.0001405580716221655
+          },
+          "days_15_28": {
+            "classes_with_both_outcomes": 956,
+            "near_only": 0.6909190173049428,
+            "joint": 0.6912698595022012,
+            "difference": 0.00035084219725844967
+          },
+          "delayed_classes_with_training_positives": 1731,
+          "heldout_users": 100000
+        },
+        "category": {
+          "days_1_14": {
+            "classes_with_both_outcomes": 499,
+            "near_only": 0.7308551574850034,
+            "joint": 0.7235080290941976,
+            "difference": -0.007347128390805757
+          },
+          "days_15_28": {
+            "classes_with_both_outcomes": 498,
+            "near_only": 0.7294294743055704,
+            "joint": 0.7300111484313567,
+            "difference": 0.0005816741257863578
+          },
+          "delayed_classes_with_training_positives": 500,
+          "heldout_users": 100000
+        }
+      },
+      "diagnostic_scope": "Held-out users at one shared historical anchor, not an independent time split; the near heads use other users from both target periods."
+    },
+    "category_residual": {
+      "method": "Joint SKU coordinates; original near category coordinates; compressed joint-minus-near category difference.",
+      "residual_rank": 16,
+      "residual_gain": 0.5,
+      "residual_pca_explained_fraction": 0.6971389651298523
+    }
+  },
+  "repeat_churn_subgroups": {
+    "epoch_zero_based": 2,
+    "is_best_epoch_for_both": true,
+    "groups": {
+      "all_historical_buyers": {
+        "buyers": 510971,
+        "repeat_buyers": 44022,
+        "purchase_auroc": 0.7353676747933591,
+        "expanded_auroc": 0.7360637571001568,
+        "difference": 0.0006960823067977406
+      },
+      "one_purchase_day": {
+        "buyers": 393692,
+        "repeat_buyers": 22465,
+        "purchase_auroc": 0.6629657153861112,
+        "expanded_auroc": 0.6644262381020798,
+        "difference": 0.0014605227159686374
+      },
+      "multiple_purchase_days": {
+        "buyers": 117279,
+        "repeat_buyers": 21557,
+        "purchase_auroc": 0.7013749592257814,
+        "expanded_auroc": 0.7018516669735158,
+        "difference": 0.00047670774773433955
+      }
+    }
+  },
+  "interpretation": "One public validation set and one seed. The combined experiment changes both the heads and the graph. The isolated repeat-signal experiment evaluates churn only. Its public validation score was used to decide inclusion."
+}

@@ -322,3 +322,13 @@ python -m extension.verify_target_cache --official-directory external/recsys2025
 | 紧凑活动 | 1270 | 0.7353 | 0.8084 | 0.8068 | 59.4 |
 
 用时为三个成功任务的实测时间之和，不含中断重试、等待和表征构建。逐项用时、最佳轮次及相对原方案的差值见 [实验记录](compact_results.json)。
+
+## 双窗与全量建图的公开验证结果
+
+| 表征 | 维数 | Churn | Category | SKU |
+|---|---:|---:|---:|---:|
+| 购买版 | 1270 | 0.7354 | 0.8088 | 0.8071 |
+| 仅追加复购特征 | 1298 | 0.7361 | — | — |
+| 双窗、全量图与复购特征 | 1314 | 0.7362 | 0.8084 | 0.8059 |
+
+复现联合版时，将上文生成的 `persistent_profiles` 与 `repeat_signals` 依次交给 `extension.combine_profiles`，两块权重均为 1。三个下游任务使用同一份合并后的画像。各项耗时、最佳轮次、指标分量和单日买家对照见[实验记录](horizon_results.json)。
